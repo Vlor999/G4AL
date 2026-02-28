@@ -1,8 +1,8 @@
-"""HUD panel and action buttons for commanding selected NPCs."""
+"""HUD panel, action buttons, and command input bar."""
 
 from __future__ import annotations
 
-from typing import List, Optional, Tuple, TYPE_CHECKING
+from typing import List, Optional, Tuple, Callable, TYPE_CHECKING
 
 import pygame
 
@@ -57,6 +57,14 @@ class HUD:
         self._buttons: List[Button] = []
         self._build_buttons()
 
+        # command input bar
+        self._input_active = False
+        self._input_text = ""
+        self._input_rect = pygame.Rect(420, self.PANEL_Y + 90, 400, 32)
+        self._on_command: Optional[Callable[[str], None]] = None
+        self._status_msg = ""
+        self._status_timer = 0
+
     def _ensure_fonts(self):
         if self._font is None:
             self._font = pygame.font.SysFont("consolas", UI_FONT_SIZE)
@@ -78,16 +86,55 @@ class HUD:
 
     # ── public ───────────────────────────────────────────────────────────
 
+    def set_command_callback(self, callback: Callable[[str], None]):
+        """Register a callback invoked when the player submits a text command."""
+        self._on_command = callback
+
+    def show_status(self, msg: str, duration_frames: int = 180):
+        """Show a transient status message (e.g. LLM feedback) on the HUD."""
+        self._status_msg = msg
+        self._status_timer = duration_frames
+
     def handle_click(self, pos: Tuple[int, int], selected_npcs: List["NPC"],
                      build_col_row: Optional[Tuple[int, int]] = None) -> bool:
         """Returns True if click was consumed by the HUD."""
         if pos[1] < self.PANEL_Y:
+            self._input_active = False
             return False  # click is on the map, not the panel
+        # check input bar
+        if self._input_rect.collidepoint(pos):
+            self._input_active = True
+            return True
+        else:
+            self._input_active = False
         for btn in self._buttons:
             if btn.rect.collidepoint(pos):
                 self._dispatch(btn.action_type, selected_npcs, build_col_row)
                 return True
         return True  # consumed but no button hit
+
+    def handle_keydown(self, event: pygame.event.Event) -> bool:
+        """Process keyboard input for the text bar. Returns True if consumed."""
+        if not self._input_active:
+            return False
+        if event.key == pygame.K_RETURN:
+            cmd = self._input_text.strip()
+            self._input_text = ""
+            self._input_active = False
+            if cmd and self._on_command:
+                self._on_command(cmd)
+            return True
+        elif event.key == pygame.K_ESCAPE:
+            self._input_active = False
+            self._input_text = ""
+            return True
+        elif event.key == pygame.K_BACKSPACE:
+            self._input_text = self._input_text[:-1]
+            return True
+        else:
+            if event.unicode and event.unicode.isprintable():
+                self._input_text += event.unicode
+            return True
 
     def _dispatch(self, action_type: ActionType | str, npcs: List["NPC"],
                   build_col_row: Optional[Tuple[int, int]]):
@@ -148,6 +195,15 @@ class HUD:
         for btn in self._buttons:
             btn.draw(surface, self._font)
 
+        # ── command input bar ────────────────────────────────────────────
+        self._draw_input_bar(surface)
+
+        # ── status message ───────────────────────────────────────────────
+        if self._status_timer > 0:
+            self._status_timer -= 1
+            status_surf = self._font.render(self._status_msg, True, (100, 255, 150))
+            surface.blit(status_surf, (self._input_rect.x, self._input_rect.bottom + 6))
+
         # ── NPC roster (right side) ──────────────────────────────────────
         rx = SCREEN_WIDTH - 220
         ry = self.PANEL_Y + 12
@@ -161,3 +217,33 @@ class HUD:
             rendered = self._font.render(line, True, color)
             surface.blit(rendered, (rx, ry))
             ry += 20
+
+    def _draw_input_bar(self, surface: pygame.Surface):
+        """Draw the text command input bar."""
+        self._ensure_fonts()
+        rect = self._input_rect
+        # background
+        border_color = (100, 255, 150) if self._input_active else (120, 120, 120)
+        bg_color = (50, 60, 65) if self._input_active else (40, 48, 52)
+        pygame.draw.rect(surface, bg_color, rect, border_radius=6)
+        pygame.draw.rect(surface, border_color, rect, 2, border_radius=6)
+
+        # placeholder or text
+        if self._input_text:
+            display = self._input_text
+        else:
+            display = "Type a command... (e.g. 'Tomas go chop wood!')"
+        color = COLOR_UI_TEXT if self._input_text else (130, 130, 130)
+        text_surf = self._font.render(display, True, color)
+        # clip to bar
+        clip = pygame.Rect(0, 0, rect.width - 12, rect.height)
+        surface.blit(text_surf, (rect.x + 6, rect.y + 7), area=clip)
+
+        # blinking cursor
+        if self._input_active and pygame.time.get_ticks() % 1000 < 500:
+            cx = rect.x + 6 + min(text_surf.get_width(), rect.width - 14)
+            pygame.draw.line(surface, COLOR_UI_TEXT, (cx, rect.y + 6), (cx, rect.bottom - 6), 2)
+
+        # label
+        label = self._font.render("Command:", True, (180, 180, 180))
+        surface.blit(label, (rect.x - label.get_width() - 8, rect.y + 7))

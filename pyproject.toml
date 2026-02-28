@@ -6,4 +6,6 @@ readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
     "pygame>=2.5",
+    "mistralai>=1.0",
+    "python-dotenv>=1.0",
 ]

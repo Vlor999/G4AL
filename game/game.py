@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import sys
+import threading
 from typing import List
 
 import pygame
@@ -16,6 +17,13 @@ from game.storage import ResourceStorage
 from game.npc import NPC, Action, ActionType
 from game.camera import Camera
 from game.ui import HUD
+
+# Lazy-import the API so the game still runs without a key
+try:
+    from api.interpreter import interpret_command, register_npcs, NPCOrder
+    _HAS_LLM = True
+except ImportError:
+    _HAS_LLM = False
 
 
 class Game:
@@ -39,6 +47,11 @@ class Game:
         self.running = True
         self._selected: List[NPC] = []
 
+        # register LLM integration
+        self._sync_npc_roster()
+        self.hud.set_command_callback(self._on_player_command)
+        self._pending_order: NPCOrder | None = None   # filled by LLM thread
+
     # ── bootstrap ────────────────────────────────────────────────────────
 
     def _spawn_initial_npcs(self, count: int):
@@ -54,6 +67,62 @@ class Game:
                     placed += 1
                     if placed >= count:
                         return
+
+    def _sync_npc_roster(self):
+        """Push current NPC list to the LLM interpreter."""
+        if not _HAS_LLM:
+            return
+        register_npcs([{"id": n.id, "name": n.name} for n in self.npcs])
+
+    # ── LLM command handling ─────────────────────────────────────────────
+
+    _ACTION_MAP = {
+        "chop_wood": ActionType.CHOP_WOOD,
+        "mine_rock": ActionType.MINE_ROCK,
+        "build": ActionType.BUILD,
+        "move_to": ActionType.MOVE_TO,
+    }
+
+    def _on_player_command(self, text: str):
+        """Called from the HUD when the player submits a text command."""
+        if not _HAS_LLM:
+            self.hud.show_status("LLM not available (missing mistralai or API key)")
+            return
+        self.hud.show_status("Thinking...")
+        # run LLM call in a background thread to avoid freezing the game
+        threading.Thread(target=self._llm_worker, args=(text,), daemon=True).start()
+
+    def _llm_worker(self, text: str):
+        order = interpret_command(text)
+        self._pending_order = order  # picked up in _update()
+
+    def _apply_pending_order(self):
+        order = self._pending_order
+        if order is None:
+            return
+        self._pending_order = None
+
+        # find the matching NPC
+        npc = None
+        for n in self.npcs:
+            if n.id == order.npc_id:
+                npc = n
+                break
+        if npc is None and self.npcs:
+            npc = self.npcs[0]
+
+        if npc is None:
+            self.hud.show_status("No NPCs available.")
+            return
+
+        # map the action
+        action_type = self._ACTION_MAP.get(order.action)
+        if action_type:
+            npc.enqueue(Action(action_type))
+
+        # show the voice line as a speech bubble
+        npc.say(order.voice_line, duration_frames=360)
+        self.hud.show_status(f"{order.npc_name}: \"{order.voice_line}\"", duration_frames=300)
 
     # ── main loop ────────────────────────────────────────────────────────
 
@@ -77,6 +146,9 @@ class Game:
                 self.running = False
 
             elif event.type == pygame.KEYDOWN:
+                # let HUD text input consume key first
+                if self.hud.handle_keydown(event):
+                    continue
                 if event.key == pygame.K_ESCAPE:
                     self.running = False
 
@@ -125,6 +197,10 @@ class Game:
         keys = pygame.key.get_pressed()
         mouse = pygame.mouse.get_pos()
         self.camera.update(keys, mouse)
+
+        # apply LLM result if ready
+        if self._pending_order is not None:
+            self._apply_pending_order()
 
         for npc in self.npcs:
             npc.update()

@@ -163,11 +163,20 @@ class NPC:
         # selection
         self.selected = False
 
+        # speech bubble
+        self._speech_text: str = ""
+        self._speech_timer: int = 0       # frames remaining
+
         # visual
         self._radius = 14
         self._bob = 0.0  # idle bobbing animation
 
     # ── public interface ─────────────────────────────────────────────────
+
+    def say(self, text: str, duration_frames: int = 300):
+        """Show a speech bubble above this NPC for *duration_frames* frames."""
+        self._speech_text = text
+        self._speech_timer = duration_frames
 
     def enqueue(self, action: Action):
         """Add an action to this NPC's queue."""
@@ -188,6 +197,10 @@ class NPC:
 
     def update(self):
         """Called every frame."""
+        # speech bubble countdown
+        if self._speech_timer > 0:
+            self._speech_timer -= 1
+
         if self.state == State.IDLE:
             self._bob += 0.05
             if self.action_queue:
@@ -387,6 +400,55 @@ class NPC:
         if self.health < self.max_health:
             from game.entities import _draw_hp_bar
             _draw_hp_bar(surface, int(sx), int(sy) - self._radius - 26, self.health, self.max_health, 28)
+
+        # speech bubble
+        if self._speech_timer > 0 and self._speech_text:
+            self._draw_speech_bubble(surface, sx, sy + bob_offset)
+
+    def _draw_speech_bubble(self, surface: pygame.Surface, sx: float, sy: float):
+        """Draw a comic-style speech bubble above the NPC."""
+        font = pygame.font.SysFont("consolas", 14)
+        max_width = 200
+        # word-wrap
+        words = self._speech_text.split()
+        lines: list[str] = []
+        current = ""
+        for w in words:
+            test = f"{current} {w}".strip()
+            if font.size(test)[0] > max_width:
+                if current:
+                    lines.append(current)
+                current = w
+            else:
+                current = test
+        if current:
+            lines.append(current)
+
+        line_surfs = [font.render(l, True, (50, 50, 50)) for l in lines]
+        padding = 8
+        bw = max(s.get_width() for s in line_surfs) + padding * 2
+        bh = sum(s.get_height() for s in line_surfs) + padding * 2
+        bx = sx - bw // 2
+        by = sy - self._radius - 50 - bh
+
+        # bubble background
+        bubble_rect = pygame.Rect(int(bx), int(by), bw, bh)
+        bubble_surf = pygame.Surface((bw, bh), pygame.SRCALPHA)
+        pygame.draw.rect(bubble_surf, (255, 255, 240, 230), (0, 0, bw, bh), border_radius=8)
+        pygame.draw.rect(bubble_surf, (180, 170, 140, 200), (0, 0, bw, bh), 2, border_radius=8)
+        surface.blit(bubble_surf, bubble_rect.topleft)
+
+        # triangle pointer
+        tri_cx = int(sx)
+        tri_top = int(by + bh)
+        pygame.draw.polygon(surface, (255, 255, 240),
+                            [(tri_cx - 6, tri_top), (tri_cx + 6, tri_top), (tri_cx, tri_top + 8)])
+
+        # text
+        ty = int(by) + padding
+        for ls in line_surfs:
+            surface.blit(ls, (int(bx) + padding, ty))
+            ty += ls.get_height()
 
     def contains_point(self, wx: float, wy: float) -> bool:
         """Check if world point is inside the NPC sprite."""

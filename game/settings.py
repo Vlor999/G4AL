@@ -52,6 +52,10 @@ TREE_WOOD_YIELD = 10
 ROCK_STONE_YIELD = 8
 ROCK_GOLD_YIELD = 3
 
+# ── Building ─────────────────────────────────────────────────────────────
+BUILD_COST_WOOD = 5
+BUILD_COST_STONE = 3
+
 # ── Camera ───────────────────────────────────────────────────────────────
 CAMERA_SPEED = 8        # pixels / frame when scrolling
 CAMERA_EDGE_MARGIN = 30 # pixels from screen edge to start scrolling

@@ -8,12 +8,13 @@ from __future__ import annotations
 
 import json
 import os
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
 from typing import Optional
 
 from mistralai import Mistral
 
 from api.characters import get_soul
+from api.logger import pipeline_logger
 
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -145,6 +146,8 @@ def interpret_command(player_input: str) -> Optional[NPCOrder]:
     client = _get_client()
     system = _build_system_prompt()
 
+    pipeline_logger.llm_start(input_text=player_input)
+
     try:
         response = client.chat.complete(
             model=MODEL,
@@ -159,6 +162,11 @@ def interpret_command(player_input: str) -> Optional[NPCOrder]:
 
         raw = response.choices[0].message.content.strip()
         data = json.loads(raw)
+
+        # token usage from the API response
+        usage = response.usage
+        prompt_tokens = usage.prompt_tokens if usage else 0
+        completion_tokens = usage.completion_tokens if usage else 0
 
         # Validate & normalize
         action = data.get("action", "").lower()
@@ -180,13 +188,22 @@ def interpret_command(player_input: str) -> Optional[NPCOrder]:
             npc_name = first["name"]
             npc_id = first["id"]
 
-        return NPCOrder(
+        order = NPCOrder(
             npc_name=npc_name,
             npc_id=npc_id,
             action=action,
             voice_line=voice_line,
         )
 
+        pipeline_logger.llm_end(
+            order=asdict(order),
+            prompt_tokens=prompt_tokens,
+            completion_tokens=completion_tokens,
+            model=MODEL,
+        )
+        return order
+
     except Exception as e:
+        pipeline_logger.llm_end(order=None, error=str(e))
         print(f"[LLM ERROR] {e}")
         return None

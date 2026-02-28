@@ -17,7 +17,8 @@ from game.storage import ResourceStorage
 from game.npc import NPC, Action, ActionType
 from game.camera import Camera
 from game.ui import HUD
-from game.voice import VoiceTranscriber
+from api.voice import VoiceTranscriber
+from api.logger import pipeline_logger
 
 # Lazy-import the API so the game still runs without a key
 try:
@@ -41,7 +42,8 @@ class Game:
         self.npcs: List[NPC] = []
         self.camera = Camera()
         self.hud = HUD()
-        self.voice = VoiceTranscriber()
+        self.voice = VoiceTranscriber(on_result=self._on_voice_result)
+        self._voice_text: str | None = None  # set from bg thread, consumed in _update
 
         # spawn a few starting bots on walkable tiles near the centre
         self._spawn_initial_npcs(3)
@@ -76,6 +78,13 @@ class Game:
             return
         register_npcs([{"id": n.id, "name": n.name} for n in self.npcs])
 
+    # ── voice → LLM bridge ───────────────────────────────────────────────
+
+    def _on_voice_result(self, text: str):
+        """Called from voice bg thread when transcription is ready."""
+        print(f"[voice] transcription: {text}")
+        self._voice_text = text  # picked up by _update on the main thread
+
     # ── LLM command handling ─────────────────────────────────────────────
 
     _ACTION_MAP = {
@@ -104,6 +113,13 @@ class Game:
             return
         self._pending_order = None
 
+        # log pipeline summary
+        from dataclasses import asdict
+        pipeline_logger.pipeline_summary(
+            voice_text=self._voice_text or "",
+            order=asdict(order) if order else None,
+        )
+
         # find the matching NPC
         npc = None
         for n in self.npcs:
@@ -120,7 +136,11 @@ class Game:
         # map the action
         action_type = self._ACTION_MAP.get(order.action)
         if action_type:
-            npc.enqueue(Action(action_type))
+            if action_type == ActionType.BUILD:
+                # BUILD needs a tile target; default to the NPC's current position
+                npc.enqueue(Action(action_type, target=npc.tile_pos))
+            else:
+                npc.enqueue(Action(action_type))
 
         # show the voice line as a speech bubble
         npc.say(order.voice_line, duration_frames=360)
@@ -135,6 +155,7 @@ class Game:
             self._draw()
             self.clock.tick(FPS)
         pygame.quit()
+        pipeline_logger.close()
         sys.exit()
 
     # ── events ───────────────────────────────────────────────────────────
@@ -159,8 +180,7 @@ class Game:
             elif event.type == pygame.KEYUP:
                 if event.key == pygame.K_g:
                     self.voice.stop()
-                    if self.voice.result:
-                        print(f"[voice] transcription: {self.voice.result}")
+                    self.hud.show_status("Transcribing…", duration_frames=300)
 
             elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 self._on_left_click(event.pos)
@@ -206,6 +226,12 @@ class Game:
     def _update(self):
         keys = pygame.key.get_pressed()
         self.camera.update(keys)
+
+        # feed voice transcription to the LLM command pipeline
+        if self._voice_text is not None:
+            text = self._voice_text
+            self._voice_text = None
+            self._on_player_command(text)
 
         # apply LLM result if ready
         if self._pending_order is not None:

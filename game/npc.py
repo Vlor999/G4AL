@@ -13,6 +13,7 @@ import pygame
 from game.settings import (
     NPC_SPEED, NPC_MAX_HEALTH,
     NPC_CHOP_TIME, NPC_MINE_TIME, NPC_BUILD_TIME,
+    BUILD_COST_WOOD, BUILD_COST_STONE,
     COLOR_NPC_BODY, COLOR_NPC_OUTLINE, COLOR_NPC_SELECTED,
 )
 from game.entities import Resource, Tree, Rock, Structure
@@ -247,16 +248,25 @@ class NPC:
 
         elif action.action_type == ActionType.BUILD:
             if isinstance(action.target, Structure):
+                # Already have a structure object – just walk there
                 self._plan_move_to(action.target.col, action.target.row)
-            elif isinstance(action.target, tuple):
-                col, row = action.target
+            else:
+                # Resolve location: explicit (col, row) or fallback to NPC tile
+                if isinstance(action.target, tuple):
+                    col, row = action.target
+                else:
+                    col, row = self.tile_pos
+                # Pay resource cost
+                if (self._storage.get("wood") < BUILD_COST_WOOD
+                        or self._storage.get("stone") < BUILD_COST_STONE):
+                    self.state = State.DONE
+                    return
+                self._storage.spend("wood", BUILD_COST_WOOD)
+                self._storage.spend("stone", BUILD_COST_STONE)
                 struct = Structure(col, row)
                 self._resources.append(struct)
                 action.target = struct
                 self._plan_move_to(col, row)
-            else:
-                self.state = State.DONE
-                return
 
         elif action.action_type == ActionType.MOVE_TO:
             if isinstance(action.target, tuple):

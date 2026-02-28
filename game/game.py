@@ -19,6 +19,7 @@ from game.camera import Camera
 from game.ui import HUD
 from api.voice import VoiceRecorder
 from api.logger import pipeline_logger
+from api.tts import TTSEngine
 
 # Lazy-import the API so the game still runs without a key
 try:
@@ -46,6 +47,7 @@ class Game:
         self.camera = Camera()
         self.hud = HUD()
         self.voice = VoiceRecorder(on_audio=self._on_voice_audio)
+        self.tts = TTSEngine()
         self._voice_text: str | None = None  # set from bg thread, consumed in _update
 
         # spawn a few starting bots on walkable tiles near the centre
@@ -155,8 +157,9 @@ class Game:
                 else:
                     npc.enqueue(Action(action_type))
 
-            # show the voice line as a speech bubble
+            # show the voice line as a speech bubble & speak it aloud
             npc.say(order.voice_line, duration_frames=360)
+            self.tts.speak(order.voice_line, order.npc_name)
             status_parts.append(f"{order.npc_name}: \"{order.voice_line}\"")
 
         # show combined status
@@ -172,6 +175,7 @@ class Game:
             self._draw()
             self.clock.tick(FPS)
         pygame.quit()
+        self.tts.close()
         pipeline_logger.close()
         sys.exit()
 

@@ -24,7 +24,7 @@ from api.logger import pipeline_logger
 try:
     from api.interpreter import (
         interpret_command, interpret_audio_command,
-        register_npcs, NPCOrder,
+        register_npcs, CommandResponse,
     )
     _HAS_LLM = True
 except ImportError:
@@ -57,7 +57,7 @@ class Game:
         # register LLM integration
         self._sync_npc_roster()
         self.hud.set_command_callback(self._on_player_command)
-        self._pending_order: NPCOrder | None = None   # filled by LLM thread
+        self._pending_response: CommandResponse | None = None   # filled by LLM thread
 
     # ── bootstrap ────────────────────────────────────────────────────────
 
@@ -90,9 +90,9 @@ class Game:
             return
         print(f"[voice] sending {len(wav_bytes)} bytes to Voxtral…")
         # Run the single multimodal API call in this bg thread
-        order = interpret_audio_command(wav_bytes)
-        if order:
-            self._pending_order = order  # picked up in _update()
+        result = interpret_audio_command(wav_bytes)
+        if result:
+            self._pending_response = result  # picked up in _update()
 
     # ── LLM command handling ─────────────────────────────────────────────
 
@@ -113,47 +113,55 @@ class Game:
         threading.Thread(target=self._llm_worker, args=(text,), daemon=True).start()
 
     def _llm_worker(self, text: str):
-        order = interpret_command(text)
-        self._pending_order = order  # picked up in _update()
+        result = interpret_command(text)
+        self._pending_response = result  # picked up in _update()
 
-    def _apply_pending_order(self):
-        order = self._pending_order
-        if order is None:
+    def _apply_pending_response(self):
+        response = self._pending_response
+        if response is None:
             return
-        self._pending_order = None
+        self._pending_response = None
+
+        if not response.actions:
+            self.hud.show_status("No actions understood.")
+            return
 
         # log pipeline summary
         from dataclasses import asdict
         pipeline_logger.pipeline_summary(
             voice_text=self._voice_text or "",
-            order=asdict(order) if order else None,
+            order=asdict(response),
         )
 
-        # find the matching NPC
-        npc = None
-        for n in self.npcs:
-            if n.id == order.npc_id:
-                npc = n
-                break
-        if npc is None and self.npcs:
-            npc = self.npcs[0]
+        status_parts: list[str] = []
 
-        if npc is None:
-            self.hud.show_status("No NPCs available.")
-            return
+        for order in response.actions:
+            # find the matching NPC
+            npc = None
+            for n in self.npcs:
+                if n.id == order.npc_id:
+                    npc = n
+                    break
+            if npc is None and self.npcs:
+                npc = self.npcs[0]
+            if npc is None:
+                continue
 
-        # map the action
-        action_type = self._ACTION_MAP.get(order.action)
-        if action_type:
-            if action_type == ActionType.BUILD:
-                # BUILD needs a tile target; default to the NPC's current position
-                npc.enqueue(Action(action_type, target=npc.tile_pos))
-            else:
-                npc.enqueue(Action(action_type))
+            # map the action
+            action_type = self._ACTION_MAP.get(order.action)
+            if action_type:
+                if action_type == ActionType.BUILD:
+                    npc.enqueue(Action(action_type, target=npc.tile_pos))
+                else:
+                    npc.enqueue(Action(action_type))
 
-        # show the voice line as a speech bubble
-        npc.say(order.voice_line, duration_frames=360)
-        self.hud.show_status(f"{order.npc_name}: \"{order.voice_line}\"", duration_frames=300)
+            # show the voice line as a speech bubble
+            npc.say(order.voice_line, duration_frames=360)
+            status_parts.append(f"{order.npc_name}: \"{order.voice_line}\"")
+
+        # show combined status
+        combined = "  |  ".join(status_parts) if status_parts else "Orders dispatched."
+        self.hud.show_status(combined, duration_frames=360)
 
     # ── main loop ────────────────────────────────────────────────────────
 
@@ -243,8 +251,8 @@ class Game:
             self._on_player_command(text)
 
         # apply LLM / Voxtral result if ready
-        if self._pending_order is not None:
-            self._apply_pending_order()
+        if self._pending_response is not None:
+            self._apply_pending_response()
 
         for npc in self.npcs:
             npc.update()

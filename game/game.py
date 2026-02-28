@@ -9,7 +9,7 @@ from typing import List
 import pygame
 
 from game.settings import (
-    SCREEN_WIDTH, SCREEN_HEIGHT, FPS, TITLE,
+    SCREEN_WIDTH, SCREEN_HEIGHT, FPS, TITLE, TTS_MAX_SPEAKERS,
 )
 from game.map import GameMap
 from game.entities import Resource, spawn_resources
@@ -136,6 +136,7 @@ class Game:
         )
 
         status_parts: list[str] = []
+        spoken_count = 0
 
         for order in response.actions:
             # find the matching NPC
@@ -159,7 +160,9 @@ class Game:
 
             # show the voice line as a speech bubble & speak it aloud
             npc.say(order.voice_line, duration_frames=360)
-            self.tts.speak(order.voice_line, order.npc_name)
+            if spoken_count < TTS_MAX_SPEAKERS:
+                self.tts.speak(order.voice_line, order.npc_name)
+                spoken_count += 1
             status_parts.append(f"{order.npc_name}: \"{order.voice_line}\"")
 
         # show combined status

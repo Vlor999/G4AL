@@ -13,7 +13,8 @@ import queue
 import threading
 
 from dotenv import load_dotenv
-from loguru import logger
+
+from api.logger import pipeline_logger
 
 load_dotenv()
 
@@ -85,19 +86,20 @@ class TTSEngine:
         self._running = True
 
         if not _API_KEY:
-            logger.warning("No ELEVENLABS_API_KEY – TTS disabled")
+            from loguru import logger as _log
+            _log.warning("No ELEVENLABS_API_KEY – TTS disabled")
             return
 
         try:
             from elevenlabs import ElevenLabs
             self._client = ElevenLabs(api_key=_API_KEY)
         except Exception as exc:
-            logger.error(f"Failed to init ElevenLabs client: {exc}")
+            from loguru import logger as _log
+            _log.error(f"Failed to init ElevenLabs client: {exc}")
             return
 
         self._thread = threading.Thread(target=self._worker, daemon=True)
         self._thread.start()
-        logger.info("TTS engine started (eleven_turbo_v2_5)")
 
     # ── public API ───────────────────────────────────────────────────────
 
@@ -135,19 +137,26 @@ class TTSEngine:
             voice_id = self._voice_id_for(npc_name)
 
             try:
-                logger.info(
-                    "TTS request | npc={} voice_id={} text='{}'",
-                    npc_name, voice_id, text[:80],
-                )
-                audio_iter = self._client.text_to_speech.convert(
+                pipeline_logger.tts_start(text, npc_name, voice_id)
+
+                # Use with_raw_response to access API-reported usage headers
+                raw_resp = self._client.text_to_speech.with_raw_response.convert(
                     voice_id=voice_id,
                     text=text,
                     model_id=_MODEL_ID,
                     output_format="mp3_22050_32",
                 )
-                audio_bytes = b"".join(audio_iter)
-                logger.info(
-                    "TTS received {} bytes for {}", len(audio_bytes), npc_name,
+                with raw_resp as http_resp:
+                    headers = http_resp.headers
+                    character_cost = int(headers.get("character-cost", 0))
+                    tts_latency_ms = int(headers.get("tts-latency-ms", 0))
+                    audio_bytes = b"".join(http_resp.data)
+
+                pipeline_logger.tts_end(
+                    npc_name=npc_name,
+                    char_count=character_cost,
+                    audio_bytes=len(audio_bytes),
+                    tts_latency_ms=tts_latency_ms,
                 )
 
                 # Play through pygame.mixer.music (supports mp3 via SDL_mixer)
@@ -160,4 +169,8 @@ class TTSEngine:
                     pygame.time.wait(50)
 
             except Exception as exc:
-                logger.error("TTS error for {}: {}", npc_name, exc)
+                pipeline_logger.tts_end(
+                    npc_name=npc_name,
+                    char_count=len(text),
+                    error=str(exc),
+                )

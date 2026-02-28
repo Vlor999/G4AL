@@ -64,3 +64,6 @@ CAMERA_EDGE_MARGIN = 30 # pixels from screen edge to start scrolling
 UI_PANEL_HEIGHT = 160
 UI_FONT_SIZE = 18
 UI_FONT_SIZE_LARGE = 24
+
+# ── TTS ──────────────────────────────────────────────────────────────────
+TTS_MAX_SPEAKERS = 1    # max NPCs that speak aloud per command (0 = mute)

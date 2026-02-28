@@ -33,6 +33,10 @@ LLM_MODEL = "mistral-small-latest"
 LLM_INPUT_COST_PER_TOKEN  = 0.1 / 1_000_000   # $0.1 / 1M input tokens
 LLM_OUTPUT_COST_PER_TOKEN = 0.3 / 1_000_000   # $0.3 / 1M output tokens
 
+# ElevenLabs TTS pricing (varies by plan – using usage-based estimate).
+# Source: https://elevenlabs.io/pricing
+TTS_COST_PER_CHAR = 0.30 / 1_000  # ~$0.30 per 1 000 characters
+
 LOG_DIR = Path(__file__).resolve().parent.parent / "logs"
 
 
@@ -85,13 +89,18 @@ class PipelineLogger:
         # running totals
         self._total_voice_cost = 0.0
         self._total_llm_cost = 0.0
+        self._total_tts_cost = 0.0
         self._total_voice_time = 0.0
         self._total_llm_time = 0.0
+        self._total_tts_time = 0.0
+        self._total_tts_chars = 0
+        self._tts_call_count = 0
         self._call_count = 0
 
         # in-flight timers
         self._voice_t0: float | None = None
         self._llm_t0: float | None = None
+        self._tts_t0: float | None = None
 
         logger.bind(event="session_start").info("Session started")
 
@@ -177,12 +186,60 @@ class PipelineLogger:
                 f"elapsed={elapsed:.2f}s | cost=${cost:.4f}"
             )
 
+    # ── TTS events ────────────────────────────────────────────────────────
+
+    def tts_start(self, text: str, npc_name: str, voice_id: str):
+        self._tts_t0 = time.perf_counter()
+        logger.bind(
+            event="tts_start",
+            npc_name=npc_name,
+            voice_id=voice_id,
+            char_count=len(text),
+        ).info(
+            f"TTS request: {npc_name} ({len(text)} chars) voice={voice_id}"
+        )
+
+    def tts_end(
+        self,
+        npc_name: str,
+        char_count: int,
+        audio_bytes: int = 0,
+        tts_latency_ms: int = 0,
+        error: str | None = None,
+    ):
+        elapsed = time.perf_counter() - (self._tts_t0 or time.perf_counter())
+        cost = char_count * TTS_COST_PER_CHAR
+        self._total_tts_cost += cost
+        self._total_tts_time += elapsed
+        self._total_tts_chars += char_count
+        self._tts_call_count += 1
+        self._tts_t0 = None
+
+        log = logger.bind(
+            event="tts_end",
+            npc_name=npc_name,
+            char_count=char_count,
+            audio_bytes=audio_bytes,
+            tts_latency_ms=tts_latency_ms,
+            elapsed_s=round(elapsed, 3),
+            cost_usd=round(cost, 6),
+            error=error,
+        )
+        if error:
+            log.error(f"TTS error for {npc_name}: {error} ({elapsed:.2f}s)")
+        else:
+            log.info(
+                f"TTS done: {npc_name} | chars={char_count} (API-reported) | "
+                f"audio={audio_bytes}B | latency={tts_latency_ms}ms | "
+                f"elapsed={elapsed:.2f}s | cost=${cost:.4f}"
+            )
+
     # ── pipeline round-trip ──────────────────────────────────────────────
 
     def pipeline_summary(self, voice_text: str, order: dict | None):
-        """Log an end-to-end summary for one voice→LLM cycle."""
-        total_time = self._total_voice_time + self._total_llm_time
-        total_cost = self._total_voice_cost + self._total_llm_cost
+        """Log an end-to-end summary for one voice→LLM→TTS cycle."""
+        total_time = self._total_voice_time + self._total_llm_time + self._total_tts_time
+        total_cost = self._total_voice_cost + self._total_llm_cost + self._total_tts_cost
 
         logger.bind(
             event="pipeline_summary",
@@ -191,31 +248,42 @@ class PipelineLogger:
             cumulative_calls=self._call_count,
             cumulative_voice_time_s=round(self._total_voice_time, 3),
             cumulative_llm_time_s=round(self._total_llm_time, 3),
+            cumulative_tts_time_s=round(self._total_tts_time, 3),
             cumulative_total_time_s=round(total_time, 3),
             cumulative_voice_cost_usd=round(self._total_voice_cost, 6),
             cumulative_llm_cost_usd=round(self._total_llm_cost, 6),
+            cumulative_tts_cost_usd=round(self._total_tts_cost, 6),
             cumulative_total_cost_usd=round(total_cost, 6),
+            cumulative_tts_chars=self._total_tts_chars,
+            cumulative_tts_calls=self._tts_call_count,
         ).info(
             f"Pipeline #{self._call_count} done | "
-            f"total_time={total_time:.2f}s | total_cost=${total_cost:.4f}"
+            f"total_time={total_time:.2f}s | total_cost=${total_cost:.4f} "
+            f"(voice=${self._total_voice_cost:.4f} llm=${self._total_llm_cost:.4f} "
+            f"tts=${self._total_tts_cost:.4f})"
         )
 
     # ── session close ────────────────────────────────────────────────────
 
     def close(self):
-        total_cost = self._total_voice_cost + self._total_llm_cost
+        total_cost = self._total_voice_cost + self._total_llm_cost + self._total_tts_cost
         logger.bind(
             event="session_end",
             total_calls=self._call_count,
             total_voice_cost_usd=round(self._total_voice_cost, 6),
             total_llm_cost_usd=round(self._total_llm_cost, 6),
+            total_tts_cost_usd=round(self._total_tts_cost, 6),
             total_cost_usd=round(total_cost, 6),
             total_voice_time_s=round(self._total_voice_time, 3),
             total_llm_time_s=round(self._total_llm_time, 3),
+            total_tts_time_s=round(self._total_tts_time, 3),
+            total_tts_chars=self._total_tts_chars,
+            total_tts_calls=self._tts_call_count,
         ).info(
             f"Session ended | calls={self._call_count} | "
-            f"voice_cost=${self._total_voice_cost:.4f} | "
-            f"llm_cost=${self._total_llm_cost:.4f} | "
+            f"voice=${self._total_voice_cost:.4f} | "
+            f"llm=${self._total_llm_cost:.4f} | "
+            f"tts=${self._total_tts_cost:.4f} ({self._total_tts_chars} chars) | "
             f"total=${total_cost:.4f}"
         )
 

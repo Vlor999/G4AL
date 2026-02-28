@@ -189,6 +189,7 @@ class NPC:
         self._storage = storage
         self._all_npcs: List["NPC"] = all_npcs if all_npcs is not None else []
         self._wait_counter = 0  # frames spent waiting for a blocked tile
+        self._repath_attempts = 0  # consecutive re-paths without progress
 
         # stats
         self.health = NPC_MAX_HEALTH
@@ -311,16 +312,13 @@ class NPC:
                     col, row = action.target
                 else:
                     col, row = self.tile_pos
-                # Validate: walkable terrain only (grass / dirt / sand)
-                if not self._map.is_walkable(col, row):
-                    self.say("Can't build here!", 120)
+                # Auto-find a nearby valid tile (walkable + no entity)
+                resolved = self._find_nearby_free_tile(col, row)
+                if resolved is None:
+                    self.say("No space to build!", 120)
                     self.state = State.DONE
                     return
-                # Validate: no existing entity on this tile
-                if self._entity_at_tile(col, row) is not None:
-                    self.say("Tile already occupied!", 120)
-                    self.state = State.DONE
-                    return
+                col, row = resolved
                 # Pay resource cost
                 if (
                     self._storage.get("wood") < BUILD_COST_WOOD
@@ -358,16 +356,13 @@ class NPC:
                 col, row = action.target
             else:
                 col, row = self.tile_pos
-            # Validate: walkable terrain only
-            if not self._map.is_walkable(col, row):
-                self.say("Can't plant here!", 120)
+            # Auto-find a nearby valid tile (walkable + no entity)
+            resolved = self._find_nearby_free_tile(col, row)
+            if resolved is None:
+                self.say("No space to plant!", 120)
                 self.state = State.DONE
                 return
-            # Validate: no existing entity on this tile
-            if self._entity_at_tile(col, row) is not None:
-                self.say("Tile already occupied!", 120)
-                self.state = State.DONE
-                return
+            col, row = resolved
             field = WheatField(col, row)
             self._resources.append(field)
             action.target = field
@@ -400,25 +395,13 @@ class NPC:
 
         target_col, target_row = self._path[self._path_index]
 
-        # ── NPC-to-NPC tile collision ────────────────────────────────
-        # Only block if we haven't entered the target tile yet.
+        # ── NPC-to-NPC tile collision: push blocker immediately ──────
         my_tile = self.tile_pos
         if my_tile != (target_col, target_row) and self._all_npcs:
             for n in self._all_npcs:
                 if n.id != self.id and n.tile_pos == (target_col, target_row):
-                    self._wait_counter += 1
-                    if self._wait_counter > 30:  # ~0.5 s @ 60 fps → re-path
-                        self._wait_counter = 0
-                        dest = self._path[-1] if self._path else my_tile
-                        self._path = find_path(
-                            self._map, my_tile, dest,
-                            blocked=self._occupied_by_npcs(),
-                        )
-                        self._path_index = 0
-                        if not self._path:
-                            self.state = State.DONE
-                    return  # wait this frame
-        self._wait_counter = 0
+                    self._push_npc_off_tile((target_col, target_row))
+                    break
 
         tx, ty = self._map.tile_center(target_col, target_row)
         dx, dy = tx - self.x, ty - self.y
@@ -427,6 +410,7 @@ class NPC:
         if dist < self.speed:
             self.x, self.y = tx, ty
             self._path_index += 1
+            self._repath_attempts = 0  # made real progress
         else:
             self.x += dx / dist * self.speed
             self.y += dy / dist * self.speed
@@ -455,6 +439,10 @@ class NPC:
             self._perform_duration = WHEAT_PLANT_TIME
             self.state = State.PERFORMING
         elif at == ActionType.collect_wheat:
+            # Push any NPC blocking the wheat field before harvesting
+            target = self._current_action.target
+            if target is not None:
+                self._push_npc_off_tile((target.col, target.row))
             self._perform_timer = 0
             self._perform_duration = NPC_CHOP_TIME
             self.state = State.PERFORMING
@@ -528,6 +516,63 @@ class NPC:
             if r.col == col and r.row == row and not r.depleted:
                 return r
         return None
+
+    def _find_nearby_free_tile(
+        self, col: int, row: int, max_radius: int = 5
+    ) -> Optional[Tuple[int, int]]:
+        """BFS outward from (col, row) to find the nearest tile that is
+        walkable AND has no non-depleted entity on it."""
+        from collections import deque as _deque
+
+        visited: set[Tuple[int, int]] = set()
+        queue: _deque[Tuple[int, int]] = _deque()
+        # Check the origin first
+        if (
+            self._map.is_walkable(col, row)
+            and self._entity_at_tile(col, row) is None
+        ):
+            return (col, row)
+        visited.add((col, row))
+        queue.append((col, row))
+        while queue:
+            c, r = queue.popleft()
+            for dc, dr in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+                nc, nr = c + dc, r + dr
+                if (nc, nr) in visited:
+                    continue
+                if abs(nc - col) > max_radius or abs(nr - row) > max_radius:
+                    continue
+                visited.add((nc, nr))
+                if (
+                    self._map.is_walkable(nc, nr)
+                    and self._entity_at_tile(nc, nr) is None
+                ):
+                    return (nc, nr)
+                queue.append((nc, nr))
+        return None
+
+    def _push_npc_off_tile(self, tile: Tuple[int, int]) -> bool:
+        """If another NPC is standing on *tile*, nudge them to an adjacent
+        free walkable tile.  Returns True if the tile is now clear."""
+        blocker: Optional[NPC] = None
+        for n in self._all_npcs:
+            if n.id != self.id and n.tile_pos == tile:
+                blocker = n
+                break
+        if blocker is None:
+            return True  # already clear
+
+        # find an adjacent walkable tile that isn't occupied by yet another NPC
+        occupied = self._occupied_by_npcs()
+        for dc, dr in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+            nc, nr = tile[0] + dc, tile[1] + dr
+            if self._map.is_walkable(nc, nr) and (nc, nr) not in occupied:
+                # teleport the blocker to the adjacent tile center
+                bx, by = self._map.tile_center(nc, nr)
+                blocker.x, blocker.y = bx, by
+                blocker.say("Excuse me!", 60)
+                return True
+        return False  # no room to push
 
     def _find_nearest(self, kind: type) -> Optional[Resource]:
         best: Optional[Resource] = None

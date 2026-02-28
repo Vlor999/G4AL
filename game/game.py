@@ -197,7 +197,7 @@ class Game:
             elif event.type == pygame.KEYUP:
                 if event.key == pygame.K_g:
                     self.voice.stop()
-                    self.hud.show_status("Transcribing…", duration_frames=300)
+                    self.hud.show_status("Thinking…", duration_frames=300)
 
             elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 self._on_left_click(event.pos)

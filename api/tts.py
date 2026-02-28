@@ -30,6 +30,7 @@ _MODEL_ID = "eleven_turbo_v2_5"
 
 # ── TTSEngine ────────────────────────────────────────────────────────────
 
+
 class TTSEngine:
     """Non-blocking TTS: call ``speak()`` and audio plays in the background."""
 
@@ -40,14 +41,17 @@ class TTSEngine:
 
         if not _API_KEY:
             from loguru import logger as _log
+
             _log.warning("No ELEVENLABS_API_KEY – TTS disabled")
             return
 
         try:
             from elevenlabs import ElevenLabs
+
             self._client = ElevenLabs(api_key=_API_KEY)
         except Exception as exc:
             from loguru import logger as _log
+
             _log.error(f"Failed to init ElevenLabs client: {exc}")
             return
 

@@ -6,7 +6,7 @@ import math
 import random
 from collections import deque
 from enum import Enum, auto
-from typing import List, Tuple, Optional, TYPE_CHECKING
+from typing import List, Tuple, Optional
 
 import pygame
 

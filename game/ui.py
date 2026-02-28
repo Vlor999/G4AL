@@ -7,9 +7,13 @@ from typing import List, Optional, Tuple, Callable, TYPE_CHECKING
 import pygame
 
 from game.settings import (
-    SCREEN_WIDTH, SCREEN_HEIGHT, UI_PANEL_HEIGHT,
-    COLOR_UI_BG, COLOR_UI_TEXT, COLOR_UI_BUTTON, COLOR_UI_BUTTON_HOV,
-    UI_FONT_SIZE, UI_FONT_SIZE_LARGE,
+    UI_PANEL_HEIGHT,
+    COLOR_UI_BG,
+    COLOR_UI_TEXT,
+    COLOR_UI_BUTTON,
+    COLOR_UI_BUTTON_HOV,
+    UI_FONT_SIZE,
+    UI_FONT_SIZE_LARGE,
 )
 from game.npc import ActionType, Action
 
@@ -21,6 +25,7 @@ if TYPE_CHECKING:
 # ─────────────────────────────────────────────────────────────────────────
 #  Button helper
 # ─────────────────────────────────────────────────────────────────────────
+
 
 class Button:
     def __init__(self, rect: pygame.Rect, label: str, action_type: ActionType | str):
@@ -34,8 +39,13 @@ class Button:
         pygame.draw.rect(surface, color, self.rect, border_radius=6)
         pygame.draw.rect(surface, (200, 200, 200), self.rect, 1, border_radius=6)
         text = font.render(self.label, True, COLOR_UI_TEXT)
-        surface.blit(text, (self.rect.centerx - text.get_width() // 2,
-                            self.rect.centery - text.get_height() // 2))
+        surface.blit(
+            text,
+            (
+                self.rect.centerx - text.get_width() // 2,
+                self.rect.centery - text.get_height() // 2,
+            ),
+        )
 
     def is_hovered(self, pos: Tuple[int, int]) -> bool:
         self.hovered = self.rect.collidepoint(pos)
@@ -46,12 +56,14 @@ class Button:
 #  HUD
 # ─────────────────────────────────────────────────────────────────────────
 
+
 class HUD:
     """Bottom panel showing resources, selected NPC info, and action buttons."""
 
-    PANEL_Y = SCREEN_HEIGHT - UI_PANEL_HEIGHT
-
-    def __init__(self):
+    def __init__(self, screen_w: int, screen_h: int):
+        self._screen_w = screen_w
+        self._screen_h = screen_h
+        self.panel_y = screen_h - UI_PANEL_HEIGHT
         self._font = None
         self._font_lg = None
         self._buttons: List[Button] = []
@@ -60,10 +72,19 @@ class HUD:
         # command input bar
         self._input_active = False
         self._input_text = ""
-        self._input_rect = pygame.Rect(420, self.PANEL_Y + 90, 400, 32)
+        self._input_rect = pygame.Rect(420, self.panel_y + 90, 400, 32)
         self._on_command: Optional[Callable[[str], None]] = None
         self._status_msg = ""
         self._status_timer = 0
+
+    def resize(self, screen_w: int, screen_h: int):
+        """Recalculate layout after the window is resized."""
+        self._screen_w = screen_w
+        self._screen_h = screen_h
+        self.panel_y = screen_h - UI_PANEL_HEIGHT
+        self._buttons.clear()
+        self._build_buttons()
+        self._input_rect = pygame.Rect(420, self.panel_y + 90, 400, 32)
 
     def _ensure_fonts(self):
         if self._font is None:
@@ -72,7 +93,7 @@ class HUD:
 
     def _build_buttons(self):
         bx = 420
-        by = self.PANEL_Y + 40
+        by = self.panel_y + 40
         bw, bh = 130, 36
         gap = 10
         button_defs = [
@@ -95,10 +116,14 @@ class HUD:
         self._status_msg = msg
         self._status_timer = duration_frames
 
-    def handle_click(self, pos: Tuple[int, int], selected_npcs: List["NPC"],
-                     build_col_row: Optional[Tuple[int, int]] = None) -> bool:
+    def handle_click(
+        self,
+        pos: Tuple[int, int],
+        selected_npcs: List["NPC"],
+        build_col_row: Optional[Tuple[int, int]] = None,
+    ) -> bool:
         """Returns True if click was consumed by the HUD."""
-        if pos[1] < self.PANEL_Y:
+        if pos[1] < self.panel_y:
             self._input_active = False
             return False  # click is on the map, not the panel
         # check input bar
@@ -136,8 +161,12 @@ class HUD:
                 self._input_text += event.unicode
             return True
 
-    def _dispatch(self, action_type: ActionType | str, npcs: List["NPC"],
-                  build_col_row: Optional[Tuple[int, int]]):
+    def _dispatch(
+        self,
+        action_type: ActionType | str,
+        npcs: List["NPC"],
+        build_col_row: Optional[Tuple[int, int]],
+    ):
         for npc in npcs:
             if action_type == ActionType.BUILD:
                 # build at NPC's current tile by default
@@ -152,18 +181,29 @@ class HUD:
 
     # ── drawing ──────────────────────────────────────────────────────────
 
-    def draw(self, surface: pygame.Surface, storage: "ResourceStorage",
-             selected_npcs: List["NPC"], all_npcs: List["NPC"]):
+    def draw(
+        self,
+        surface: pygame.Surface,
+        storage: "ResourceStorage",
+        selected_npcs: List["NPC"],
+        all_npcs: List["NPC"],
+    ):
         self._ensure_fonts()
 
         # panel background
-        panel_rect = pygame.Rect(0, self.PANEL_Y, SCREEN_WIDTH, UI_PANEL_HEIGHT)
+        panel_rect = pygame.Rect(0, self.panel_y, self._screen_w, UI_PANEL_HEIGHT)
         pygame.draw.rect(surface, COLOR_UI_BG, panel_rect)
-        pygame.draw.line(surface, (100, 100, 100), (0, self.PANEL_Y), (SCREEN_WIDTH, self.PANEL_Y), 2)
+        pygame.draw.line(
+            surface,
+            (100, 100, 100),
+            (0, self.panel_y),
+            (self._screen_w, self.panel_y),
+            2,
+        )
 
         # ── resources ────────────────────────────────────────────────────
         rx = 20
-        ry = self.PANEL_Y + 12
+        ry = self.panel_y + 12
         stock = storage.snapshot()
         res_labels = [
             (f"🪵 Wood: {stock.get('wood', 0)}", (139, 195, 74)),
@@ -182,14 +222,16 @@ class HUD:
                 f"{npc.name} (#{npc.id})  HP: {npc.health}/{npc.max_health}",
                 f"State: {npc.state.name}   Queue: {npc.queue_size}",
             ]
-            iy = self.PANEL_Y + 50
+            iy = self.panel_y + 50
             for line in info_lines:
                 rendered = self._font.render(line, True, COLOR_UI_TEXT)
                 surface.blit(rendered, (20, iy))
                 iy += 22
         else:
-            hint = self._font.render("Click an NPC to select it, then give orders.", True, (180, 180, 180))
-            surface.blit(hint, (20, self.PANEL_Y + 55))
+            hint = self._font.render(
+                "Click an NPC to select it, then give orders.", True, (180, 180, 180)
+            )
+            surface.blit(hint, (20, self.panel_y + 55))
 
         # ── action buttons ───────────────────────────────────────────────
         for btn in self._buttons:
@@ -205,8 +247,8 @@ class HUD:
             surface.blit(status_surf, (self._input_rect.x, self._input_rect.bottom + 6))
 
         # ── NPC roster (right side) ──────────────────────────────────────
-        rx = SCREEN_WIDTH - 220
-        ry = self.PANEL_Y + 12
+        rx = self._screen_w - 220
+        ry = self.panel_y + 12
         title = self._font_lg.render("NPCs", True, COLOR_UI_TEXT)
         surface.blit(title, (rx, ry))
         ry += 28
@@ -242,7 +284,9 @@ class HUD:
         # blinking cursor
         if self._input_active and pygame.time.get_ticks() % 1000 < 500:
             cx = rect.x + 6 + min(text_surf.get_width(), rect.width - 14)
-            pygame.draw.line(surface, COLOR_UI_TEXT, (cx, rect.y + 6), (cx, rect.bottom - 6), 2)
+            pygame.draw.line(
+                surface, COLOR_UI_TEXT, (cx, rect.y + 6), (cx, rect.bottom - 6), 2
+            )
 
         # label
         label = self._font.render("Command:", True, (180, 180, 180))

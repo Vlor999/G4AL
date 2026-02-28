@@ -7,15 +7,24 @@ from typing import Tuple
 import pygame
 
 from game.settings import (
-    SCREEN_WIDTH, SCREEN_HEIGHT, CAMERA_SPEED, CAMERA_EDGE_MARGIN,
-    MAP_WIDTH, MAP_HEIGHT, UI_PANEL_HEIGHT,
+    CAMERA_SPEED,
+    MAP_WIDTH,
+    MAP_HEIGHT,
+    UI_PANEL_HEIGHT,
 )
 
 
 class Camera:
-    def __init__(self):
+    def __init__(self, screen_w: int, screen_h: int):
         self.x = 0.0
         self.y = 0.0
+        self._screen_w = screen_w
+        self._screen_h = screen_h
+
+    def resize(self, screen_w: int, screen_h: int):
+        """Called when the window is resized."""
+        self._screen_w = screen_w
+        self._screen_h = screen_h
 
     @property
     def offset(self) -> Tuple[int, int]:
@@ -37,8 +46,8 @@ class Camera:
         self.y += dy
 
         # clamp
-        max_x = max(0, MAP_WIDTH - SCREEN_WIDTH)
-        max_y = max(0, MAP_HEIGHT - (SCREEN_HEIGHT - UI_PANEL_HEIGHT))
+        max_x = max(0, MAP_WIDTH - self._screen_w)
+        max_y = max(0, MAP_HEIGHT - (self._screen_h - UI_PANEL_HEIGHT))
         self.x = max(0.0, min(self.x, max_x))
         self.y = max(0.0, min(self.y, max_y))
 

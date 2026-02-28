@@ -30,8 +30,8 @@ from loguru import logger
 
 VOXTRAL_REALTIME_COST_PER_SECOND = 0.015 / 60  # ~$0.015 / minute → per second
 LLM_MODEL = "mistral-small-latest"
-LLM_INPUT_COST_PER_TOKEN  = 0.1 / 1_000_000   # $0.1 / 1M input tokens
-LLM_OUTPUT_COST_PER_TOKEN = 0.3 / 1_000_000   # $0.3 / 1M output tokens
+LLM_INPUT_COST_PER_TOKEN = 0.1 / 1_000_000  # $0.1 / 1M input tokens
+LLM_OUTPUT_COST_PER_TOKEN = 0.3 / 1_000_000  # $0.3 / 1M output tokens
 
 # ElevenLabs TTS pricing (varies by plan – using usage-based estimate).
 # Source: https://elevenlabs.io/pricing
@@ -134,7 +134,7 @@ class PipelineLogger:
             log.error(f"Voice error: {error} ({elapsed:.2f}s)")
         else:
             log.info(
-                f"Transcription: \"{text}\" | audio={audio_seconds:.1f}s | "
+                f'Transcription: "{text}" | audio={audio_seconds:.1f}s | '
                 f"elapsed={elapsed:.2f}s | cost=${cost:.4f}"
             )
 
@@ -143,7 +143,7 @@ class PipelineLogger:
     def llm_start(self, input_text: str):
         self._llm_t0 = time.perf_counter()
         logger.bind(event="llm_start", input_text=input_text).info(
-            f"LLM request: \"{input_text}\""
+            f'LLM request: "{input_text}"'
         )
 
     def llm_end(
@@ -195,9 +195,7 @@ class PipelineLogger:
             npc_name=npc_name,
             voice_id=voice_id,
             char_count=len(text),
-        ).info(
-            f"TTS request: {npc_name} ({len(text)} chars) voice={voice_id}"
-        )
+        ).info(f"TTS request: {npc_name} ({len(text)} chars) voice={voice_id}")
 
     def tts_end(
         self,
@@ -238,8 +236,12 @@ class PipelineLogger:
 
     def pipeline_summary(self, voice_text: str, order: dict | None):
         """Log an end-to-end summary for one voice→LLM→TTS cycle."""
-        total_time = self._total_voice_time + self._total_llm_time + self._total_tts_time
-        total_cost = self._total_voice_cost + self._total_llm_cost + self._total_tts_cost
+        total_time = (
+            self._total_voice_time + self._total_llm_time + self._total_tts_time
+        )
+        total_cost = (
+            self._total_voice_cost + self._total_llm_cost + self._total_tts_cost
+        )
 
         logger.bind(
             event="pipeline_summary",
@@ -266,7 +268,9 @@ class PipelineLogger:
     # ── session close ────────────────────────────────────────────────────
 
     def close(self):
-        total_cost = self._total_voice_cost + self._total_llm_cost + self._total_tts_cost
+        total_cost = (
+            self._total_voice_cost + self._total_llm_cost + self._total_tts_cost
+        )
         logger.bind(
             event="session_end",
             total_calls=self._call_count,

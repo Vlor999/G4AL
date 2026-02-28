@@ -9,7 +9,6 @@ from __future__ import annotations
 
 import base64
 import io
-import os
 import threading
 import wave
 from typing import Callable, Optional
@@ -22,10 +21,10 @@ from api.logger import pipeline_logger
 load_dotenv()
 
 # ── Audio constants ──────────────────────────────────────────────────────
-SAMPLE_RATE = 16_000        # 16 kHz mono
+SAMPLE_RATE = 16_000  # 16 kHz mono
 CHANNELS = 1
-SAMPLE_WIDTH = 2            # 16-bit = 2 bytes
-CHUNK_SAMPLES = 1024        # frames per read (~64 ms at 16 kHz)
+SAMPLE_WIDTH = 2  # 16-bit = 2 bytes
+CHUNK_SAMPLES = 1024  # frames per read (~64 ms at 16 kHz)
 
 
 def _pcm_to_wav(pcm_chunks: list[bytes]) -> bytes:
@@ -109,7 +108,9 @@ class VoiceRecorder:
             p.terminate()
 
         if not self._chunks:
-            pipeline_logger.voice_end(text="", audio_seconds=0.0, error=error_msg or "no audio captured")
+            pipeline_logger.voice_end(
+                text="", audio_seconds=0.0, error=error_msg or "no audio captured"
+            )
             return
 
         # Compute duration from raw PCM data
@@ -119,8 +120,12 @@ class VoiceRecorder:
         wav_bytes = _pcm_to_wav(self._chunks)
         self._chunks = []  # free memory
 
-        print(f"[voice] recording done ({audio_seconds:.1f}s, {len(wav_bytes)} bytes WAV)")
-        pipeline_logger.voice_end(text="(audio captured)", audio_seconds=audio_seconds, error=error_msg)
+        print(
+            f"[voice] recording done ({audio_seconds:.1f}s, {len(wav_bytes)} bytes WAV)"
+        )
+        pipeline_logger.voice_end(
+            text="(audio captured)", audio_seconds=audio_seconds, error=error_msg
+        )
 
         if self._on_audio:
             self._on_audio(wav_bytes)

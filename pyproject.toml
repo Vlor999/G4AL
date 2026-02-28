@@ -13,4 +13,5 @@ dependencies = [
     "python-dotenv>=1.2.1",
     "loguru>=0.7.3",
     "elevenlabs>=2.37.0",
+    "ruff>=0.15.4",
 ]

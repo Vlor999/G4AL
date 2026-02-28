@@ -28,20 +28,23 @@ from api.logger import pipeline_logger
 #  Data types
 # ═══════════════════════════════════════════════════════════════════════════
 
+
 @dataclass
 class NPCOrder:
     """A single order addressed to one NPC."""
-    npc_name: str           # matched NPC name
-    npc_id: int             # NPC numeric id
-    action: str             # one of: chop_wood, mine_rock, build, move_to
-    voice_line: str         # in-character spoken line
+
+    npc_name: str  # matched NPC name
+    npc_id: int  # NPC numeric id
+    action: str  # one of: chop_wood, mine_rock, build, move_to
+    voice_line: str  # in-character spoken line
 
 
 @dataclass
 class CommandResponse:
     """Top-level response: wraps one or many NPC orders."""
-    n: int                          # total number of actions
-    actions: list[NPCOrder]         # individual orders
+
+    n: int  # total number of actions
+    actions: list[NPCOrder]  # individual orders
 
 
 VALID_ACTIONS = ["chop_wood", "mine_rock", "build", "move_to"]
@@ -150,8 +153,7 @@ Your job:
 def _build_system_prompt() -> str:
     roster = _build_roster_table()
     personalities = "\n\n".join(
-        f"**{info['name']}**: {get_soul(info['name'])}"
-        for info in _npc_roster.values()
+        f"**{info['name']}**: {get_soul(info['name'])}" for info in _npc_roster.values()
     )
     return SYSTEM_PROMPT.format(
         actions=", ".join(VALID_ACTIONS),
@@ -163,6 +165,7 @@ def _build_system_prompt() -> str:
 # ═══════════════════════════════════════════════════════════════════════════
 #  Shared response parser
 # ═══════════════════════════════════════════════════════════════════════════
+
 
 def _strip_fences(raw: str) -> str:
     """Remove markdown code fences (```json ... ```) that some models add."""
@@ -207,12 +210,14 @@ def _parse_response(raw_json: str) -> CommandResponse:
             npc_name = first["name"]
             npc_id = first["id"]
 
-        orders.append(NPCOrder(
-            npc_name=npc_name,
-            npc_id=npc_id,
-            action=action,
-            voice_line=voice_line,
-        ))
+        orders.append(
+            NPCOrder(
+                npc_name=npc_name,
+                npc_id=npc_id,
+                action=action,
+                voice_line=voice_line,
+            )
+        )
 
     return CommandResponse(n=len(orders), actions=orders)
 
@@ -220,6 +225,7 @@ def _parse_response(raw_json: str) -> CommandResponse:
 # ═══════════════════════════════════════════════════════════════════════════
 #  Public API — text input
 # ═══════════════════════════════════════════════════════════════════════════
+
 
 def interpret_command(player_input: str) -> Optional[CommandResponse]:
     """Send a text command to Mistral and return a structured CommandResponse
@@ -269,6 +275,7 @@ def interpret_command(player_input: str) -> Optional[CommandResponse]:
 # ═══════════════════════════════════════════════════════════════════════════
 #  Public API — audio input  (single multimodal Voxtral call)
 # ═══════════════════════════════════════════════════════════════════════════
+
 
 def interpret_audio_command(wav_bytes: bytes) -> Optional[CommandResponse]:
     """Send recorded audio directly to Voxtral and return a structured CommandResponse.

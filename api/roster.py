@@ -19,30 +19,32 @@ from enum import Enum
 #  ElevenLabs voice library
 # ═══════════════════════════════════════════════════════════════════════════
 
+
 class ElevenLabsVoice(Enum):
     """Available ElevenLabs preset voices with their API IDs."""
-    
+
     # Female voices
-    RACHEL = "21m00Tcm4TlvDq8ikWAM"   # calm, mature
-    DOMI = "AZnzlk1XvdvUeBnXmlld"     # strong, confident
-    BELLA = "EXAVITQu4vr4xnSDxMaL"    # soft, warm
-    ELLI = "MF3mGyEYCl7XYWbV9V6O"     # young, cheerful
-    
+    RACHEL = "21m00Tcm4TlvDq8ikWAM"  # calm, mature
+    DOMI = "AZnzlk1XvdvUeBnXmlld"  # strong, confident
+    BELLA = "EXAVITQu4vr4xnSDxMaL"  # soft, warm
+    ELLI = "MF3mGyEYCl7XYWbV9V6O"  # young, cheerful
+
     # Male voices
-    JOSH = "TxGEqnHWrfWFTfGW9XjX"     # deep, authoritative
-    ARNOLD = "VR6AewLTigWG4xSOukaG"   # crisp, military
-    ADAM = "pNInz6obpgDQGcFmaJgB"     # deep, resonant
-    SAM = "yoZ06aMxZJJ28mfd3POQ"      # raspy, older
-    ANTONI = "ErXwobaYiN019PkySvjV"   # warm, young male
+    JOSH = "TxGEqnHWrfWFTfGW9XjX"  # deep, authoritative
+    ARNOLD = "VR6AewLTigWG4xSOukaG"  # crisp, military
+    ADAM = "pNInz6obpgDQGcFmaJgB"  # deep, resonant
+    SAM = "yoZ06aMxZJJ28mfd3POQ"  # raspy, older
+    ANTONI = "ErXwobaYiN019PkySvjV"  # warm, young male
 
 
 # ═══════════════════════════════════════════════════════════════════════════
 #  NPC Names
 # ═══════════════════════════════════════════════════════════════════════════
 
+
 class NPCName(Enum):
     """All available NPC names."""
-    
+
     ADA = "Ada"
     BJORN = "Bjorn"
     CLEO = "Cleo"
@@ -75,9 +77,9 @@ class NPCName(Enum):
 class NPCProfile:
     """Immutable identity card for one NPC."""
 
-    name: NPCName              # canonical NPC name (enum)
-    soul: str                  # personality description (for LLM prompts)
-    voice: ElevenLabsVoice     # ElevenLabs preset voice (enum)
+    name: NPCName  # canonical NPC name (enum)
+    soul: str  # personality description (for LLM prompts)
+    voice: ElevenLabsVoice  # ElevenLabs preset voice (enum)
 
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -338,7 +340,10 @@ NPC_VOICE_MAP: dict[str, str] = {p.name.value: p.voice.value for p in NPC_PROFIL
 
 def get_soul(name: str) -> str:
     """Return the personality blurb for *name*, with a generic fallback."""
-    return CHARACTER_SOULS.get(name, (
-        f"{name} is a dependable worker with a neutral personality. "
-        "They follow orders without much fuss and keep to themselves."
-    ))
+    return CHARACTER_SOULS.get(
+        name,
+        (
+            f"{name} is a dependable worker with a neutral personality. "
+            "They follow orders without much fuss and keep to themselves."
+        ),
+    )

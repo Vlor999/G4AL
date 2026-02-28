@@ -9,8 +9,14 @@ from typing import List, Tuple, Optional
 import pygame
 
 from game.settings import (
-    TILE_SIZE, MAP_COLS, MAP_ROWS,
-    COLOR_GRASS_LIGHT, COLOR_GRASS_DARK, COLOR_DIRT, COLOR_WATER, COLOR_SAND,
+    TILE_SIZE,
+    MAP_COLS,
+    MAP_ROWS,
+    COLOR_GRASS_LIGHT,
+    COLOR_GRASS_DARK,
+    COLOR_DIRT,
+    COLOR_WATER,
+    COLOR_SAND,
 )
 
 
@@ -28,7 +34,9 @@ WALKABLE = {TileType.GRASS, TileType.DIRT, TileType.SAND}
 class GameMap:
     """Grid of tiles + helper look-ups used by NPCs."""
 
-    def __init__(self, cols: int = MAP_COLS, rows: int = MAP_ROWS, seed: int | None = None):
+    def __init__(
+        self, cols: int = MAP_COLS, rows: int = MAP_ROWS, seed: int | None = None
+    ):
         self.cols = cols
         self.rows = rows
         if seed is not None:
@@ -63,7 +71,10 @@ class GameMap:
                         dist2 = dx * dx + dy * dy
                         if dist2 <= radius * radius:
                             grid[ny][nx] = TileType.WATER
-                        elif dist2 <= (radius + 1) ** 2 and grid[ny][nx] != TileType.WATER:
+                        elif (
+                            dist2 <= (radius + 1) ** 2
+                            and grid[ny][nx] != TileType.WATER
+                        ):
                             grid[ny][nx] = TileType.SAND
         return grid
 
@@ -81,9 +92,12 @@ class GameMap:
         """Convert world pixel coords → (col, row)."""
         return int(x // TILE_SIZE), int(y // TILE_SIZE)
 
-    def find_nearest_walkable(self, col: int, row: int, max_radius: int = 10) -> Optional[Tuple[int, int]]:
+    def find_nearest_walkable(
+        self, col: int, row: int, max_radius: int = 10
+    ) -> Optional[Tuple[int, int]]:
         """BFS outward to find nearest walkable tile (used for placement fallback)."""
         from collections import deque
+
         visited = set()
         queue = deque()
         queue.append((col, row))
@@ -94,7 +108,11 @@ class GameMap:
                 return (c, r)
             for dc, dr in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
                 nc, nr = c + dc, r + dr
-                if (nc, nr) not in visited and 0 <= nc < self.cols and 0 <= nr < self.rows:
+                if (
+                    (nc, nr) not in visited
+                    and 0 <= nc < self.cols
+                    and 0 <= nr < self.rows
+                ):
                     if abs(nc - col) <= max_radius and abs(nr - row) <= max_radius:
                         visited.add((nc, nr))
                         queue.append((nc, nr))
@@ -103,8 +121,8 @@ class GameMap:
     # ── rendering ────────────────────────────────────────────────────────
     _TILE_COLORS = {
         TileType.GRASS: (COLOR_GRASS_LIGHT, COLOR_GRASS_DARK),
-        TileType.DIRT:  (COLOR_DIRT, COLOR_DIRT),
-        TileType.SAND:  (COLOR_SAND, COLOR_SAND),
+        TileType.DIRT: (COLOR_DIRT, COLOR_DIRT),
+        TileType.SAND: (COLOR_SAND, COLOR_SAND),
         TileType.WATER: (COLOR_WATER, COLOR_WATER),
     }
 
@@ -116,7 +134,9 @@ class GameMap:
                 light, dark = self._TILE_COLORS[tt]
                 # checker-board to add texture
                 color = light if (row + col) % 2 == 0 else dark
-                rect = pygame.Rect(col * TILE_SIZE, row * TILE_SIZE, TILE_SIZE, TILE_SIZE)
+                rect = pygame.Rect(
+                    col * TILE_SIZE, row * TILE_SIZE, TILE_SIZE, TILE_SIZE
+                )
                 pygame.draw.rect(surf, color, rect)
                 # subtle grid line
                 pygame.draw.rect(surf, tuple(max(0, c - 15) for c in color), rect, 1)

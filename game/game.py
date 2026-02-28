@@ -9,7 +9,11 @@ from typing import List
 import pygame
 
 from game.settings import (
-    SCREEN_WIDTH, SCREEN_HEIGHT, FPS, TITLE, TTS_MAX_SPEAKERS,
+    SCREEN_WIDTH,
+    SCREEN_HEIGHT,
+    FPS,
+    TITLE,
+    TTS_MAX_SPEAKERS,
 )
 from game.map import GameMap
 from game.entities import Resource, spawn_resources
@@ -24,9 +28,12 @@ from api.tts import TTSEngine
 # Lazy-import the API so the game still runs without a key
 try:
     from api.interpreter import (
-        interpret_command, interpret_audio_command,
-        register_npcs, CommandResponse,
+        interpret_command,
+        interpret_audio_command,
+        register_npcs,
+        CommandResponse,
     )
+
     _HAS_LLM = True
 except ImportError:
     _HAS_LLM = False
@@ -35,8 +42,12 @@ except ImportError:
 class Game:
     def __init__(self):
         pygame.init()
-        self.screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+        self.screen = pygame.display.set_mode(
+            (SCREEN_WIDTH, SCREEN_HEIGHT), pygame.RESIZABLE
+        )
         pygame.display.set_caption(TITLE)
+        self.screen_w = SCREEN_WIDTH
+        self.screen_h = SCREEN_HEIGHT
         self.clock = pygame.time.Clock()
 
         # core objects
@@ -44,8 +55,8 @@ class Game:
         self.storage = ResourceStorage()
         self.resources: List[Resource] = spawn_resources(self.game_map)
         self.npcs: List[NPC] = []
-        self.camera = Camera()
-        self.hud = HUD()
+        self.camera = Camera(self.screen_w, self.screen_h)
+        self.hud = HUD(self.screen_w, self.screen_h)
         self.voice = VoiceRecorder(on_audio=self._on_voice_audio)
         self.tts = TTSEngine()
         self._voice_text: str | None = None  # set from bg thread, consumed in _update
@@ -59,7 +70,7 @@ class Game:
         # register LLM integration
         self._sync_npc_roster()
         self.hud.set_command_callback(self._on_player_command)
-        self._pending_response: CommandResponse | None = None   # filled by LLM thread
+        self._pending_response: CommandResponse | None = None  # filled by LLM thread
 
     # ── bootstrap ────────────────────────────────────────────────────────
 
@@ -130,6 +141,7 @@ class Game:
 
         # log pipeline summary
         from dataclasses import asdict
+
         pipeline_logger.pipeline_summary(
             voice_text=self._voice_text or "",
             order=asdict(response),
@@ -163,7 +175,7 @@ class Game:
             if spoken_count < TTS_MAX_SPEAKERS:
                 self.tts.speak(order.voice_line, order.npc_name)
                 spoken_count += 1
-            status_parts.append(f"{order.npc_name}: \"{order.voice_line}\"")
+            status_parts.append(f'{order.npc_name}: "{order.voice_line}"')
 
         # show combined status
         combined = "  |  ".join(status_parts) if status_parts else "Orders dispatched."
@@ -191,6 +203,14 @@ class Game:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.running = False
+
+            elif event.type == pygame.VIDEORESIZE:
+                self.screen_w, self.screen_h = event.w, event.h
+                self.screen = pygame.display.set_mode(
+                    (self.screen_w, self.screen_h), pygame.RESIZABLE
+                )
+                self.camera.resize(self.screen_w, self.screen_h)
+                self.hud.resize(self.screen_w, self.screen_h)
 
             elif event.type == pygame.KEYDOWN:
                 # let HUD text input consume key first
@@ -236,7 +256,7 @@ class Game:
 
     def _on_right_click(self, pos):
         """Right-click on the map → move selected NPCs there."""
-        if pos[1] >= HUD.PANEL_Y:
+        if pos[1] >= self.hud.panel_y:
             return
         if not self._selected:
             return

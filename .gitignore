@@ -1,7 +1,38 @@
-# env
+# =========================
+# GODOT ENGINE (Frontend)
+# =========================
+
+# Dossier de cache et d'importation de Godot 4 (Très important !)
+godot_client/
+
+
+# =========================
+# PYTHON (Backend)
+# =========================
+
+# Fichiers de cache Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environnements virtuels
+venv/
+env/
+.env/
+
+# Variables d'environnement et secrets (Critique !)
 .env
-__pycache__
-*.pyc
+
+# =========================
+# OS / OUTILS (VS Code, etc.)
+# =========================
+
+# Fichiers système
+.DS_Store
+Thumbs.db
+
+# Fichiers de configuration de l'éditeur (VS Code)
+.vscode/
 
 # logs
 logs/

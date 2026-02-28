@@ -9,9 +9,14 @@ import pygame
 
 from game.settings import (
     TILE_SIZE,
-    COLOR_TREE_TRUNK, COLOR_TREE_LEAVES,
-    COLOR_ROCK_BODY, COLOR_ROCK_SHADE, COLOR_GOLD,
-    TREE_WOOD_YIELD, ROCK_STONE_YIELD, ROCK_GOLD_YIELD,
+    COLOR_TREE_TRUNK,
+    COLOR_TREE_LEAVES,
+    COLOR_ROCK_BODY,
+    COLOR_ROCK_SHADE,
+    COLOR_GOLD,
+    TREE_WOOD_YIELD,
+    ROCK_STONE_YIELD,
+    ROCK_GOLD_YIELD,
 )
 
 if TYPE_CHECKING:
@@ -28,12 +33,15 @@ class Resource:
         self.row = row
         self.hp = hp
         self.max_hp = hp
-        self.yields = yields          # {"wood": 10, …}
+        self.yields = yields  # {"wood": 10, …}
         self.depleted = False
 
     @property
     def world_pos(self) -> Tuple[float, float]:
-        return self.col * TILE_SIZE + TILE_SIZE // 2, self.row * TILE_SIZE + TILE_SIZE // 2
+        return (
+            self.col * TILE_SIZE + TILE_SIZE // 2,
+            self.row * TILE_SIZE + TILE_SIZE // 2,
+        )
 
     def harvest_tick(self) -> Optional[dict[str, int]]:
         """Call once per action-frame. Returns yield dict when fully depleted."""
@@ -53,7 +61,9 @@ class Tree(Resource):
     kind = "tree"
 
     def __init__(self, col: int, row: int):
-        super().__init__(col, row, hp=TREE_WOOD_YIELD * 3, yields={"wood": TREE_WOOD_YIELD})
+        super().__init__(
+            col, row, hp=TREE_WOOD_YIELD * 3, yields={"wood": TREE_WOOD_YIELD}
+        )
         # visual variation
         self._leaf_radius = random.randint(18, 26)
         self._trunk_w = random.randint(6, 10)
@@ -65,21 +75,38 @@ class Tree(Resource):
         cx, cy = self.world_pos
         sx, sy = cx - camera[0], cy - camera[1]
         # shadow
-        pygame.draw.ellipse(surface, (0, 0, 0, 60),
-                            (sx - self._leaf_radius, sy + 4,
-                             self._leaf_radius * 2, self._leaf_radius))
+        pygame.draw.ellipse(
+            surface,
+            (0, 0, 0, 60),
+            (sx - self._leaf_radius, sy + 4, self._leaf_radius * 2, self._leaf_radius),
+        )
         # trunk
-        trunk_rect = pygame.Rect(sx - self._trunk_w // 2, sy - self._trunk_h + 6,
-                                 self._trunk_w, self._trunk_h)
+        trunk_rect = pygame.Rect(
+            sx - self._trunk_w // 2,
+            sy - self._trunk_h + 6,
+            self._trunk_w,
+            self._trunk_h,
+        )
         pygame.draw.rect(surface, COLOR_TREE_TRUNK, trunk_rect)
         # leaves (two overlapping circles for depth)
-        pygame.draw.circle(surface, COLOR_TREE_LEAVES, (sx, sy - self._leaf_radius // 2), self._leaf_radius)
+        pygame.draw.circle(
+            surface,
+            COLOR_TREE_LEAVES,
+            (sx, sy - self._leaf_radius // 2),
+            self._leaf_radius,
+        )
         lighter = tuple(min(255, c + 30) for c in COLOR_TREE_LEAVES)
-        pygame.draw.circle(surface, lighter, (sx - 4, sy - self._leaf_radius // 2 - 4),
-                           self._leaf_radius - 6)
+        pygame.draw.circle(
+            surface,
+            lighter,
+            (sx - 4, sy - self._leaf_radius // 2 - 4),
+            self._leaf_radius - 6,
+        )
         # HP bar (small)
         if self.hp < self.max_hp:
-            _draw_hp_bar(surface, sx, sy - self._leaf_radius - 10, self.hp, self.max_hp, 30)
+            _draw_hp_bar(
+                surface, sx, sy - self._leaf_radius - 10, self.hp, self.max_hp, 30
+            )
 
 
 class Rock(Resource):
@@ -103,8 +130,9 @@ class Rock(Resource):
         body = pygame.Rect(sx - self._w // 2, sy - self._h // 2, self._w, self._h)
         pygame.draw.ellipse(surface, COLOR_ROCK_BODY, body)
         # shade / highlight
-        shade = pygame.Rect(sx - self._w // 2 + 4, sy - self._h // 2 + 4,
-                            self._w - 8, self._h - 8)
+        shade = pygame.Rect(
+            sx - self._w // 2 + 4, sy - self._h // 2 + 4, self._w - 8, self._h - 8
+        )
         pygame.draw.ellipse(surface, COLOR_ROCK_SHADE, shade)
         # gold sparkle
         if self.has_gold:
@@ -117,11 +145,12 @@ class Rock(Resource):
 
 class Structure(Resource):
     """A player-built structure (e.g. storage hut). Placeholder for v1."""
+
     kind = "structure"
 
     def __init__(self, col: int, row: int, build_progress: int = 0):
         super().__init__(col, row, hp=100, yields={})
-        self.build_progress = build_progress   # 0..100
+        self.build_progress = build_progress  # 0..100
         self.built = False
         self._size = 40
 
@@ -144,12 +173,16 @@ class Structure(Resource):
             _draw_hp_bar(surface, sx, sy - half - 10, self.build_progress, 100, 36)
         # roof triangle when built
         if self.built:
-            points = [(sx - half - 4, sy - half), (sx + half + 4, sy - half),
-                      (sx, sy - half - 18)]
+            points = [
+                (sx - half - 4, sy - half),
+                (sx + half + 4, sy - half),
+                (sx, sy - half - 18),
+            ]
             pygame.draw.polygon(surface, (178, 34, 34), points)
 
 
 # ── helpers ──────────────────────────────────────────────────────────────
+
 
 def _draw_hp_bar(surface, cx, top_y, current, maximum, width=30, height=5):
     ratio = max(0, current / maximum)
@@ -160,7 +193,9 @@ def _draw_hp_bar(surface, cx, top_y, current, maximum, width=30, height=5):
     pygame.draw.rect(surface, bar_color, fg)
 
 
-def spawn_resources(game_map: "GameMap", tree_count: int = 40, rock_count: int = 15) -> List[Resource]:
+def spawn_resources(
+    game_map: "GameMap", tree_count: int = 40, rock_count: int = 15
+) -> List[Resource]:
     """Place trees and rocks randomly on walkable grass tiles."""
     resources: List[Resource] = []
     occupied: set[Tuple[int, int]] = set()

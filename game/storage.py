@@ -8,9 +8,9 @@ class ResourceStorage:
 
     def __init__(self):
         self._stock: dict[str, int] = {
-            "wood":  0,
+            "wood": 0,
             "stone": 0,
-            "gold":  0,
+            "gold": 0,
         }
 
     # ── public API ───────────────────────────────────────────────────────

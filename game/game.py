@@ -57,7 +57,7 @@ class Game:
         # register LLM integration
         self._sync_npc_roster()
         self.hud.set_command_callback(self._on_player_command)
-        self._pending_response: CommandResponse | None = None   # filled by LLM thread
+        self._pending_order: NPCOrder | None = None   # filled by LLM thread
 
     # ── bootstrap ────────────────────────────────────────────────────────
 
@@ -113,54 +113,47 @@ class Game:
         threading.Thread(target=self._llm_worker, args=(text,), daemon=True).start()
 
     def _llm_worker(self, text: str):
-        response = interpret_command(text)
-        self._pending_response = response  # picked up in _update()
+        order = interpret_command(text)
+        self._pending_order = order  # picked up in _update()
 
-    def _apply_pending_response(self):
-        response = self._pending_response
-        if response is None:
+    def _apply_pending_order(self):
+        order = self._pending_order
+        if order is None:
             return
-        self._pending_response = None
-
-        if not response.actions:
-            self.hud.show_status("No actions understood.")
-            return
+        self._pending_order = None
 
         # log pipeline summary
+        from dataclasses import asdict
         pipeline_logger.pipeline_summary(
             voice_text=self._voice_text or "",
-            order=response.model_dump(),
+            order=asdict(order) if order else None,
         )
 
-        status_parts: list[str] = []
+        # find the matching NPC
+        npc = None
+        for n in self.npcs:
+            if n.id == order.npc_id:
+                npc = n
+                break
+        if npc is None and self.npcs:
+            npc = self.npcs[0]
 
-        for order in response.actions:
-            # find the matching NPC
-            npc = None
-            for n in self.npcs:
-                if n.id == order.npc_id:
-                    npc = n
-                    break
-            if npc is None and self.npcs:
-                npc = self.npcs[0]
-            if npc is None:
-                continue
+        if npc is None:
+            self.hud.show_status("No NPCs available.")
+            return
 
-            # map the action
-            action_type = self._ACTION_MAP.get(order.action.value if hasattr(order.action, 'value') else order.action)
-            if action_type:
-                if action_type == ActionType.BUILD:
-                    npc.enqueue(Action(action_type, target=npc.tile_pos))
-                else:
-                    npc.enqueue(Action(action_type))
+        # map the action
+        action_type = self._ACTION_MAP.get(order.action)
+        if action_type:
+            if action_type == ActionType.BUILD:
+                # BUILD needs a tile target; default to the NPC's current position
+                npc.enqueue(Action(action_type, target=npc.tile_pos))
+            else:
+                npc.enqueue(Action(action_type))
 
-            # show the voice line as a speech bubble
-            npc.say(order.voice_line, duration_frames=360)
-            status_parts.append(f"{order.npc_name}: \"{order.voice_line}\"")
-
-        # show combined status
-        combined = "  |  ".join(status_parts) if status_parts else "Orders dispatched."
-        self.hud.show_status(combined, duration_frames=360)
+        # show the voice line as a speech bubble
+        npc.say(order.voice_line, duration_frames=360)
+        self.hud.show_status(f"{order.npc_name}: \"{order.voice_line}\"", duration_frames=300)
 
     # ── main loop ────────────────────────────────────────────────────────
 

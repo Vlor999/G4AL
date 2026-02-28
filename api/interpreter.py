@@ -15,47 +15,29 @@ from __future__ import annotations
 import base64
 import json
 import os
-from enum import Enum
+from dataclasses import dataclass, asdict
 from typing import Optional
 
-import instructor
 from mistralai import Mistral
-from pydantic import BaseModel, Field
 
 from api.characters import get_soul
 from api.logger import pipeline_logger
 
 
 # ═══════════════════════════════════════════════════════════════════════════
-#  Pydantic models (instructor will enforce these)
+#  Data types
 # ═══════════════════════════════════════════════════════════════════════════
 
-class ActionName(str, Enum):
-    chop_wood = "chop_wood"
-    mine_rock = "mine_rock"
-    build = "build"
-    move_to = "move_to"
+@dataclass
+class NPCOrder:
+    """Structured output returned by the LLM."""
+    npc_name: str           # matched NPC name
+    npc_id: int             # NPC numeric id
+    action: str             # one of: chop_wood, mine_rock, build, move_to
+    voice_line: str         # in-character spoken line
 
 
-class NPCOrder(BaseModel):
-    """A single order addressed to one NPC."""
-    npc_name: str = Field(..., description="Exact NPC name from the roster")
-    npc_id: int = Field(..., description="NPC numeric id from the roster")
-    action: ActionName = Field(..., description="The action the NPC should perform")
-    voice_line: str = Field(
-        ...,
-        description="Short in-character voice line (1-2 sentences) the NPC says in response, "
-                    "in the SAME language as the player's command",
-    )
-
-
-class CommandResponse(BaseModel):
-    """Top-level response: can hold one or many NPC orders."""
-    n: int = Field(..., description="Total number of actions in this response")
-    actions: list[NPCOrder] = Field(..., description="List of individual NPC orders")
-
-
-VALID_ACTIONS = [a.value for a in ActionName]
+VALID_ACTIONS = ["chop_wood", "mine_rock", "build", "move_to"]
 
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -88,7 +70,7 @@ def _build_roster_table() -> str:
 
 
 # ═══════════════════════════════════════════════════════════════════════════
-#  Instructor-wrapped Mistral client
+#  Mistral client
 # ═══════════════════════════════════════════════════════════════════════════
 
 _client: Mistral | None = None
@@ -96,7 +78,7 @@ TEXT_MODEL = "mistral-small-latest"
 AUDIO_MODEL = "voxtral-mini-latest"
 
 
-def _get_client() -> instructor.Instructor:
+def _get_client() -> Mistral:
     global _client
     if _client is None:
         api_key = os.environ.get("MISTRAL_API_KEY", "")
@@ -104,7 +86,7 @@ def _get_client() -> instructor.Instructor:
             raise RuntimeError(
                 "MISTRAL_API_KEY not set. Add it to your .env or environment."
             )
-        _client = instructor.from_mistral(Mistral(api_key=api_key))
+        _client = Mistral(api_key=api_key)
     return _client
 
 
@@ -126,9 +108,6 @@ orders to NPCs (bots) — either as text or spoken audio. Your job is to:
 
 ─── Character Personalities ───
 {personalities}
-
-─── Valid actions ───
-{actions}
 
 ─── Rules ───
 • If the player's intent is ambiguous, pick the most likely action.
@@ -219,9 +198,9 @@ def interpret_command(player_input: str) -> Optional[NPCOrder]:
                 {"role": "system", "content": system},
                 {"role": "user", "content": player_input},
             ],
-            response_model=CommandResponse,
+            response_format={"type": "json_object"},
             temperature=0.7,
-            max_tokens=1024,
+            max_tokens=256,
         )
 
         raw = response.choices[0].message.content
@@ -238,7 +217,7 @@ def interpret_command(player_input: str) -> Optional[NPCOrder]:
             completion_tokens=usage.completion_tokens or 0 if usage else 0,
             model=TEXT_MODEL,
         )
-        return response
+        return order
 
     except Exception as e:
         pipeline_logger.llm_end(order=None, error=str(e))

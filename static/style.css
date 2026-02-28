@@ -103,6 +103,44 @@ body {
 
 .header-title {
     white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+.mistral-logo {
+    height: 26px;
+    width: auto;
+    flex-shrink: 0;
+    filter: drop-shadow(0 0 6px rgba(255, 108, 53, 0.5));
+    object-fit: contain;
+}
+
+.mistral-text,
+.hackathon-text {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 0.12em;
+    background: linear-gradient(90deg, #FF8C00, #FFCE00, #FF6B35);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    color: transparent;
+    text-shadow: none;
+}
+
+.hackathon-sep {
+    color: rgba(255, 175, 0, 0.4);
+    margin: 0 2px;
+    font-weight: 300;
 }
 
 .header-sep {

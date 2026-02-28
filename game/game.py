@@ -17,6 +17,7 @@ from game.storage import ResourceStorage
 from game.npc import NPC, Action, ActionType
 from game.camera import Camera
 from game.ui import HUD
+from game.voice import VoiceTranscriber
 
 # Lazy-import the API so the game still runs without a key
 try:
@@ -40,6 +41,7 @@ class Game:
         self.npcs: List[NPC] = []
         self.camera = Camera()
         self.hud = HUD()
+        self.voice = VoiceTranscriber()
 
         # spawn a few starting bots on walkable tiles near the centre
         self._spawn_initial_npcs(3)
@@ -151,6 +153,14 @@ class Game:
                     continue
                 if event.key == pygame.K_ESCAPE:
                     self.running = False
+                elif event.key == pygame.K_g:
+                    self.voice.start()
+
+            elif event.type == pygame.KEYUP:
+                if event.key == pygame.K_g:
+                    self.voice.stop()
+                    if self.voice.result:
+                        print(f"[voice] transcription: {self.voice.result}")
 
             elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 self._on_left_click(event.pos)
@@ -195,8 +205,7 @@ class Game:
 
     def _update(self):
         keys = pygame.key.get_pressed()
-        mouse = pygame.mouse.get_pos()
-        self.camera.update(keys, mouse)
+        self.camera.update(keys)
 
         # apply LLM result if ready
         if self._pending_order is not None:

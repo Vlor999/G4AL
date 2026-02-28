@@ -21,7 +21,7 @@ class Camera:
     def offset(self) -> Tuple[int, int]:
         return (int(self.x), int(self.y))
 
-    def update(self, keys_pressed, mouse_pos: Tuple[int, int]):
+    def update(self, keys_pressed):
         dx = dy = 0.0
 
         # keyboard
@@ -33,9 +33,6 @@ class Camera:
             dy -= CAMERA_SPEED
         if keys_pressed[pygame.K_DOWN] or keys_pressed[pygame.K_s]:
             dy += CAMERA_SPEED
-
-    
-
         self.x += dx
         self.y += dy
 

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>G4AL – Survival</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div id="app">
+        <!-- ── Top Bar: Resources ──────────────────────────────────── -->
+        <div id="top-bar">
+            <div class="resource-item res-wood">
+                <span class="icon">🪵</span>
+                <span>Wood: <span id="res-wood">0</span></span>
+            </div>
+            <div class="resource-item res-stone">
+                <span class="icon">🪨</span>
+                <span>Stone: <span id="res-stone">0</span></span>
+            </div>
+            <div class="resource-item res-gold">
+                <span class="icon">💰</span>
+                <span>Gold: <span id="res-gold">0</span></span>
+            </div>
+            <div class="resource-item res-wheat">
+                <span class="icon">🌾</span>
+                <span>Wheat: <span id="res-wheat">0</span></span>
+            </div>
+        </div>
+
+        <!-- ── Left Panel: Selection & Actions ─────────────────────── -->
+        <div id="left-panel">
+            <div class="panel-title">Selection</div>
+            <div id="selection-info">
+                <div id="sel-placeholder" style="color: var(--text-dim); font-size: 13px;">
+                    Click an NPC to<br>give orders.
+                </div>
+                <div id="sel-details" style="display:none;">
+                    <div class="npc-name-display" id="sel-name"></div>
+                    <div class="stat-row"><span>HP</span><span id="sel-hp-text"></span></div>
+                    <div class="stat-bar"><div class="stat-bar-fill bar-hp" id="sel-hp-bar"></div></div>
+                    <div class="stat-row"><span>Hunger</span><span id="sel-hunger-text"></span></div>
+                    <div class="stat-bar"><div class="stat-bar-fill bar-hunger" id="sel-hunger-bar"></div></div>
+                    <div class="stat-row"><span>State</span><span id="sel-state"></span></div>
+                </div>
+            </div>
+
+            <div class="panel-title">Actions</div>
+            <div id="action-buttons">
+                <button class="action-btn" data-action="chop_wood">🪓 Chop Wood</button>
+                <button class="action-btn" data-action="mine_rock">⛏️ Mine Rock</button>
+                <button class="action-btn" data-action="build">🏗️ Build</button>
+                <button class="action-btn" data-action="plant_wheat">🌾 Plant</button>
+                <button class="action-btn" data-action="collect_wheat">🌿 Collect</button>
+                <button class="action-btn" data-action="eat">🍞 Eat</button>
+            </div>
+        </div>
+
+        <!-- ── Center: Game Canvas ─────────────────────────────────── -->
+        <div id="canvas-container">
+            <canvas id="game-canvas"></canvas>
+            <!-- Speech bubbles are dynamically inserted here -->
+        </div>
+
+        <!-- ── Right Panel: Roster, Log, Command ───────────────────── -->
+        <div id="right-panel">
+            <div id="roster-section">
+                <div class="panel-title">NPC Roster</div>
+                <div id="roster-list"></div>
+            </div>
+            <div id="log-section">
+                <div class="panel-title">Event Log</div>
+                <div id="log-messages"></div>
+            </div>
+            <div id="command-section">
+                <input type="text" id="command-input"
+                       placeholder="Type a command... (e.g. 'Tomas go chop wood!')">
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    <script src="/static/game.js"></script>
+</body>
+</html>

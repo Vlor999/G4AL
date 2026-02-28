@@ -6,18 +6,7 @@ import random
 from enum import IntEnum
 from typing import List, Tuple, Optional
 
-import pygame
-
-from game.settings import (
-    TILE_SIZE,
-    MAP_COLS,
-    MAP_ROWS,
-    COLOR_GRASS_LIGHT,
-    COLOR_GRASS_DARK,
-    COLOR_DIRT,
-    COLOR_WATER,
-    COLOR_SAND,
-)
+from game.settings import TILE_SIZE, MAP_COLS, MAP_ROWS
 
 
 class TileType(IntEnum):
@@ -42,7 +31,6 @@ class GameMap:
         if seed is not None:
             random.seed(seed)
         self.tiles: List[List[TileType]] = self._generate()
-        self._surface: pygame.Surface | None = None
 
     # ── generation ───────────────────────────────────────────────────────
     def _generate(self) -> List[List[TileType]]:
@@ -117,32 +105,3 @@ class GameMap:
                         visited.add((nc, nr))
                         queue.append((nc, nr))
         return None
-
-    # ── rendering ────────────────────────────────────────────────────────
-    _TILE_COLORS = {
-        TileType.GRASS: (COLOR_GRASS_LIGHT, COLOR_GRASS_DARK),
-        TileType.DIRT: (COLOR_DIRT, COLOR_DIRT),
-        TileType.SAND: (COLOR_SAND, COLOR_SAND),
-        TileType.WATER: (COLOR_WATER, COLOR_WATER),
-    }
-
-    def _build_surface(self) -> pygame.Surface:
-        surf = pygame.Surface((self.cols * TILE_SIZE, self.rows * TILE_SIZE))
-        for row in range(self.rows):
-            for col in range(self.cols):
-                tt = self.tiles[row][col]
-                light, dark = self._TILE_COLORS[tt]
-                # checker-board to add texture
-                color = light if (row + col) % 2 == 0 else dark
-                rect = pygame.Rect(
-                    col * TILE_SIZE, row * TILE_SIZE, TILE_SIZE, TILE_SIZE
-                )
-                pygame.draw.rect(surf, color, rect)
-                # subtle grid line
-                pygame.draw.rect(surf, tuple(max(0, c - 15) for c in color), rect, 1)
-        return surf
-
-    def draw(self, surface: pygame.Surface, camera_offset: Tuple[int, int]):
-        if self._surface is None:
-            self._surface = self._build_surface()
-        surface.blit(self._surface, (-camera_offset[0], -camera_offset[1]))

@@ -5,8 +5,6 @@ from __future__ import annotations
 import random
 from typing import List, Tuple, Optional, TYPE_CHECKING
 
-import pygame
-
 from game.settings import (
     TILE_SIZE,
     TREE_WOOD_YIELD,
@@ -15,7 +13,6 @@ from game.settings import (
     WHEAT_YIELD,
     WHEAT_GROW_TIME,
 )
-from game.sprites import get_sprite
 
 if TYPE_CHECKING:
     from game.map import GameMap
@@ -52,9 +49,6 @@ class Resource:
             return dict(self.yields)
         return None
 
-    def draw(self, surface: pygame.Surface, camera: Tuple[int, int]):
-        raise NotImplementedError
-
 
 class Tree(Resource):
     kind = "tree"
@@ -63,32 +57,6 @@ class Tree(Resource):
         super().__init__(
             col, row, hp=TREE_WOOD_YIELD * 3, yields={"wood": TREE_WOOD_YIELD}
         )
-        # visual variation
-        self._leaf_radius = random.randint(18, 26)
-        self._trunk_w = random.randint(6, 10)
-        self._trunk_h = random.randint(14, 20)
-
-    def draw(self, surface: pygame.Surface, camera: Tuple[int, int]):
-        if self.depleted:
-            return
-        cx, cy = self.world_pos
-        sx, sy = cx - camera[0], cy - camera[1]
-        sprite = get_sprite(
-            "tree.ppm", (self._leaf_radius * 2, self._leaf_radius * 2 + 10)
-        )
-        surface.blit(
-            sprite, (sx - sprite.get_width() // 2, sy - sprite.get_height() // 2 - 4)
-        )
-        # HP bar (small)
-        if self.hp < self.max_hp:
-            _draw_hp_bar(
-                surface,
-                sx,
-                sy - sprite.get_height() // 2 - 10,
-                self.hp,
-                self.max_hp,
-                30,
-            )
 
 
 class Rock(Resource):
@@ -100,24 +68,6 @@ class Rock(Resource):
             yields["gold"] = ROCK_GOLD_YIELD
         super().__init__(col, row, hp=ROCK_STONE_YIELD * 4, yields=yields)
         self.has_gold = has_gold
-        self._w = random.randint(28, 38)
-        self._h = random.randint(20, 28)
-
-    def draw(self, surface: pygame.Surface, camera: Tuple[int, int]):
-        if self.depleted:
-            return
-        cx, cy = self.world_pos
-        sx, sy = cx - camera[0], cy - camera[1]
-        sprite_name = "gold_rock.ppm" if self.has_gold else "rock.ppm"
-        sprite = get_sprite(sprite_name, (self._w, self._h + 8))
-        surface.blit(
-            sprite, (sx - sprite.get_width() // 2, sy - sprite.get_height() // 2)
-        )
-        # HP bar
-        if self.hp < self.max_hp:
-            _draw_hp_bar(
-                surface, sx, sy - sprite.get_height() // 2 - 6, self.hp, self.max_hp, 30
-            )
 
 
 class Structure(Resource):
@@ -135,19 +85,6 @@ class Structure(Resource):
         self.build_progress = min(100, self.build_progress + 1)
         if self.build_progress >= 100:
             self.built = True
-
-    def draw(self, surface: pygame.Surface, camera: Tuple[int, int]):
-        cx, cy = self.world_pos
-        sx, sy = cx - camera[0], cy - camera[1]
-        half = self._size // 2
-        if self.built:
-            sprite = get_sprite("structure.ppm", (self._size, self._size))
-        else:
-            sprite = get_sprite("construction.ppm", (self._size, self._size))
-        surface.blit(sprite, (sx - half, sy - half))
-        # progress bar while building
-        if not self.built:
-            _draw_hp_bar(surface, sx, sy - half - 10, self.build_progress, 100, 36)
 
 
 class WheatField(Resource):
@@ -184,41 +121,6 @@ class WheatField(Resource):
             self.depleted = True
             return dict(self.yields)
         return None
-
-    def draw(self, surface: pygame.Surface, camera: Tuple[int, int]):
-        if self.depleted:
-            return
-        cx, cy = self.world_pos
-        sx, sy = cx - camera[0], cy - camera[1]
-        size = TILE_SIZE - 8
-        half = size // 2
-
-        if self.fully_grown:
-            sprite = get_sprite("wheat_grown.ppm", (size, size))
-        else:
-            sprite = get_sprite("wheat_young.ppm", (size, size))
-        surface.blit(sprite, (sx - half, sy - half))
-
-        # growth bar
-        if not self.fully_grown:
-            _draw_hp_bar(surface, sx, sy - half - 4, self.growth, WHEAT_GROW_TIME, 30)
-        elif self.fully_grown and not self.depleted:
-            # "ready" indicator
-            font = pygame.font.SysFont(None, 14)
-            ready = font.render("READY", True, (255, 230, 80))
-            surface.blit(ready, (sx - ready.get_width() // 2, sy - half - 10))
-
-
-# ── helpers ──────────────────────────────────────────────────────────────
-
-
-def _draw_hp_bar(surface, cx, top_y, current, maximum, width=30, height=5):
-    ratio = max(0, current / maximum)
-    bg = pygame.Rect(cx - width // 2, top_y, width, height)
-    fg = pygame.Rect(cx - width // 2, top_y, int(width * ratio), height)
-    pygame.draw.rect(surface, (60, 60, 60), bg)
-    bar_color = (76, 175, 80) if ratio > 0.4 else (244, 67, 54)
-    pygame.draw.rect(surface, bar_color, fg)
 
 
 def spawn_resources(

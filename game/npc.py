@@ -8,8 +8,6 @@ from collections import deque
 from enum import Enum, auto
 from typing import List, Tuple, Optional
 
-import pygame
-
 from game.settings import (
     NPC_HUNGER_MAX,
     NPC_HUNGER_DRAIN,
@@ -27,7 +25,6 @@ from game.settings import (
     WHEAT_PLANT_TIME,
 )
 from game.entities import Resource, Tree, Rock, Structure, WheatField
-from game.sprites import get_sprite
 from api.roster import NPC_NAMES
 
 
@@ -216,7 +213,6 @@ class NPC:
 
         # visual
         self._radius = 14
-        self._bob = 0.0  # idle bobbing animation
 
     # ── public interface ─────────────────────────────────────────────────
 
@@ -254,7 +250,6 @@ class NPC:
             self.health = max(0, self.health - NPC_HUNGER_DAMAGE)
 
         if self.state == State.IDLE:
-            self._bob += 0.05
             if self.action_queue:
                 self._next_action()
 
@@ -598,147 +593,3 @@ class NPC:
                     best_dist = d
                     best = r
         return best
-
-    # ── drawing ──────────────────────────────────────────────────────────
-
-    def draw(self, surface: pygame.Surface, camera: Tuple[int, int]):
-        sx = self.x - camera[0]
-        sy = self.y - camera[1]
-
-        # little idle bobbing
-        bob_offset = math.sin(self._bob) * 2 if self.state == State.IDLE else 0
-
-        # shadow
-        shadow = pygame.Surface((self._radius * 2, self._radius), pygame.SRCALPHA)
-        shadow.fill((0, 0, 0, 0))
-        pygame.draw.ellipse(
-            shadow, (0, 0, 0, 80), (0, 0, self._radius * 2, self._radius)
-        )
-        surface.blit(shadow, (sx - self._radius, sy + self._radius - 4))
-
-        # body sprite
-        body_y = sy + bob_offset
-        sprite_size = (self._radius * 2 + 4, self._radius * 2 + 4)
-        sprite = get_sprite("npc.ppm", sprite_size)
-
-        # selection ring
-        if self.selected:
-            pygame.draw.circle(
-                surface, (0, 230, 118), (int(sx), int(body_y)), self._radius + 4, 2
-            )
-
-        surface.blit(
-            sprite,
-            (int(sx) - sprite.get_width() // 2, int(body_y) - sprite.get_height() // 2),
-        )
-
-        # name label
-        name_font = pygame.font.SysFont("consolas", 15, bold=True)
-        name_surf = name_font.render(self.name, True, (255, 255, 255))
-        name_x = sx - name_surf.get_width() // 2
-        name_y = sy - self._radius - 30 + bob_offset
-        # dark background for readability
-        bg_rect = pygame.Rect(
-            name_x - 2,
-            name_y - 1,
-            name_surf.get_width() + 4,
-            name_surf.get_height() + 2,
-        )
-        bg = pygame.Surface((bg_rect.width, bg_rect.height), pygame.SRCALPHA)
-        bg.fill((0, 0, 0, 120))
-        surface.blit(bg, bg_rect.topleft)
-        surface.blit(name_surf, (name_x, name_y))
-
-        # state label (below the name)
-        font = pygame.font.SysFont(None, 14)
-        label = font.render(self.state.name, True, (200, 200, 200))
-        surface.blit(
-            label, (sx - label.get_width() // 2, name_y + name_surf.get_height() + 1)
-        )
-
-        # HP bar
-        if self.health < self.max_health:
-            from game.entities import _draw_hp_bar
-
-            _draw_hp_bar(
-                surface,
-                int(sx),
-                int(sy) - self._radius - 26,
-                self.health,
-                self.max_health,
-                28,
-            )
-
-        # Hunger bar (always visible, below shadow)
-        self._draw_hunger_bar(surface, int(sx), int(sy) + self._radius + 4)
-
-        # speech bubble
-        if self._speech_timer > 0 and self._speech_text:
-            self._draw_speech_bubble(surface, sx, sy + bob_offset)
-
-    def _draw_hunger_bar(self, surface: pygame.Surface, cx: int, top_y: int):
-        """Small hunger bar below the NPC sprite."""
-        w, h = 24, 4
-        ratio = max(0.0, self.hunger / self.max_hunger)
-        bg = pygame.Rect(cx - w // 2, top_y, w, h)
-        fg = pygame.Rect(cx - w // 2, top_y, int(w * ratio), h)
-        pygame.draw.rect(surface, (60, 60, 60), bg)
-        # orange when healthy, red when starving
-        bar_color = (255, 152, 0) if ratio > 0.25 else (244, 67, 54)
-        pygame.draw.rect(surface, bar_color, fg)
-
-    def _draw_speech_bubble(self, surface: pygame.Surface, sx: float, sy: float):
-        """Draw a comic-style speech bubble above the NPC."""
-        font = pygame.font.SysFont("consolas", 14)
-        max_width = 200
-        # word-wrap
-        words = self._speech_text.split()
-        lines: list[str] = []
-        current = ""
-        for w in words:
-            test = f"{current} {w}".strip()
-            if font.size(test)[0] > max_width:
-                if current:
-                    lines.append(current)
-                current = w
-            else:
-                current = test
-        if current:
-            lines.append(current)
-
-        line_surfs = [font.render(l, True, (50, 50, 50)) for l in lines]
-        padding = 8
-        bw = max(s.get_width() for s in line_surfs) + padding * 2
-        bh = sum(s.get_height() for s in line_surfs) + padding * 2
-        bx = sx - bw // 2
-        by = sy - self._radius - 50 - bh
-
-        # bubble background
-        bubble_rect = pygame.Rect(int(bx), int(by), bw, bh)
-        bubble_surf = pygame.Surface((bw, bh), pygame.SRCALPHA)
-        pygame.draw.rect(
-            bubble_surf, (255, 255, 240, 230), (0, 0, bw, bh), border_radius=8
-        )
-        pygame.draw.rect(
-            bubble_surf, (180, 170, 140, 200), (0, 0, bw, bh), 2, border_radius=8
-        )
-        surface.blit(bubble_surf, bubble_rect.topleft)
-
-        # triangle pointer
-        tri_cx = int(sx)
-        tri_top = int(by + bh)
-        pygame.draw.polygon(
-            surface,
-            (255, 255, 240),
-            [(tri_cx - 6, tri_top), (tri_cx + 6, tri_top), (tri_cx, tri_top + 8)],
-        )
-
-        # text
-        ty = int(by) + padding
-        for ls in line_surfs:
-            surface.blit(ls, (int(bx) + padding, ty))
-            ty += ls.get_height()
-
-    def contains_point(self, wx: float, wy: float) -> bool:
-        """Check if world point is inside the NPC sprite."""
-        return math.hypot(wx - self.x, wy - self.y) <= self._radius + 4

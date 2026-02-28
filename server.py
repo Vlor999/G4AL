@@ -25,14 +25,11 @@ from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
 from flask_socketio import SocketIO, emit
 
-# ── Headless pygame init (no display, but REAL audio for TTS) ────────────
+# ── Pygame audio only (for TTS playback — no display needed) ─────────────
 os.environ["SDL_VIDEODRIVER"] = "dummy"
-# NOTE: Do NOT set SDL_AUDIODRIVER=dummy — we need real audio for TTS playback
 import pygame
 pygame.init()
-pygame.mixer.init()  # ensure mixer is ready for TTS mp3 playback
-# Create a tiny hidden surface so pygame.font and Surface work
-pygame.display.set_mode((1, 1))
+pygame.mixer.init()  # mixer is used by api/tts.py for mp3 playback
 
 from game.settings import (
     TILE_SIZE, FPS,

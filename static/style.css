@@ -115,6 +115,11 @@ body {
     gap: 20px;
 }
 
+.header-filler {
+    /* balances the flex layout now that resources moved to left panel */
+    flex: 0 0 0;
+}
+
 .res-tag {
     color: var(--primary);
     opacity: 0.7;
@@ -162,6 +167,58 @@ body {
     flex-direction: column;
     gap: 4px;
     background: var(--bg);
+}
+
+/* ── Inventory Grid ──────────────────────────────────────────────────────── */
+
+#inventory-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    margin-bottom: 8px;
+}
+
+.inv-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    border: 1px solid rgba(245, 240, 230, 0.15);
+    background: rgba(245, 240, 230, 0.02);
+    transition: border-color 0.2s, background 0.2s;
+}
+
+.inv-item:hover {
+    border-color: rgba(245, 240, 230, 0.3);
+    background: rgba(245, 240, 230, 0.04);
+}
+
+.inv-icon {
+    font-size: 20px;
+    line-height: 1;
+    flex-shrink: 0;
+}
+
+.inv-data {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.inv-label {
+    font-size: 9px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--primary);
+    opacity: 0.45;
+    line-height: 1.2;
+}
+
+.inv-value {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--accent);
+    line-height: 1.2;
 }
 
 /* ── Network Grid ────────────────────────────────────────────────────────── */

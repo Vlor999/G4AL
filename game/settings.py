@@ -1,10 +1,7 @@
 """Game-wide constants and settings."""
 
-# ── Display ──────────────────────────────────────────────────────────────
-SCREEN_WIDTH = 1280
-SCREEN_HEIGHT = 720
+# ── Core ────────────────────────────────────────────────────────────────
 FPS = 60
-TITLE = "G4AL – Survival"
 
 # ── Tile / Map ───────────────────────────────────────────────────────────
 TILE_SIZE = 64  # pixels per tile side
@@ -62,17 +59,6 @@ WHEAT_PLANT_TIME = 60  # frames to plant
 # ── Building ─────────────────────────────────────────────────────────────
 BUILD_COST_WOOD = 5
 BUILD_COST_STONE = 3
-
-# ── Camera ───────────────────────────────────────────────────────────────
-CAMERA_SPEED = 8  # pixels / frame when scrolling
-CAMERA_EDGE_MARGIN = 30  # pixels from screen edge to start scrolling
-
-# ── UI ───────────────────────────────────────────────────────────────────
-UI_TOP_BAR_HEIGHT = 40
-UI_LEFT_PANEL_WIDTH = 200
-UI_RIGHT_PANEL_WIDTH = 300
-UI_FONT_SIZE = 18
-UI_FONT_SIZE_LARGE = 24
 
 # ── TTS ──────────────────────────────────────────────────────────────────
 TTS_MAX_SPEAKERS = 1  # max NPCs that speak aloud per command (0 = mute)

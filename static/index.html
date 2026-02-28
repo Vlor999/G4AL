@@ -40,19 +40,46 @@
             <span class="header-title">MISTRAL OS [v0.8.1] <span class="header-sep">//</span> SYSTEM UNAUTHORIZED <span
                     class="header-sep">//</span></span>
             <span class="g4al-logo">G4AL</span>
-            <div class="header-resources">
-                <span class="res-tag">WOOD:<span id="res-wood">0</span></span>
-                <span class="res-tag">STONE:<span id="res-stone">0</span></span>
-                <span class="res-tag">GOLD:<span id="res-gold">0</span></span>
-                <span class="res-tag">WHEAT:<span id="res-wheat">0</span></span>
-            </div>
+            <span class="header-filler"></span>
         </header>
 
         <!-- ══ MAIN ════════════════════════════════════════════════ -->
         <main id="main">
 
-            <!-- ── Left: Network Grid + Selection ────────────────── -->
+            <!-- ── Left: Inventory + Selection + Actions ──────── -->
             <aside id="left-panel">
+
+                <div class="panel-label">INVENTORY</div>
+                <div id="inventory-grid">
+                    <div class="inv-item">
+                        <span class="inv-icon">🪵</span>
+                        <div class="inv-data">
+                            <span class="inv-label">WOOD</span>
+                            <span class="inv-value" id="res-wood">0</span>
+                        </div>
+                    </div>
+                    <div class="inv-item">
+                        <span class="inv-icon">🪨</span>
+                        <div class="inv-data">
+                            <span class="inv-label">STONE</span>
+                            <span class="inv-value" id="res-stone">0</span>
+                        </div>
+                    </div>
+                    <div class="inv-item">
+                        <span class="inv-icon">💰</span>
+                        <div class="inv-data">
+                            <span class="inv-label">GOLD</span>
+                            <span class="inv-value" id="res-gold">0</span>
+                        </div>
+                    </div>
+                    <div class="inv-item">
+                        <span class="inv-icon">🌾</span>
+                        <div class="inv-data">
+                            <span class="inv-label">WHEAT</span>
+                            <span class="inv-value" id="res-wheat">0</span>
+                        </div>
+                    </div>
+                </div>
                 
                 <div class="panel-label">UNIT_SELECT</div>
                 <div id="selection-info">

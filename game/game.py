@@ -17,12 +17,15 @@ from game.storage import ResourceStorage
 from game.npc import NPC, Action, ActionType
 from game.camera import Camera
 from game.ui import HUD
-from api.voice import VoiceTranscriber
+from api.voice import VoiceRecorder
 from api.logger import pipeline_logger
 
 # Lazy-import the API so the game still runs without a key
 try:
-    from api.interpreter import interpret_command, register_npcs, NPCOrder
+    from api.interpreter import (
+        interpret_command, interpret_audio_command,
+        register_npcs, NPCOrder,
+    )
     _HAS_LLM = True
 except ImportError:
     _HAS_LLM = False
@@ -42,7 +45,7 @@ class Game:
         self.npcs: List[NPC] = []
         self.camera = Camera()
         self.hud = HUD()
-        self.voice = VoiceTranscriber(on_result=self._on_voice_result)
+        self.voice = VoiceRecorder(on_audio=self._on_voice_audio)
         self._voice_text: str | None = None  # set from bg thread, consumed in _update
 
         # spawn a few starting bots on walkable tiles near the centre
@@ -78,12 +81,18 @@ class Game:
             return
         register_npcs([{"id": n.id, "name": n.name} for n in self.npcs])
 
-    # ── voice → LLM bridge ───────────────────────────────────────────────
+    # ── voice → Voxtral multimodal bridge ───────────────────────────────────────
 
-    def _on_voice_result(self, text: str):
-        """Called from voice bg thread when transcription is ready."""
-        print(f"[voice] transcription: {text}")
-        self._voice_text = text  # picked up by _update on the main thread
+    def _on_voice_audio(self, wav_bytes: bytes):
+        """Called from voice bg thread with recorded WAV bytes.
+        Sends audio directly to Voxtral for a single-call interpretation."""
+        if not _HAS_LLM:
+            return
+        print(f"[voice] sending {len(wav_bytes)} bytes to Voxtral…")
+        # Run the single multimodal API call in this bg thread
+        order = interpret_audio_command(wav_bytes)
+        if order:
+            self._pending_order = order  # picked up in _update()
 
     # ── LLM command handling ─────────────────────────────────────────────
 
@@ -227,13 +236,13 @@ class Game:
         keys = pygame.key.get_pressed()
         self.camera.update(keys)
 
-        # feed voice transcription to the LLM command pipeline
+        # feed text command from HUD to the LLM pipeline
         if self._voice_text is not None:
             text = self._voice_text
             self._voice_text = None
             self._on_player_command(text)
 
-        # apply LLM result if ready
+        # apply LLM / Voxtral result if ready
         if self._pending_order is not None:
             self._apply_pending_order()
 

@@ -1,11 +1,18 @@
 """Mistral LLM integration – interprets natural-language commands and returns
 structured NPC orders with in-character voice lines.
 
+Supports two input modes:
+  • **Text** – ``interpret_command(text)`` uses ``mistral-small-latest``.
+  • **Audio** – ``interpret_audio_command(wav_bytes)`` sends audio + system
+    prompt to ``voxtral-mini-latest`` in a single multimodal call (no
+    intermediate transcription step).
+
 Uses the Mistral API with JSON-mode to guarantee a parseable response.
 """
 
 from __future__ import annotations
 
+import base64
 import json
 import os
 from dataclasses import dataclass, asdict
@@ -67,7 +74,8 @@ def _build_roster_table() -> str:
 # ═══════════════════════════════════════════════════════════════════════════
 
 _client: Mistral | None = None
-MODEL = "mistral-small-latest"
+TEXT_MODEL = "mistral-small-latest"
+AUDIO_MODEL = "voxtral-mini-latest"
 
 
 def _get_client() -> Mistral:
@@ -88,7 +96,7 @@ def _get_client() -> Mistral:
 
 SYSTEM_PROMPT = """\
 You are the command interpreter for a 2D survival game. Players give natural-language \
-orders to NPCs (bots). Your job is to:
+orders to NPCs (bots) — either as text or spoken audio. Your job is to:
 
 1. **Identify which NPC** the player is talking to (match by name, nickname, or context).
 2. **Determine the action** from this list: {actions}.
@@ -104,20 +112,20 @@ orders to NPCs (bots). Your job is to:
 ─── Rules ───
 • If the player's intent is ambiguous, pick the most likely action.
 • **IMPORTANT: The voice line MUST be in the exact same language as the player's command.** \
-  If they write in French, reply in French. If Spanish, reply in Spanish. Always match the input language.
-• If the NPC name is misspelled or abbreviated, do your best to match it.
+  If they speak or write in French, reply in French. If Spanish, reply in Spanish. Always match the input language.
+• If the NPC name is misspelled, abbreviated, or mispronounced, do your best to match it.
 • If you truly cannot determine the NPC, pick the first idle NPC from the roster.
 • The voice line MUST reflect the NPC's unique personality.
 • Keep voice lines short, punchy, and fun.
 • Reply with **only** valid JSON – no markdown, no explanation.
 
 ─── Output format (strict JSON) ───
-{{
+{{{{
   "npc_name": "<exact NPC name from roster>",
   "npc_id": <integer>,
   "action": "<one of: {actions}>",
   "voice_line": "<in-character line>"
-}}
+}}}}
 """
 
 
@@ -135,11 +143,46 @@ def _build_system_prompt() -> str:
 
 
 # ═══════════════════════════════════════════════════════════════════════════
-#  Public API
+#  Shared response parser
+# ═══════════════════════════════════════════════════════════════════════════
+
+def _parse_order(raw_json: str) -> NPCOrder:
+    """Parse and validate the JSON returned by the LLM into an NPCOrder."""
+    data = json.loads(raw_json)
+
+    # Validate & normalize action
+    action = data.get("action", "").lower()
+    if action not in VALID_ACTIONS:
+        action = "chop_wood"  # safe fallback
+
+    npc_name = data.get("npc_name", "")
+    npc_id = int(data.get("npc_id", 0))
+    voice_line = data.get("voice_line", "...")
+
+    # Cross-check against roster
+    roster_entry = _npc_roster.get(npc_name.lower())
+    if roster_entry:
+        npc_name = roster_entry["name"]
+        npc_id = roster_entry["id"]
+    elif _npc_roster:
+        first = next(iter(_npc_roster.values()))
+        npc_name = first["name"]
+        npc_id = first["id"]
+
+    return NPCOrder(
+        npc_name=npc_name,
+        npc_id=npc_id,
+        action=action,
+        voice_line=voice_line,
+    )
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+#  Public API — text input
 # ═══════════════════════════════════════════════════════════════════════════
 
 def interpret_command(player_input: str) -> Optional[NPCOrder]:
-    """Send a natural-language command to Mistral and return a structured NPCOrder.
+    """Send a text command to Mistral and return a structured NPCOrder.
 
     Returns None if parsing fails or the API is unavailable.
     """
@@ -150,7 +193,7 @@ def interpret_command(player_input: str) -> Optional[NPCOrder]:
 
     try:
         response = client.chat.complete(
-            model=MODEL,
+            model=TEXT_MODEL,
             messages=[
                 {"role": "system", "content": system},
                 {"role": "user", "content": player_input},
@@ -160,50 +203,103 @@ def interpret_command(player_input: str) -> Optional[NPCOrder]:
             max_tokens=256,
         )
 
-        raw = response.choices[0].message.content.strip()
-        data = json.loads(raw)
+        raw = response.choices[0].message.content
+        if isinstance(raw, list):
+            raw = "".join(str(c) for c in raw)
+        raw = (raw or "").strip()
 
-        # token usage from the API response
+        order = _parse_order(raw)
+
         usage = response.usage
-        prompt_tokens = usage.prompt_tokens if usage else 0
-        completion_tokens = usage.completion_tokens if usage else 0
-
-        # Validate & normalize
-        action = data.get("action", "").lower()
-        if action not in VALID_ACTIONS:
-            action = "chop_wood"  # safe fallback
-
-        npc_name = data.get("npc_name", "")
-        npc_id = int(data.get("npc_id", 0))
-        voice_line = data.get("voice_line", "...")
-
-        # Cross-check against roster
-        roster_entry = _npc_roster.get(npc_name.lower())
-        if roster_entry:
-            npc_name = roster_entry["name"]
-            npc_id = roster_entry["id"]
-        elif _npc_roster:
-            # LLM returned unknown name – fallback to first NPC
-            first = next(iter(_npc_roster.values()))
-            npc_name = first["name"]
-            npc_id = first["id"]
-
-        order = NPCOrder(
-            npc_name=npc_name,
-            npc_id=npc_id,
-            action=action,
-            voice_line=voice_line,
-        )
-
         pipeline_logger.llm_end(
             order=asdict(order),
-            prompt_tokens=prompt_tokens,
-            completion_tokens=completion_tokens,
-            model=MODEL,
+            prompt_tokens=usage.prompt_tokens or 0 if usage else 0,
+            completion_tokens=usage.completion_tokens or 0 if usage else 0,
+            model=TEXT_MODEL,
         )
         return order
 
     except Exception as e:
         pipeline_logger.llm_end(order=None, error=str(e))
         print(f"[LLM ERROR] {e}")
+        return None
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+#  Public API — audio input  (single multimodal Voxtral call)
+# ═══════════════════════════════════════════════════════════════════════════
+
+def interpret_audio_command(wav_bytes: bytes) -> Optional[NPCOrder]:
+    """Send recorded audio directly to Voxtral and return a structured NPCOrder.
+
+    This merges transcription + interpretation into one API round-trip.
+    The Voxtral model natively understands audio and follows the system
+    prompt to output the JSON order.
+
+    Args:
+        wav_bytes: WAV-encoded audio bytes from the microphone.
+
+    Returns:
+        NPCOrder or None on failure.
+    """
+    client = _get_client()
+    system = _build_system_prompt()
+    audio_b64 = base64.b64encode(wav_bytes).decode("utf-8")
+
+    pipeline_logger.llm_start(input_text="(audio input)")
+
+    try:
+        response = client.chat.complete(
+            model=AUDIO_MODEL,
+            messages=[
+                {"role": "system", "content": system},
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "input_audio",
+                            "input_audio": audio_b64,
+                        },
+                        {
+                            "type": "text",
+                            "text": (
+                                "Listen to my voice command above and respond "
+                                "with ONLY the JSON order as specified in the "
+                                "system prompt. No markdown fences, no explanation."
+                            ),
+                        },
+                    ],
+                },
+            ],
+            temperature=0.7,
+            max_tokens=256,
+        )
+
+        raw = response.choices[0].message.content
+        print(f"[voxtral] raw response type={type(raw).__name__}: {raw!r}")
+        if isinstance(raw, list):
+            raw = "".join(str(c) for c in raw)
+        raw = (raw or "").strip()
+
+        # Strip markdown fences if the model wraps JSON in ```json ... ```
+        if raw.startswith("```"):
+            raw = raw.split("\n", 1)[-1]  # drop first ``` line
+            if raw.endswith("```"):
+                raw = raw[:-3]
+            raw = raw.strip()
+
+        order = _parse_order(raw)
+
+        usage = response.usage
+        pipeline_logger.llm_end(
+            order=asdict(order),
+            prompt_tokens=usage.prompt_tokens or 0 if usage else 0,
+            completion_tokens=usage.completion_tokens or 0 if usage else 0,
+            model=AUDIO_MODEL,
+        )
+        return order
+
+    except Exception as e:
+        pipeline_logger.llm_end(order=None, error=str(e))
+        print(f"[LLM AUDIO ERROR] {e}")
         return None

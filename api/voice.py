@@ -1,53 +1,63 @@
-"""Voxtral Realtime push-to-talk transcription (hold G to record)."""
+"""Push-to-talk microphone recorder (hold G to record).
+
+Records PCM audio from the microphone while the key is held, then
+packages it as an in-memory WAV and hands it to the interpreter for a
+single Voxtral multimodal call (audio + text → structured NPC order).
+"""
 
 from __future__ import annotations
 
-import asyncio
+import base64
+import io
 import os
 import threading
-from typing import AsyncIterator, Callable, Optional
+import wave
+from typing import Callable, Optional
 
 import pyaudio
 from dotenv import load_dotenv
-from mistralai import Mistral
-from mistralai.extra.realtime import UnknownRealtimeEvent
-from mistralai.models import (
-    AudioFormat,
-    RealtimeTranscriptionError,
-    RealtimeTranscriptionSessionCreated,
-    TranscriptionStreamDone,
-    TranscriptionStreamTextDelta,
-)
 
 from api.logger import pipeline_logger
 
 load_dotenv()
 
-# ── constants ────────────────────────────────────────────────────────────
-SAMPLE_RATE = 16000
-CHUNK_DURATION_MS = 480  # 30 ms chunks at 16 kHz
-SILENCE_FLUSH_MS = 1500   # silence appended after mic stops so server can flush
-MODEL = "voxtral-mini-transcribe-realtime-2602"
+# ── Audio constants ──────────────────────────────────────────────────────
+SAMPLE_RATE = 16_000        # 16 kHz mono
+CHANNELS = 1
+SAMPLE_WIDTH = 2            # 16-bit = 2 bytes
+CHUNK_SAMPLES = 1024        # frames per read (~64 ms at 16 kHz)
 
 
-class VoiceTranscriber:
-    """Hold-to-talk microphone → Voxtral Realtime transcription.
+def _pcm_to_wav(pcm_chunks: list[bytes]) -> bytes:
+    """Wrap raw PCM 16-bit mono data into a WAV byte string."""
+    buf = io.BytesIO()
+    with wave.open(buf, "wb") as wf:
+        wf.setnchannels(CHANNELS)
+        wf.setsampwidth(SAMPLE_WIDTH)
+        wf.setframerate(SAMPLE_RATE)
+        for chunk in pcm_chunks:
+            wf.writeframes(chunk)
+    return buf.getvalue()
 
-    * ``start()``  – begin recording + streaming (non-blocking).
-    * ``stop()``   – stop recording; blocks briefly until final text is ready.
-    * ``result``   – the transcribed text from the last session.
+
+def audio_to_base64(wav_bytes: bytes) -> str:
+    """Base64-encode WAV bytes for the Voxtral multimodal API."""
+    return base64.b64encode(wav_bytes).decode("utf-8")
+
+
+class VoiceRecorder:
+    """Hold-to-talk microphone recorder.
+
+    * ``start()``  – begin recording (non-blocking).
+    * ``stop()``   – stop recording; the background thread will
+                     call *on_audio* with the WAV bytes when ready.
     """
 
-    def __init__(self, on_result: Optional[Callable[[str], None]] = None):
-        api_key = os.getenv("MISTRAL_API_KEY", "")
-        self._client = Mistral(api_key=api_key)
-        self._audio_format = AudioFormat(encoding="pcm_s16le", sample_rate=SAMPLE_RATE)
-
+    def __init__(self, on_audio: Optional[Callable[[bytes], None]] = None):
+        self._on_audio = on_audio
         self._recording = False
         self._thread: Optional[threading.Thread] = None
-        self._loop: Optional[asyncio.AbstractEventLoop] = None
-        self._result: str = ""
-        self._on_result = on_result  # called from bg thread when transcription is ready
+        self._chunks: list[bytes] = []
 
     # ── public API ───────────────────────────────────────────────────────
 
@@ -55,111 +65,62 @@ class VoiceTranscriber:
     def recording(self) -> bool:
         return self._recording
 
-    @property
-    def result(self) -> str:
-        return self._result
-
     def start(self):
-        """Begin recording from the microphone and streaming to Voxtral."""
+        """Begin capturing mic audio in a background thread."""
         if self._recording:
             return
         self._recording = True
-        self._result = ""
-        self._audio_seconds: float = 0.0
-        self._voice_error: str | None = None
+        self._chunks = []
         pipeline_logger.voice_start()
-        self._thread = threading.Thread(target=self._run_in_thread, daemon=True)
+        self._thread = threading.Thread(target=self._record_loop, daemon=True)
         self._thread.start()
 
     def stop(self):
-        """Signal recording to stop. The background thread will flush remaining
-        audio and deliver the result via the on_result callback."""
+        """Signal recording to end. The bg thread finishes and fires on_audio."""
         if not self._recording:
             return
         self._recording = False
-        # Don't join here – let the thread finish flushing in the background.
-        # The callback will fire when the result is ready.
+        # Don't join — the callback fires from the bg thread when ready.
 
     # ── internals ────────────────────────────────────────────────────────
 
-    def _run_in_thread(self):
-        loop = asyncio.new_event_loop()
-        self._loop = loop
-        try:
-            loop.run_until_complete(self._transcribe())
-        except Exception as exc:
-            self._voice_error = str(exc)
-            print(f"[voice] error: {exc}")
-        finally:
-            pipeline_logger.voice_end(
-                text=self._result,
-                audio_seconds=self._audio_seconds,
-                error=self._voice_error,
-            )
-            loop.close()
-            self._loop = None
-            self._thread = None
-            if self._result and self._on_result:
-                self._on_result(self._result)
-
-    async def _iter_microphone(self) -> AsyncIterator[bytes]:
-        """Yield PCM 16-bit mono chunks from the microphone while recording."""
+    def _record_loop(self):
+        """Capture PCM from the mic, convert to WAV, and invoke the callback."""
         p = pyaudio.PyAudio()
-        chunk_samples = int(SAMPLE_RATE * CHUNK_DURATION_MS / 1000)
-
         stream = p.open(
             format=pyaudio.paInt16,
-            channels=1,
+            channels=CHANNELS,
             rate=SAMPLE_RATE,
             input=True,
-            frames_per_buffer=chunk_samples,
+            frames_per_buffer=CHUNK_SAMPLES,
         )
 
-        loop = asyncio.get_running_loop()
+        error_msg: str | None = None
         try:
             while self._recording:
-                data = await loop.run_in_executor(
-                    None, stream.read, chunk_samples, False
-                )
-                yield data
-            # After mic stops, send silence so the server can flush its buffer
-            silence = b"\x00" * (chunk_samples * 2)  # 16-bit = 2 bytes/sample
-            remaining_ms = SILENCE_FLUSH_MS
-            while remaining_ms > 0:
-                yield silence
-                await asyncio.sleep(CHUNK_DURATION_MS / 1000)
-                remaining_ms -= CHUNK_DURATION_MS
+                data = stream.read(CHUNK_SAMPLES, exception_on_overflow=False)
+                self._chunks.append(data)
+        except Exception as exc:
+            error_msg = str(exc)
+            print(f"[voice] recording error: {exc}")
         finally:
             stream.stop_stream()
             stream.close()
             p.terminate()
 
-    async def _transcribe(self):
-        """Stream mic audio to Voxtral Realtime and accumulate text."""
-        text_parts: list[str] = []
+        if not self._chunks:
+            pipeline_logger.voice_end(text="", audio_seconds=0.0, error=error_msg or "no audio captured")
+            return
 
-        try:
-            async for event in self._client.audio.realtime.transcribe_stream(
-                audio_stream=self._iter_microphone(),
-                model=MODEL,
-                audio_format=self._audio_format,
-            ):
-                if isinstance(event, RealtimeTranscriptionSessionCreated):
-                    print("[voice] session created – recording…")
-                elif isinstance(event, TranscriptionStreamTextDelta):
-                    text_parts.append(event.text)
-                elif isinstance(event, TranscriptionStreamDone):
-                    # Extract API-reported usage (audio seconds, tokens)
-                    if event.usage:
-                        self._audio_seconds = float(event.usage.prompt_audio_seconds or 0)
-                    print(f"[voice] transcription done (audio={self._audio_seconds:.1f}s).")
-                    break
-                elif isinstance(event, RealtimeTranscriptionError):
-                    print(f"[voice] API error: {event}")
-                    break
-                elif isinstance(event, UnknownRealtimeEvent):
-                    continue
-        except Exception as exc:
-            print(f"[voice] stream error: {exc}")
+        # Compute duration from raw PCM data
+        total_bytes = sum(len(c) for c in self._chunks)
+        audio_seconds = total_bytes / (SAMPLE_RATE * CHANNELS * SAMPLE_WIDTH)
 
-        self._result = "".join(text_parts).strip()
+        wav_bytes = _pcm_to_wav(self._chunks)
+        self._chunks = []  # free memory
+
+        print(f"[voice] recording done ({audio_seconds:.1f}s, {len(wav_bytes)} bytes WAV)")
+        pipeline_logger.voice_end(text="(audio captured)", audio_seconds=audio_seconds, error=error_msg)
+
+        if self._on_audio:
+            self._on_audio(wav_bytes)

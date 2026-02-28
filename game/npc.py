@@ -11,21 +11,25 @@ from typing import List, Tuple, Optional, TYPE_CHECKING
 import pygame
 
 from game.settings import (
-    NPC_SPEED, NPC_MAX_HEALTH,
-    NPC_CHOP_TIME, NPC_MINE_TIME, NPC_BUILD_TIME,
-    BUILD_COST_WOOD, BUILD_COST_STONE,
-    COLOR_NPC_BODY, COLOR_NPC_OUTLINE, COLOR_NPC_SELECTED,
+    NPC_SPEED,
+    NPC_MAX_HEALTH,
+    NPC_CHOP_TIME,
+    NPC_MINE_TIME,
+    NPC_BUILD_TIME,
+    BUILD_COST_WOOD,
+    BUILD_COST_STONE,
+    COLOR_NPC_BODY,
+    COLOR_NPC_OUTLINE,
+    COLOR_NPC_SELECTED,
 )
 from game.entities import Resource, Tree, Rock, Structure
-
-if TYPE_CHECKING:
-    from game.map import GameMap
-    from game.storage import ResourceStorage
+from api.roster import NPC_NAMES
 
 
 # ═══════════════════════════════════════════════════════════════════════════
 #  FSM States
 # ═══════════════════════════════════════════════════════════════════════════
+
 
 class State(Enum):
     IDLE = auto()
@@ -38,36 +42,53 @@ class State(Enum):
 #  Action descriptors (what goes in the queue)
 # ═══════════════════════════════════════════════════════════════════════════
 
+
 class ActionType(Enum):
     CHOP_WOOD = "chop_wood"
     MINE_ROCK = "mine_rock"
     BUILD = "build"
-    MOVE_TO = "move_to"        # explicit move order
+    MOVE_TO = "move_to"  # explicit move order
 
 
 class Action:
     """One unit of work for an NPC."""
 
-    def __init__(self, action_type: ActionType, target: Optional[Resource | Tuple[int, int]] = None):
+    def __init__(
+        self,
+        action_type: ActionType,
+        target: Optional[Resource | Tuple[int, int]] = None,
+    ):
         self.action_type = action_type
-        self.target = target           # Resource instance or (col, row) for MOVE_TO
+        self.target = target  # Resource instance or (col, row) for MOVE_TO
 
 
 # ═══════════════════════════════════════════════════════════════════════════
 #  Simple A* pathfinding on the tile grid
 # ═══════════════════════════════════════════════════════════════════════════
 
+
 def _heuristic(a: Tuple[int, int], b: Tuple[int, int]) -> float:
     return abs(a[0] - b[0]) + abs(a[1] - b[1])
 
 
-def find_path(game_map: "GameMap", start: Tuple[int, int], goal: Tuple[int, int]) -> List[Tuple[int, int]]:
+def find_path(
+    game_map: "GameMap", start: Tuple[int, int], goal: Tuple[int, int]
+) -> List[Tuple[int, int]]:
     """A* on the tile grid. Returns list of (col, row) from start to goal (inclusive)."""
     import heapq
 
     if not game_map.is_walkable(goal[0], goal[1]):
         # try to get an adjacent walkable tile to the goal
-        for dc, dr in [(-1, 0), (1, 0), (0, -1), (0, 1), (-1, -1), (1, -1), (-1, 1), (1, 1)]:
+        for dc, dr in [
+            (-1, 0),
+            (1, 0),
+            (0, -1),
+            (0, 1),
+            (-1, -1),
+            (1, -1),
+            (-1, 1),
+            (1, 1),
+        ]:
             nc, nr = goal[0] + dc, goal[1] + dr
             if game_map.is_walkable(nc, nr):
                 goal = (nc, nr)
@@ -108,13 +129,7 @@ def find_path(game_map: "GameMap", start: Tuple[int, int], goal: Tuple[int, int]
 #  NPC
 # ═══════════════════════════════════════════════════════════════════════════
 
-# ── Name pool for NPCs ───────────────────────────────────────────────────
-NPC_NAMES = [
-    "Ada", "Bjorn", "Cleo", "Dante", "Elara", "Finn", "Greta", "Hugo",
-    "Iris", "Jasper", "Kira", "Ludo", "Mira", "Niko", "Olga", "Pavel",
-    "Quinn", "Rolf", "Suki", "Tomas", "Uma", "Viktor", "Wren", "Xena",
-    "Yara", "Zeke",
-]
+# ── Name pool for NPCs (from the central roster) ────────────────────────
 _used_names: list[str] = []
 
 
@@ -132,8 +147,15 @@ def _pick_name() -> str:
 class NPC:
     _next_id = 1
 
-    def __init__(self, x: float, y: float, game_map: "GameMap",
-                 resources: List[Resource], storage: "ResourceStorage", name: Optional[str] = None):
+    def __init__(
+        self,
+        x: float,
+        y: float,
+        game_map: "GameMap",
+        resources: List[Resource],
+        storage: "ResourceStorage",
+        name: Optional[str] = None,
+    ):
         self.id = NPC._next_id
         NPC._next_id += 1
         self.name = name or _pick_name()
@@ -166,7 +188,7 @@ class NPC:
 
         # speech bubble
         self._speech_text: str = ""
-        self._speech_timer: int = 0       # frames remaining
+        self._speech_timer: int = 0  # frames remaining
 
         # visual
         self._radius = 14
@@ -257,8 +279,10 @@ class NPC:
                 else:
                     col, row = self.tile_pos
                 # Pay resource cost
-                if (self._storage.get("wood") < BUILD_COST_WOOD
-                        or self._storage.get("stone") < BUILD_COST_STONE):
+                if (
+                    self._storage.get("wood") < BUILD_COST_WOOD
+                    or self._storage.get("stone") < BUILD_COST_STONE
+                ):
                     self.state = State.DONE
                     return
                 self._storage.spend("wood", BUILD_COST_WOOD)
@@ -333,7 +357,10 @@ class NPC:
 
         # per-frame work on target
         if isinstance(target, Resource) and not target.depleted:
-            if self._current_action.action_type in (ActionType.CHOP_WOOD, ActionType.MINE_ROCK):
+            if self._current_action.action_type in (
+                ActionType.CHOP_WOOD,
+                ActionType.MINE_ROCK,
+            ):
                 result = target.harvest_tick()
                 if result:
                     for res, amt in result.items():
@@ -373,15 +400,21 @@ class NPC:
         bob_offset = math.sin(self._bob) * 2 if self.state == State.IDLE else 0
 
         # shadow
-        pygame.draw.ellipse(surface, (0, 0, 0, 80),
-                            (sx - self._radius, sy + self._radius - 4,
-                             self._radius * 2, self._radius))
+        pygame.draw.ellipse(
+            surface,
+            (0, 0, 0, 80),
+            (sx - self._radius, sy + self._radius - 4, self._radius * 2, self._radius),
+        )
 
         # body
         body_y = sy + bob_offset
         outline_color = COLOR_NPC_SELECTED if self.selected else COLOR_NPC_OUTLINE
-        pygame.draw.circle(surface, outline_color, (int(sx), int(body_y)), self._radius + 2)
-        pygame.draw.circle(surface, COLOR_NPC_BODY, (int(sx), int(body_y)), self._radius)
+        pygame.draw.circle(
+            surface, outline_color, (int(sx), int(body_y)), self._radius + 2
+        )
+        pygame.draw.circle(
+            surface, COLOR_NPC_BODY, (int(sx), int(body_y)), self._radius
+        )
 
         # tiny face
         eye_y = int(body_y) - 3
@@ -394,8 +427,12 @@ class NPC:
         name_x = sx - name_surf.get_width() // 2
         name_y = sy - self._radius - 30 + bob_offset
         # dark background for readability
-        bg_rect = pygame.Rect(name_x - 2, name_y - 1,
-                              name_surf.get_width() + 4, name_surf.get_height() + 2)
+        bg_rect = pygame.Rect(
+            name_x - 2,
+            name_y - 1,
+            name_surf.get_width() + 4,
+            name_surf.get_height() + 2,
+        )
         bg = pygame.Surface((bg_rect.width, bg_rect.height), pygame.SRCALPHA)
         bg.fill((0, 0, 0, 120))
         surface.blit(bg, bg_rect.topleft)
@@ -404,12 +441,22 @@ class NPC:
         # state label (below the name)
         font = pygame.font.SysFont(None, 14)
         label = font.render(self.state.name, True, (200, 200, 200))
-        surface.blit(label, (sx - label.get_width() // 2, name_y + name_surf.get_height() + 1))
+        surface.blit(
+            label, (sx - label.get_width() // 2, name_y + name_surf.get_height() + 1)
+        )
 
         # HP bar
         if self.health < self.max_health:
             from game.entities import _draw_hp_bar
-            _draw_hp_bar(surface, int(sx), int(sy) - self._radius - 26, self.health, self.max_health, 28)
+
+            _draw_hp_bar(
+                surface,
+                int(sx),
+                int(sy) - self._radius - 26,
+                self.health,
+                self.max_health,
+                28,
+            )
 
         # speech bubble
         if self._speech_timer > 0 and self._speech_text:
@@ -444,15 +491,22 @@ class NPC:
         # bubble background
         bubble_rect = pygame.Rect(int(bx), int(by), bw, bh)
         bubble_surf = pygame.Surface((bw, bh), pygame.SRCALPHA)
-        pygame.draw.rect(bubble_surf, (255, 255, 240, 230), (0, 0, bw, bh), border_radius=8)
-        pygame.draw.rect(bubble_surf, (180, 170, 140, 200), (0, 0, bw, bh), 2, border_radius=8)
+        pygame.draw.rect(
+            bubble_surf, (255, 255, 240, 230), (0, 0, bw, bh), border_radius=8
+        )
+        pygame.draw.rect(
+            bubble_surf, (180, 170, 140, 200), (0, 0, bw, bh), 2, border_radius=8
+        )
         surface.blit(bubble_surf, bubble_rect.topleft)
 
         # triangle pointer
         tri_cx = int(sx)
         tri_top = int(by + bh)
-        pygame.draw.polygon(surface, (255, 255, 240),
-                            [(tri_cx - 6, tri_top), (tri_cx + 6, tri_top), (tri_cx, tri_top + 8)])
+        pygame.draw.polygon(
+            surface,
+            (255, 255, 240),
+            [(tri_cx - 6, tri_top), (tri_cx + 6, tri_top), (tri_cx, tri_top + 8)],
+        )
 
         # text
         ty = int(by) + padding

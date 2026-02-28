@@ -1,7 +1,7 @@
 """ElevenLabs TTS – speaks NPC voice lines in the background.
 
-Each NPC name is mapped to a specific ElevenLabs preset voice to match
-their personality.  A single daemon worker thread processes a FIFO queue
+Voice assignments come from :pymod:`api.roster` (the single source of
+truth for NPC identities).  A daemon worker thread processes a FIFO queue
 so voice lines never overlap and never block the game loop.
 """
 
@@ -15,61 +15,14 @@ import threading
 from dotenv import load_dotenv
 
 from api.logger import pipeline_logger
+from api.roster import NPC_VOICE_MAP, ElevenLabsVoice
 
 load_dotenv()
 
 _API_KEY = os.getenv("ELEVENLABS_API_KEY", "")
 
-# ── ElevenLabs preset voice IDs ─────────────────────────────────────────
-# Subset of the default voice library – enough variety for 26 NPCs.
-
-_VOICES: dict[str, str] = {
-    # Female
-    "Rachel":  "21m00Tcm4TlvDq8ikWAM",  # calm, mature
-    "Domi":    "AZnzlk1XvdvUeBnXmlld",  # strong, confident
-    "Bella":   "EXAVITQu4vr4xnSDxMaL",  # soft, warm
-    "Elli":    "MF3mGyEYCl7XYWbV9V6O",  # young, cheerful
-    # Male
-    "Josh":    "TxGEqnHWrfWFTfGW9XjX",  # deep, authoritative
-    "Arnold":  "VR6AewLTigWG4xSOukaG",  # crisp, military
-    "Adam":    "pNInz6obpgDQGcFmaJgB",  # deep, resonant
-    "Sam":     "yoZ06aMxZJJ28mfd3POQ",  # raspy, older
-    "Antoni":  "ErXwobaYiN019PkySvjV",  # warm, young male
-}
-
-_DEFAULT_VOICE = "Rachel"
-
-# ── NPC → ElevenLabs voice mapping ──────────────────────────────────────
-# Chosen to loosely match each character's personality / gender.
-
-NPC_VOICE_MAP: dict[str, str] = {
-    "Ada":    "Rachel",   # calm, precise thinker
-    "Bjorn":  "Josh",     # gruff warrior
-    "Cleo":   "Domi",     # sarcastic rogue
-    "Dante":  "Adam",     # dramatic poet
-    "Elara":  "Bella",    # gentle healer
-    "Finn":   "Antoni",   # energetic youngster
-    "Greta":  "Domi",     # stern foreman
-    "Hugo":   "Sam",      # lazy philosopher
-    "Iris":   "Elli",     # cheerful botanist
-    "Jasper": "Sam",      # old miner
-    "Kira":   "Domi",     # competitive overachiever
-    "Ludo":   "Josh",     # gentle giant
-    "Mira":   "Rachel",   # pragmatic merchant
-    "Niko":   "Antoni",   # rebellious teen
-    "Olga":   "Bella",    # grandmother figure
-    "Pavel":  "Arnold",   # military engineer
-    "Quinn":  "Elli",     # mysterious loner
-    "Rolf":   "Adam",     # boisterous bard
-    "Suki":   "Rachel",   # cunning strategist
-    "Tomas":  "Arnold",   # grumpy worker
-    "Uma":    "Bella",    # spiritual mystic
-    "Viktor": "Arnold",   # perfectionist
-    "Wren":   "Elli",     # shy introvert
-    "Xena":   "Domi",     # fierce warrior
-    "Yara":   "Bella",    # storyteller
-    "Zeke":   "Antoni",   # mad inventor
-}
+# Default fallback voice ID
+_DEFAULT_VOICE_ID = ElevenLabsVoice.RACHEL.value
 
 # Model for short voice lines – optimised for low latency.
 _MODEL_ID = "eleven_turbo_v2_5"
@@ -117,8 +70,8 @@ class TTSEngine:
     # ── internals ────────────────────────────────────────────────────────
 
     def _voice_id_for(self, npc_name: str) -> str:
-        voice_name = NPC_VOICE_MAP.get(npc_name, _DEFAULT_VOICE)
-        return _VOICES.get(voice_name, _VOICES[_DEFAULT_VOICE])
+        """Get the ElevenLabs voice ID for an NPC name."""
+        return NPC_VOICE_MAP.get(npc_name, _DEFAULT_VOICE_ID)
 
     def _worker(self) -> None:
         """Background loop: generate TTS audio and play via pygame.mixer."""

@@ -20,7 +20,7 @@ from typing import Optional
 
 from mistralai import Mistral
 
-from api.characters import get_soul
+from api.roster import get_soul
 from api.logger import pipeline_logger
 
 

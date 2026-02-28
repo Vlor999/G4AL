@@ -85,8 +85,12 @@ class Game:
                 if self.game_map.is_walkable(c, r) and (c, r) not in entity_tiles:
                     wx, wy = self.game_map.tile_center(c, r)
                     npc = NPC(
-                        wx, wy, self.game_map, self.resources,
-                        self.storage, all_npcs=self.npcs,
+                        wx,
+                        wy,
+                        self.game_map,
+                        self.resources,
+                        self.storage,
+                        all_npcs=self.npcs,
                     )
                     self.npcs.append(npc)
                     entity_tiles.add((c, r))  # prevent stacking
@@ -248,7 +252,7 @@ class Game:
         if self.hud.handle_click(pos, self._selected):
             return
 
-        # try selecting an NPC
+        # click was on map (playable area)
         wx, wy = self.camera.screen_to_world(pos[0], pos[1])
         clicked_npc = None
         for npc in self.npcs:
@@ -267,7 +271,12 @@ class Game:
 
     def _on_right_click(self, pos):
         """Right-click on the map → move selected NPCs there."""
-        if pos[1] >= self.hud.panel_y:
+        in_ui = (
+            self.hud.top_rect.collidepoint(pos)
+            or self.hud.left_rect.collidepoint(pos)
+            or self.hud.right_rect.collidepoint(pos)
+        )
+        if in_ui:
             return
         if not self._selected:
             return
@@ -305,18 +314,32 @@ class Game:
     def _draw(self):
         cam = self.camera.offset
 
-        # map
-        self.game_map.draw(self.screen, cam)
+        # define playable view area
+        view_rect = pygame.Rect(
+            self.hud.left_rect.width,
+            self.hud.top_rect.height,
+            self.screen_w - self.hud.left_rect.width - self.hud.right_rect.width,
+            self.screen_h - self.hud.top_rect.height,
+        )
+        # Create a subsurface to clip map drawing and automatically shift origin
+        if view_rect.width > 0 and view_rect.height > 0:
+            world_surface = self.screen.subsurface(view_rect)
 
-        # resources
-        for r in self.resources:
-            r.draw(self.screen, cam)
+            # background fallback
+            world_surface.fill((0, 0, 0))
 
-        # NPCs (sorted by y for naive depth)
-        for npc in sorted(self.npcs, key=lambda n: n.y):
-            npc.draw(self.screen, cam)
+            # map
+            self.game_map.draw(world_surface, cam)
 
-        # HUD on top
+            # resources
+            for r in self.resources:
+                r.draw(world_surface, cam)
+
+            # NPCs (sorted by y for naive depth)
+            for npc in sorted(self.npcs, key=lambda n: n.y):
+                npc.draw(world_surface, cam)
+
+        # HUD on top (draws to main screen)
         self.hud.draw(self.screen, self.storage, self._selected, self.npcs)
 
         pygame.display.flip()

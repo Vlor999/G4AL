@@ -10,7 +10,9 @@ from game.settings import (
     CAMERA_SPEED,
     MAP_WIDTH,
     MAP_HEIGHT,
-    UI_PANEL_HEIGHT,
+    UI_TOP_BAR_HEIGHT,
+    UI_LEFT_PANEL_WIDTH,
+    UI_RIGHT_PANEL_WIDTH,
 )
 
 
@@ -46,10 +48,14 @@ class Camera:
         self.y += dy
 
         # clamp
-        max_x = max(0, MAP_WIDTH - self._screen_w)
-        max_y = max(0, MAP_HEIGHT - (self._screen_h - UI_PANEL_HEIGHT))
+        view_w = self._screen_w - UI_LEFT_PANEL_WIDTH - UI_RIGHT_PANEL_WIDTH
+        view_h = self._screen_h - UI_TOP_BAR_HEIGHT
+
+        max_x = max(0, MAP_WIDTH - view_w)
+        max_y = max(0, MAP_HEIGHT - view_h)
         self.x = max(0.0, min(self.x, max_x))
         self.y = max(0.0, min(self.y, max_y))
 
     def screen_to_world(self, sx: int, sy: int) -> Tuple[float, float]:
-        return sx + self.x, sy + self.y
+        # sx, sy are relative to the playable view area (offset by UI panels)
+        return sx + self.x - UI_LEFT_PANEL_WIDTH, sy + self.y - UI_TOP_BAR_HEIGHT

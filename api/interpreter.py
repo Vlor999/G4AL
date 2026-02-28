@@ -102,6 +102,8 @@ orders to NPCs (bots). Your job is to:
 
 ─── Rules ───
 • If the player's intent is ambiguous, pick the most likely action.
+• **IMPORTANT: The voice line MUST be in the exact same language as the player's command.** \
+  If they write in French, reply in French. If Spanish, reply in Spanish. Always match the input language.
 • If the NPC name is misspelled or abbreviated, do your best to match it.
 • If you truly cannot determine the NPC, pick the first idle NPC from the roster.
 • The voice line MUST reflect the NPC's unique personality.

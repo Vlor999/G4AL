@@ -1,23 +1,30 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title> G4AL </title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="/static/style.css">
 </head>
+
 <body>
     <!-- ══ MIC PERMISSION MODAL ════════════════════════════════════ -->
     <div id="mic-modal">
         <div id="mic-modal-box">
             <div class="modal-border-top"></div>
-            <div class="modal-header">SYSTEM_INIT</div>
+            <div class="modal-header">
+                <div>SYSTEM_INIT</div>
+                <button id="mic-close-btn" class="modal-close-btn">[X]</button>
+            </div>
             <div class="modal-body">
                 <p class="modal-line">// AUDIO SUBSYSTEM REQUIRED</p>
-                <p class="modal-line dim">This application uses voice commands.<br>Microphone access is needed to proceed.</p>
+                <p class="modal-line dim">This application uses voice commands.<br>Microphone access is needed to
+                    proceed.</p>
                 <div class="modal-key-hint">
                     <span class="key-badge">G</span>
                     <span>HOLD TO TALK</span>
@@ -26,6 +33,35 @@
             </div>
             <div class="modal-footer">
                 <span class="modal-cursor">█</span> AWAITING AUTHORIZATION...
+            </div>
+        </div>
+    </div>
+
+    <!-- ══ TEAM INFORMATION MODAL ══════════════════════════════════ -->
+    <div id="team-modal" class="hidden">
+        <div id="team-modal-box">
+            <div class="modal-border-top"></div>
+            <div class="modal-header">
+                <div>G4AL_TEAM_INFO</div>
+                <button id="team-close-btn" class="modal-close-btn">[X]</button>
+            </div>
+            <div class="modal-body">
+                <p class="modal-line">// PROJECT G4AL DEVELOPERS</p>
+                <p class="modal-line dim">Select a profile to access professional records via external network.</p>
+
+                <div class="team-links">
+                    <a href="https://www.linkedin.com/in/edouard-d-3120782b5/" target="_blank" class="team-link-btn">
+                        <span class="link-icon">►</span>
+                        <span>[Edouard Da Cruz]</span>
+                    </a>
+                    <a href="https://www.linkedin.com/in/willem-adnet" target="_blank" class="team-link-btn">
+                        <span class="link-icon">►</span>
+                        <span>[Willem Adnet]</span>
+                    </a>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <span class="modal-cursor">█</span> SYSTEM READY
             </div>
         </div>
     </div>
@@ -39,7 +75,7 @@
         <header id="header">
             <span class="header-title">MISTRAL OS [v0.8.1] <span class="header-sep">//</span> SYSTEM UNAUTHORIZED <span
                     class="header-sep">//</span></span>
-            <span class="g4al-logo">G4AL</span>
+            <span id="g4al-logo-btn" class="g4al-logo" style="cursor: pointer;" title="G4AL Team Info">G4AL</span>
             <span class="header-filler"></span>
         </header>
 
@@ -89,9 +125,13 @@
                     <div id="sel-details" style="display:none;">
                         <div class="npc-name-display" id="sel-name"></div>
                         <div class="stat-row"><span>HP</span><span id="sel-hp-text"></span></div>
-                        <div class="stat-bar"><div class="stat-bar-fill bar-hp" id="sel-hp-bar"></div></div>
+                        <div class="stat-bar">
+                            <div class="stat-bar-fill bar-hp" id="sel-hp-bar"></div>
+                        </div>
                         <div class="stat-row"><span>HUNGER</span><span id="sel-hunger-text"></span></div>
-                        <div class="stat-bar"><div class="stat-bar-fill bar-hunger" id="sel-hunger-bar"></div></div>
+                        <div class="stat-bar">
+                            <div class="stat-bar-fill bar-hunger" id="sel-hunger-bar"></div>
+                        </div>
                         <div class="stat-row"><span>STATE</span><span id="sel-state"></span></div>
                     </div>
                 </div>
@@ -114,7 +154,7 @@
 
             <!-- ── Right: System Stats + Roster + Log ────────────── -->
             <aside id="right-panel">
-                
+
                 <div class="panel-label">ROSTER</div>
                 <div id="roster-section">
                     <div id="roster-list"></div>
@@ -132,12 +172,12 @@
             <div id="terminal-left">
                 <span class="mic-indicator">[<span class="mic-blink">MIC ACTIVE</span>]</span>
                 <span class="terminal-sep">|</span>
-                <span class="voice-transcript">VOICE_INPUT&gt; <em>"Prioritize allocation to Entry_03..."</em> <span class="cmd-status">[ACCEPTED]</span></span>
+                <span class="voice-transcript">VOICE_INPUT&gt; <em>"Prioritize allocation to Entry_03..."</em> <span
+                        class="cmd-status">[ACCEPTED]</span></span>
             </div>
             <div id="terminal-right">
                 <div id="command-section">
-                    <input type="text" id="command-input"
-                           placeholder="&gt; type command...">
+                    <input type="text" id="command-input" placeholder="&gt; type command...">
                 </div>
             </div>
             <span class="cursor-blink">█</span>
@@ -147,4 +187,5 @@
     <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
     <script src="/static/game.js"></script>
 </body>
+
 </html>

@@ -77,14 +77,19 @@ class Game:
 
     def _spawn_initial_npcs(self, count: int):
         cx, cy = self.game_map.cols // 2, self.game_map.rows // 2
+        entity_tiles = {(r.col, r.row) for r in self.resources}
         placed = 0
         for dc in range(-3, 4):
             for dr in range(-3, 4):
                 c, r = cx + dc, cy + dr
-                if self.game_map.is_walkable(c, r):
+                if self.game_map.is_walkable(c, r) and (c, r) not in entity_tiles:
                     wx, wy = self.game_map.tile_center(c, r)
-                    npc = NPC(wx, wy, self.game_map, self.resources, self.storage)
+                    npc = NPC(
+                        wx, wy, self.game_map, self.resources,
+                        self.storage, all_npcs=self.npcs,
+                    )
                     self.npcs.append(npc)
+                    entity_tiles.add((c, r))  # prevent stacking
                     placed += 1
                     if placed >= count:
                         return

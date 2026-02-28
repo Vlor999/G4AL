@@ -82,9 +82,16 @@ def _heuristic(a: Tuple[int, int], b: Tuple[int, int]) -> float:
 
 
 def find_path(
-    game_map: "GameMap", start: Tuple[int, int], goal: Tuple[int, int]
+    game_map: "GameMap", start: Tuple[int, int], goal: Tuple[int, int],
+    blocked: set[Tuple[int, int]] | None = None,
 ) -> List[Tuple[int, int]]:
-    """A* on the tile grid. Returns list of (col, row) from start to goal (inclusive)."""
+    """A* on the tile grid. Returns list of (col, row) from start to goal (inclusive).
+
+    *blocked* is an optional set of (col, row) tiles treated as impassable
+    (e.g. tiles occupied by other NPCs).  The *goal* tile itself is never
+    considered blocked so that NPCs can still path toward a destination
+    even if one of them is standing on it.
+    """
     import heapq
 
     if not game_map.is_walkable(goal[0], goal[1]):
@@ -126,6 +133,9 @@ def find_path(
             neighbor = (current[0] + dc, current[1] + dr)
             if not game_map.is_walkable(neighbor[0], neighbor[1]):
                 continue
+            # skip tiles occupied by other NPCs (but allow the goal)
+            if blocked and neighbor in blocked and neighbor != goal:
+                continue
             tentative = g_score[current] + 1
             if tentative < g_score.get(neighbor, float("inf")):
                 came_from[neighbor] = current
@@ -164,6 +174,7 @@ class NPC:
         game_map: "GameMap",
         resources: List[Resource],
         storage: "ResourceStorage",
+        all_npcs: Optional[List["NPC"]] = None,
         name: Optional[str] = None,
     ):
         self.id = NPC._next_id
@@ -178,6 +189,8 @@ class NPC:
         self._map = game_map
         self._resources = resources
         self._storage = storage
+        self._all_npcs: List["NPC"] = all_npcs if all_npcs is not None else []
+        self._wait_counter = 0  # frames spent waiting for a blocked tile
 
         # stats
         self.health = NPC_MAX_HEALTH
@@ -300,6 +313,16 @@ class NPC:
                     col, row = action.target
                 else:
                     col, row = self.tile_pos
+                # Validate: walkable terrain only (grass / dirt / sand)
+                if not self._map.is_walkable(col, row):
+                    self.say("Can't build here!", 120)
+                    self.state = State.DONE
+                    return
+                # Validate: no existing entity on this tile
+                if self._entity_at_tile(col, row) is not None:
+                    self.say("Tile already occupied!", 120)
+                    self.state = State.DONE
+                    return
                 # Pay resource cost
                 if (
                     self._storage.get("wood") < BUILD_COST_WOOD
@@ -337,7 +360,14 @@ class NPC:
                 col, row = action.target
             else:
                 col, row = self.tile_pos
+            # Validate: walkable terrain only
             if not self._map.is_walkable(col, row):
+                self.say("Can't plant here!", 120)
+                self.state = State.DONE
+                return
+            # Validate: no existing entity on this tile
+            if self._entity_at_tile(col, row) is not None:
+                self.say("Tile already occupied!", 120)
                 self.state = State.DONE
                 return
             field = WheatField(col, row)
@@ -356,7 +386,7 @@ class NPC:
 
     def _plan_move_to(self, col: int, row: int):
         start = self.tile_pos
-        path = find_path(self._map, start, (col, row))
+        path = find_path(self._map, start, (col, row), blocked=self._occupied_by_npcs())
         if not path:
             self.state = State.DONE
             return
@@ -371,6 +401,27 @@ class NPC:
             return
 
         target_col, target_row = self._path[self._path_index]
+
+        # ── NPC-to-NPC tile collision ────────────────────────────────
+        # Only block if we haven't entered the target tile yet.
+        my_tile = self.tile_pos
+        if my_tile != (target_col, target_row) and self._all_npcs:
+            for n in self._all_npcs:
+                if n.id != self.id and n.tile_pos == (target_col, target_row):
+                    self._wait_counter += 1
+                    if self._wait_counter > 30:  # ~0.5 s @ 60 fps → re-path
+                        self._wait_counter = 0
+                        dest = self._path[-1] if self._path else my_tile
+                        self._path = find_path(
+                            self._map, my_tile, dest,
+                            blocked=self._occupied_by_npcs(),
+                        )
+                        self._path_index = 0
+                        if not self._path:
+                            self.state = State.DONE
+                    return  # wait this frame
+        self._wait_counter = 0
+
         tx, ty = self._map.tile_center(target_col, target_row)
         dx, dy = tx - self.x, ty - self.y
         dist = math.hypot(dx, dy)
@@ -468,6 +519,17 @@ class NPC:
             target = self._current_action.target
             if target.reserved_by == self.id:
                 target.reserved_by = None
+
+    def _occupied_by_npcs(self) -> set[Tuple[int, int]]:
+        """Return set of tiles currently occupied by *other* NPCs."""
+        return {n.tile_pos for n in self._all_npcs if n.id != self.id}
+
+    def _entity_at_tile(self, col: int, row: int) -> Optional[Resource]:
+        """Return the first non-depleted entity sitting on (col, row), or None."""
+        for r in self._resources:
+            if r.col == col and r.row == row and not r.depleted:
+                return r
+        return None
 
     def _find_nearest(self, kind: type) -> Optional[Resource]:
         best: Optional[Resource] = None

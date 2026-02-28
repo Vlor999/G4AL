@@ -3,79 +3,122 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>G4AL – Survival</title>
+    <title>MISTRAL OS [v0.8.1]</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-    <div id="app">
-        <!-- ── Top Bar: Resources ──────────────────────────────────── -->
-        <div id="top-bar">
-            <div class="resource-item res-wood">
-                <span class="icon">🪵</span>
-                <span>Wood: <span id="res-wood">0</span></span>
-            </div>
-            <div class="resource-item res-stone">
-                <span class="icon">🪨</span>
-                <span>Stone: <span id="res-stone">0</span></span>
-            </div>
-            <div class="resource-item res-gold">
-                <span class="icon">💰</span>
-                <span>Gold: <span id="res-gold">0</span></span>
-            </div>
-            <div class="resource-item res-wheat">
-                <span class="icon">🌾</span>
-                <span>Wheat: <span id="res-wheat">0</span></span>
-            </div>
-        </div>
+    <!-- CRT scanline overlay -->
+    <div id="crt-overlay" aria-hidden="true"></div>
 
-        <!-- ── Left Panel: Selection & Actions ─────────────────────── -->
-        <div id="left-panel">
-            <div class="panel-title">Selection</div>
-            <div id="selection-info">
-                <div id="sel-placeholder" style="color: var(--text-dim); font-size: 13px;">
-                    Press "G" and talk <br> to give orders. <br> Like : "Tomas go cut some wood !"                </div>
-                <div id="sel-details" style="display:none;">
-                    <div class="npc-name-display" id="sel-name"></div>
-                    <div class="stat-row"><span>HP</span><span id="sel-hp-text"></span></div>
-                    <div class="stat-bar"><div class="stat-bar-fill bar-hp" id="sel-hp-bar"></div></div>
-                    <div class="stat-row"><span>Hunger</span><span id="sel-hunger-text"></span></div>
-                    <div class="stat-bar"><div class="stat-bar-fill bar-hunger" id="sel-hunger-bar"></div></div>
-                    <div class="stat-row"><span>State</span><span id="sel-state"></span></div>
+    <div id="app">
+
+        <!-- ══ HEADER ══════════════════════════════════════════════ -->
+        <header id="header">
+            <span class="header-title">MISTRAL OS [v0.8.1] <span class="header-sep">//</span> SYSTEM UNAUTHORIZED <span class="header-sep">//</span></span>
+            <div class="header-resources">
+                <span class="res-tag">WOOD:<span id="res-wood">0</span></span>
+                <span class="res-tag">STONE:<span id="res-stone">0</span></span>
+                <span class="res-tag">GOLD:<span id="res-gold">0</span></span>
+                <span class="res-tag">WHEAT:<span id="res-wheat">0</span></span>
+            </div>
+        </header>
+
+        <!-- ══ MAIN ════════════════════════════════════════════════ -->
+        <main id="main">
+
+            <!-- ── Left: Network Grid + Selection ────────────────── -->
+            <aside id="left-panel">
+                <div class="panel-label">NETWORK_GRID</div>
+                <div id="network-grid">
+                    <!-- 6x4 grid of nodes -->
+                    <div class="node"></div><div class="node"></div><div class="node"></div><div class="node"></div><div class="node"></div><div class="node"></div>
+                    <div class="node active"></div><div class="node"></div><div class="node"></div><div class="node"></div><div class="node"></div><div class="node"></div>
+                    <div class="node"></div><div class="node"></div><div class="node active"></div><div class="node"></div><div class="node"></div><div class="node"></div>
+                    <div class="node"></div><div class="node"></div><div class="node"></div><div class="node"></div><div class="node active"></div><div class="node"></div>
+                </div>
+
+                <div class="panel-label">UNIT_SELECT</div>
+                <div id="selection-info">
+                    <div id="sel-placeholder">
+                        &gt; Press G and talk to<br>&gt; give orders
+                    </div>
+                    <div id="sel-details" style="display:none;">
+                        <div class="npc-name-display" id="sel-name"></div>
+                        <div class="stat-row"><span>HP</span><span id="sel-hp-text"></span></div>
+                        <div class="stat-bar"><div class="stat-bar-fill bar-hp" id="sel-hp-bar"></div></div>
+                        <div class="stat-row"><span>HUNGER</span><span id="sel-hunger-text"></span></div>
+                        <div class="stat-bar"><div class="stat-bar-fill bar-hunger" id="sel-hunger-bar"></div></div>
+                        <div class="stat-row"><span>STATE</span><span id="sel-state"></span></div>
+                    </div>
+                </div>
+
+                <div class="panel-label">ACTIONS</div>
+                <div id="action-buttons">
+                    <button class="action-btn" data-action="chop_wood">[CHOP_WOOD]</button>
+                    <button class="action-btn" data-action="mine_rock">[MINE_ROCK]</button>
+                    <button class="action-btn" data-action="build">[BUILD]</button>
+                    <button class="action-btn" data-action="plant_wheat">[PLANT]</button>
+                    <button class="action-btn" data-action="collect_wheat">[COLLECT]</button>
+                    <button class="action-btn" data-action="eat">[EAT]</button>
+                </div>
+            </aside>
+
+            <!-- ── Center: Game Canvas ───────────────────────────── -->
+            <section id="canvas-container">
+                <canvas id="game-canvas"></canvas>
+            </section>
+
+            <!-- ── Right: System Stats + Roster + Log ────────────── -->
+            <aside id="right-panel">
+                <div class="panel-label">SYS_STATS</div>
+                <div id="sys-stats">
+                    <div class="stat-metric">
+                        <span class="metric-label">DATA THROUGHPUT</span>
+                        <div class="brut-bar"><div class="brut-bar-fill" style="width:72%;"></div></div>
+                        <span class="metric-val">72%</span>
+                    </div>
+                    <div class="stat-metric">
+                        <span class="metric-label">CORE POWER</span>
+                        <div class="brut-bar"><div class="brut-bar-fill" style="width:91%;"></div></div>
+                        <span class="metric-val">91%</span>
+                    </div>
+                    <div class="stat-metric">
+                        <span class="metric-label">MEM ALLOC</span>
+                        <div class="brut-bar"><div class="brut-bar-fill warn" style="width:48%;"></div></div>
+                        <span class="metric-val">48%</span>
+                    </div>
+                </div>
+
+                <div class="panel-label">ROSTER</div>
+                <div id="roster-section">
+                    <div id="roster-list"></div>
+                </div>
+
+                <div class="panel-label">EVENT_LOG</div>
+                <div id="log-section">
+                    <div id="log-messages"></div>
+                </div>
+            </aside>
+        </main>
+
+        <!-- ══ BOTTOM: Voice Terminal ══════════════════════════════ -->
+        <footer id="voice-terminal">
+            <div id="terminal-left">
+                <span class="mic-indicator">[<span class="mic-blink">MIC ACTIVE</span>]</span>
+                <span class="terminal-sep">|</span>
+                <span class="voice-transcript">VOICE_INPUT&gt; <em>"Prioritize allocation to Entry_03..."</em> <span class="cmd-status">[ACCEPTED]</span></span>
+            </div>
+            <div id="terminal-right">
+                <div id="command-section">
+                    <input type="text" id="command-input"
+                           placeholder="&gt; type command...">
                 </div>
             </div>
-
-            <div class="panel-title">Actions</div>
-            <div id="action-buttons">
-                <button class="action-btn" data-action="chop_wood">🪓 Chop Wood</button>
-                <button class="action-btn" data-action="mine_rock">⛏️ Mine Rock</button>
-                <button class="action-btn" data-action="build">🏗️ Build</button>
-                <button class="action-btn" data-action="plant_wheat">🌾 Plant</button>
-                <button class="action-btn" data-action="collect_wheat">🌿 Collect</button>
-                <button class="action-btn" data-action="eat">🍞 Eat</button>
-            </div>
-        </div>
-
-        <!-- ── Center: Game Canvas ─────────────────────────────────── -->
-        <div id="canvas-container">
-            <canvas id="game-canvas"></canvas>
-            <!-- Speech bubbles are dynamically inserted here -->
-        </div>
-
-        <!-- ── Right Panel: Roster, Log, Command ───────────────────── -->
-        <div id="right-panel">
-            <div id="roster-section">
-                <div class="panel-title">NPC Roster</div>
-                <div id="roster-list"></div>
-            </div>
-            <div id="log-section">
-                <div class="panel-title">Event Log</div>
-                <div id="log-messages"></div>
-            </div>
-            <div id="command-section">
-                <input type="text" id="command-input"
-                       placeholder="Type a command... (e.g. 'Tomas go chop wood!')">
-            </div>
-        </div>
+            <span class="cursor-blink">█</span>
+        </footer>
     </div>
 
     <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>

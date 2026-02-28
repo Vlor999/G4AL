@@ -10,6 +10,26 @@
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
+    <!-- ══ MIC PERMISSION MODAL ════════════════════════════════════ -->
+    <div id="mic-modal">
+        <div id="mic-modal-box">
+            <div class="modal-border-top"></div>
+            <div class="modal-header">SYSTEM_INIT</div>
+            <div class="modal-body">
+                <p class="modal-line">// AUDIO SUBSYSTEM REQUIRED</p>
+                <p class="modal-line dim">This application uses voice commands.<br>Microphone access is needed to proceed.</p>
+                <div class="modal-key-hint">
+                    <span class="key-badge">G</span>
+                    <span>HOLD TO TALK</span>
+                </div>
+                <button id="mic-allow-btn">[AUTHORIZE_MIC]</button>
+            </div>
+            <div class="modal-footer">
+                <span class="modal-cursor">█</span> AWAITING AUTHORIZATION...
+            </div>
+        </div>
+    </div>
+
     <!-- CRT scanline overlay -->
     <div id="crt-overlay" aria-hidden="true"></div>
 

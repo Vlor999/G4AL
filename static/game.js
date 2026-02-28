@@ -690,6 +690,32 @@ document.getElementById("command-input").addEventListener("keydown", e => {
 //  Boot
 // ═══════════════════════════════════════════════════════════════════════════
 
+// ═══════════════════════════════════════════════════════════════════════════
+//  Mic Permission Modal
+// ═══════════════════════════════════════════════════════════════════════════
+
+const micModal = document.getElementById("mic-modal");
+const micBtn   = document.getElementById("mic-allow-btn");
+
+if (micModal && micBtn) {
+    micBtn.addEventListener("click", async () => {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            // Stop tracks immediately – we just needed permission
+            stream.getTracks().forEach(t => t.stop());
+            micBtn.textContent = "[MIC AUTHORIZED]";
+            micBtn.classList.add("granted");
+            // Dismiss modal after a short delay
+            setTimeout(() => {
+                micModal.classList.add("hidden");
+            }, 600);
+        } catch (err) {
+            console.warn("Mic permission denied:", err);
+            micBtn.textContent = "[ACCESS DENIED – RETRY]";
+        }
+    });
+}
+
 // Start render loop (state arrives via WebSocket)
 requestAnimationFrame(render);
 

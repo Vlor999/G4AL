@@ -547,6 +547,156 @@ body {
 ::-webkit-scrollbar-thumb:hover { background: rgba(245, 240, 230, 0.3); }
 
 /* ═══════════════════════════════════════════════════════════════════════════
+   MIC PERMISSION MODAL
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+#mic-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(20, 20, 22, 0.92);
+    backdrop-filter: blur(4px);
+    animation: modalFadeIn 0.3s ease;
+}
+
+#mic-modal.hidden {
+    display: none;
+}
+
+@keyframes modalFadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+#mic-modal-box {
+    border: 1px solid var(--primary);
+    background: var(--bg);
+    width: 420px;
+    max-width: 90vw;
+    position: relative;
+}
+
+.modal-border-top {
+    height: 3px;
+    background: var(--accent);
+}
+
+.modal-header {
+    padding: 12px 20px;
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--primary);
+    opacity: 0.5;
+    border-bottom: 1px solid rgba(245, 240, 230, 0.12);
+}
+
+.modal-body {
+    padding: 24px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.modal-line {
+    font-size: 13px;
+    color: var(--primary);
+    line-height: 1.6;
+}
+
+.modal-line.dim {
+    opacity: 0.5;
+    font-size: 12px;
+}
+
+.modal-key-hint {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 16px;
+    border: 1px solid rgba(245, 240, 230, 0.15);
+    background: rgba(245, 240, 230, 0.03);
+}
+
+.key-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border: 2px solid var(--accent);
+    color: var(--accent);
+    font-size: 20px;
+    font-weight: 700;
+    flex-shrink: 0;
+    animation: keyPulse 2s ease-in-out infinite;
+}
+
+@keyframes keyPulse {
+    0%, 100% { box-shadow: 0 0 0 rgba(255, 107, 53, 0); }
+    50%      { box-shadow: 0 0 16px rgba(255, 107, 53, 0.35); }
+}
+
+.modal-key-hint span:last-child {
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    color: var(--primary);
+    opacity: 0.7;
+}
+
+#mic-allow-btn {
+    background: transparent;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    border-radius: 0;
+    padding: 10px 20px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+    text-transform: uppercase;
+    align-self: stretch;
+    text-align: center;
+}
+
+#mic-allow-btn:hover {
+    background: var(--accent);
+    color: var(--bg);
+}
+
+#mic-allow-btn:active {
+    background: #e05a2a;
+    color: var(--bg);
+}
+
+#mic-allow-btn.granted {
+    border-color: var(--primary);
+    color: var(--primary);
+    opacity: 0.4;
+    cursor: default;
+    pointer-events: none;
+}
+
+.modal-footer {
+    padding: 10px 20px;
+    font-size: 11px;
+    color: var(--primary);
+    opacity: 0.35;
+    border-top: 1px solid rgba(245, 240, 230, 0.08);
+    letter-spacing: 0.06em;
+}
+
+.modal-cursor {
+    color: var(--accent);
+    animation: blink 0.8s steps(2, start) infinite;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
    PTT Indicator Override (matches theme)
    ═══════════════════════════════════════════════════════════════════════════ */
 

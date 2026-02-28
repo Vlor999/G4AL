@@ -156,6 +156,7 @@ class HUD:
             ("Mine Rock", ActionType.MINE_ROCK),
             ("Build", ActionType.BUILD),
             ("Plant", ActionType.PLANT_WHEAT),
+            ("Collect", ActionType.collect_wheat),
             ("Eat", ActionType.EAT),
         ]
         for i, (label, at) in enumerate(button_defs):

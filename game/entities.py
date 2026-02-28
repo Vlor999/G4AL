@@ -9,11 +9,13 @@ import pygame
 
 from game.settings import (
     TILE_SIZE,
-    COLOR_TREE_TRUNK, COLOR_TREE_LEAVES,
-    COLOR_ROCK_BODY, COLOR_ROCK_SHADE, COLOR_GOLD,
-    TREE_WOOD_YIELD, ROCK_STONE_YIELD, ROCK_GOLD_YIELD,
-    WHEAT_YIELD, WHEAT_GROW_TIME,
+    TREE_WOOD_YIELD,
+    ROCK_STONE_YIELD,
+    ROCK_GOLD_YIELD,
+    WHEAT_YIELD,
+    WHEAT_GROW_TIME,
 )
+from game.sprites import get_sprite
 
 if TYPE_CHECKING:
     from game.map import GameMap
@@ -71,38 +73,21 @@ class Tree(Resource):
             return
         cx, cy = self.world_pos
         sx, sy = cx - camera[0], cy - camera[1]
-        # shadow
-        pygame.draw.ellipse(
-            surface,
-            (0, 0, 0, 60),
-            (sx - self._leaf_radius, sy + 4, self._leaf_radius * 2, self._leaf_radius),
+        sprite = get_sprite(
+            "tree.ppm", (self._leaf_radius * 2, self._leaf_radius * 2 + 10)
         )
-        # trunk
-        trunk_rect = pygame.Rect(
-            sx - self._trunk_w // 2,
-            sy - self._trunk_h + 6,
-            self._trunk_w,
-            self._trunk_h,
-        )
-        pygame.draw.rect(surface, COLOR_TREE_TRUNK, trunk_rect)
-        # leaves (two overlapping circles for depth)
-        pygame.draw.circle(
-            surface,
-            COLOR_TREE_LEAVES,
-            (sx, sy - self._leaf_radius // 2),
-            self._leaf_radius,
-        )
-        lighter = tuple(min(255, c + 30) for c in COLOR_TREE_LEAVES)
-        pygame.draw.circle(
-            surface,
-            lighter,
-            (sx - 4, sy - self._leaf_radius // 2 - 4),
-            self._leaf_radius - 6,
+        surface.blit(
+            sprite, (sx - sprite.get_width() // 2, sy - sprite.get_height() // 2 - 4)
         )
         # HP bar (small)
         if self.hp < self.max_hp:
             _draw_hp_bar(
-                surface, sx, sy - self._leaf_radius - 10, self.hp, self.max_hp, 30
+                surface,
+                sx,
+                sy - sprite.get_height() // 2 - 10,
+                self.hp,
+                self.max_hp,
+                30,
             )
 
 
@@ -123,21 +108,16 @@ class Rock(Resource):
             return
         cx, cy = self.world_pos
         sx, sy = cx - camera[0], cy - camera[1]
-        # main body
-        body = pygame.Rect(sx - self._w // 2, sy - self._h // 2, self._w, self._h)
-        pygame.draw.ellipse(surface, COLOR_ROCK_BODY, body)
-        # shade / highlight
-        shade = pygame.Rect(
-            sx - self._w // 2 + 4, sy - self._h // 2 + 4, self._w - 8, self._h - 8
+        sprite_name = "gold_rock.ppm" if self.has_gold else "rock.ppm"
+        sprite = get_sprite(sprite_name, (self._w, self._h + 8))
+        surface.blit(
+            sprite, (sx - sprite.get_width() // 2, sy - sprite.get_height() // 2)
         )
-        pygame.draw.ellipse(surface, COLOR_ROCK_SHADE, shade)
-        # gold sparkle
-        if self.has_gold:
-            for dx, dy in [(-6, -3), (4, 2), (-2, 5)]:
-                pygame.draw.circle(surface, COLOR_GOLD, (sx + dx, sy + dy), 3)
         # HP bar
         if self.hp < self.max_hp:
-            _draw_hp_bar(surface, sx, sy - self._h // 2 - 10, self.hp, self.max_hp, 30)
+            _draw_hp_bar(
+                surface, sx, sy - sprite.get_height() // 2 - 6, self.hp, self.max_hp, 30
+            )
 
 
 class Structure(Resource):
@@ -160,33 +140,26 @@ class Structure(Resource):
         cx, cy = self.world_pos
         sx, sy = cx - camera[0], cy - camera[1]
         half = self._size // 2
-        rect = pygame.Rect(sx - half, sy - half, self._size, self._size)
-        # foundation color
-        color = (139, 119, 101) if not self.built else (101, 67, 33)
-        pygame.draw.rect(surface, color, rect)
-        pygame.draw.rect(surface, (80, 60, 40), rect, 2)
+        if self.built:
+            sprite = get_sprite("structure.ppm", (self._size, self._size))
+        else:
+            sprite = get_sprite("construction.ppm", (self._size, self._size))
+        surface.blit(sprite, (sx - half, sy - half))
         # progress bar while building
         if not self.built:
             _draw_hp_bar(surface, sx, sy - half - 10, self.build_progress, 100, 36)
-        # roof triangle when built
-        if self.built:
-            points = [
-                (sx - half - 4, sy - half),
-                (sx + half + 4, sy - half),
-                (sx, sy - half - 18),
-            ]
-            pygame.draw.polygon(surface, (178, 34, 34), points)
 
 
 class WheatField(Resource):
     """A plantable wheat field that grows over time and can be harvested."""
+
     kind = "wheat"
 
     def __init__(self, col: int, row: int):
         # hp here is the harvest effort (how many harvest_tick calls to collect).
         # Growth is tracked separately by self.growth.
         super().__init__(col, row, hp=10, yields={"wheat": WHEAT_YIELD})
-        self.growth = 0          # 0..WHEAT_GROW_TIME
+        self.growth = 0  # 0..WHEAT_GROW_TIME
         self.fully_grown = False
         self.planted = True
 
@@ -217,26 +190,14 @@ class WheatField(Resource):
             return
         cx, cy = self.world_pos
         sx, sy = cx - camera[0], cy - camera[1]
-        half = TILE_SIZE // 2 - 4
+        size = TILE_SIZE - 8
+        half = size // 2
 
-        # ground patch
-        ground = pygame.Rect(sx - half, sy - half + 6, half * 2, half * 2 - 6)
-        pygame.draw.rect(surface, (139, 119, 80), ground, border_radius=4)
-
-        # wheat stalks – height depends on growth
-        stalk_h = int(6 + 20 * self.growth_ratio)
-        col_g = int(100 + 155 * self.growth_ratio)  # green → golden
-        col_r = int(80 + 175 * self.growth_ratio)
-        stalk_color = (col_r, col_g, 30)
-        for dx in range(-half + 4, half, 6):
-            base_x = sx + dx
-            base_y = sy + half - 2
-            pygame.draw.line(surface, stalk_color,
-                             (base_x, base_y), (base_x, base_y - stalk_h), 2)
-            # grain head when grown enough
-            if self.growth_ratio > 0.6:
-                pygame.draw.circle(surface, (218, 195, 80),
-                                   (base_x, base_y - stalk_h), 3)
+        if self.fully_grown:
+            sprite = get_sprite("wheat_grown.ppm", (size, size))
+        else:
+            sprite = get_sprite("wheat_young.ppm", (size, size))
+        surface.blit(sprite, (sx - half, sy - half))
 
         # growth bar
         if not self.fully_grown:

@@ -16,6 +16,7 @@ from game.settings import (
     UI_FONT_SIZE_LARGE,
 )
 from game.npc import ActionType, Action
+from game.sprites import get_sprite
 
 if TYPE_CHECKING:
     from game.npc import NPC
@@ -97,11 +98,11 @@ class HUD:
         bw, bh = 130, 36
         gap = 10
         button_defs = [
-            ("⛏  Chop Wood", ActionType.CHOP_WOOD),
-            ("⛏  Mine Rock", ActionType.MINE_ROCK),
-            ("🏗  Build", ActionType.BUILD),
-            ("🌾  Plant", ActionType.PLANT_WHEAT),
-            ("🍞  Eat", ActionType.EAT),
+            ("Chop Wood", ActionType.CHOP_WOOD),
+            ("Mine Rock", ActionType.MINE_ROCK),
+            ("Build", ActionType.BUILD),
+            ("Plant", ActionType.PLANT_WHEAT),
+            ("Eat", ActionType.EAT),
         ]
         for i, (label, at) in enumerate(button_defs):
             rect = pygame.Rect(bx + i * (bw + gap), by, bw, bh)
@@ -209,15 +210,20 @@ class HUD:
         rx = 20
         ry = self.panel_y + 12
         stock = storage.snapshot()
-        res_labels = [
-            (f"🪵 Wood: {stock.get('wood', 0)}", (139, 195, 74)),
-            (f"🪨 Stone: {stock.get('stone', 0)}", (189, 189, 189)),
-            (f"💰 Gold: {stock.get('gold', 0)}", (255, 215, 0)),
-            (f"🌾 Wheat: {stock.get('wheat', 0)}", (218, 195, 80)),
+        res_data = [
+            ("Wood:", stock.get("wood", 0), (139, 195, 74), "icon_wood.ppm"),
+            ("Stone:", stock.get("stone", 0), (189, 189, 189), "icon_stone.ppm"),
+            ("Gold:", stock.get("gold", 0), (255, 215, 0), "icon_gold.ppm"),
+            ("Wheat:", stock.get("wheat", 0), (218, 195, 80), "icon_wheat.ppm"),
         ]
-        for text, color in res_labels:
-            rendered = self._font_lg.render(text, True, color)
-            surface.blit(rendered, (rx, ry))
+        for label, count, color, icon in res_data:
+            # draw icon
+            sprite = get_sprite(icon, (20, 20))
+            surface.blit(sprite, (rx, ry))
+            rx += 26
+            # draw text
+            rendered = self._font_lg.render(f"{label} {count}", True, color)
+            surface.blit(rendered, (rx, ry - 2))
             rx += rendered.get_width() + 30
 
         # ── selected NPC info ────────────────────────────────────────────
@@ -235,7 +241,9 @@ class HUD:
                 surface.blit(rendered, (20, iy))
                 iy += 22
             # hunger bar in the info area
-            hunger_label = self._font.render(f"Hunger: {hunger_pct}%", True, hunger_color)
+            hunger_label = self._font.render(
+                f"Hunger: {hunger_pct}%", True, hunger_color
+            )
             surface.blit(hunger_label, (20, iy))
             bar_x = 20 + hunger_label.get_width() + 8
             bar_w, bar_h = 100, 12

@@ -25,11 +25,9 @@ from game.settings import (
     BUILD_COST_WOOD,
     BUILD_COST_STONE,
     WHEAT_PLANT_TIME,
-    COLOR_NPC_BODY,
-    COLOR_NPC_OUTLINE,
-    COLOR_NPC_SELECTED,
 )
 from game.entities import Resource, Tree, Rock, Structure, WheatField
+from game.sprites import get_sprite
 from api.roster import NPC_NAMES
 
 
@@ -566,26 +564,28 @@ class NPC:
         bob_offset = math.sin(self._bob) * 2 if self.state == State.IDLE else 0
 
         # shadow
+        shadow = pygame.Surface((self._radius * 2, self._radius), pygame.SRCALPHA)
+        shadow.fill((0, 0, 0, 0))
         pygame.draw.ellipse(
-            surface,
-            (0, 0, 0, 80),
-            (sx - self._radius, sy + self._radius - 4, self._radius * 2, self._radius),
+            shadow, (0, 0, 0, 80), (0, 0, self._radius * 2, self._radius)
         )
+        surface.blit(shadow, (sx - self._radius, sy + self._radius - 4))
 
-        # body
+        # body sprite
         body_y = sy + bob_offset
-        outline_color = COLOR_NPC_SELECTED if self.selected else COLOR_NPC_OUTLINE
-        pygame.draw.circle(
-            surface, outline_color, (int(sx), int(body_y)), self._radius + 2
-        )
-        pygame.draw.circle(
-            surface, COLOR_NPC_BODY, (int(sx), int(body_y)), self._radius
-        )
+        sprite_size = (self._radius * 2 + 4, self._radius * 2 + 4)
+        sprite = get_sprite("npc.ppm", sprite_size)
 
-        # tiny face
-        eye_y = int(body_y) - 3
-        pygame.draw.circle(surface, (50, 50, 50), (int(sx) - 4, eye_y), 2)
-        pygame.draw.circle(surface, (50, 50, 50), (int(sx) + 4, eye_y), 2)
+        # selection ring
+        if self.selected:
+            pygame.draw.circle(
+                surface, (0, 230, 118), (int(sx), int(body_y)), self._radius + 4, 2
+            )
+
+        surface.blit(
+            sprite,
+            (int(sx) - sprite.get_width() // 2, int(body_y) - sprite.get_height() // 2),
+        )
 
         # name label
         name_font = pygame.font.SysFont("consolas", 15, bold=True)

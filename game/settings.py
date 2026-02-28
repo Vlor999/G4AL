@@ -41,14 +41,23 @@ COLOR_HP_RED = (244, 67, 54)
 # ── NPC ──────────────────────────────────────────────────────────────────
 NPC_SPEED = 2.5  # pixels / frame
 NPC_MAX_HEALTH = 100
-NPC_CHOP_TIME = 90  # frames to chop a tree
-NPC_MINE_TIME = 120  # frames to mine a rock
-NPC_BUILD_TIME = 180  # frames to build a structure
+NPC_CHOP_TIME = 90      # frames to chop a tree
+NPC_MINE_TIME = 120     # frames to mine a rock
+NPC_BUILD_TIME = 180    # frames to build a structure
+NPC_HUNGER_MAX = 100
+NPC_HUNGER_DRAIN = 0.005     # hunger lost per frame (≈ 1 per ~67 frames ≈ ~1.1s at 60 fps)
+NPC_EAT_TIME = 60            # frames to eat
+NPC_EAT_RESTORE = 35         # hunger restored when eating
+EAT_WHEAT_COST = 2           # wheat consumed per eat action
+NPC_HUNGER_DAMAGE = 0.05     # HP lost per frame when hunger == 0
 
 # ── Resources ────────────────────────────────────────────────────────────
 TREE_WOOD_YIELD = 10
 ROCK_STONE_YIELD = 8
 ROCK_GOLD_YIELD = 3
+WHEAT_YIELD = 5              # wheat per fully grown field
+WHEAT_GROW_TIME = 300        # frames to grow (5 s at 60 fps)
+WHEAT_PLANT_TIME = 60        # frames to plant
 
 # ── Building ─────────────────────────────────────────────────────────────
 BUILD_COST_WOOD = 5

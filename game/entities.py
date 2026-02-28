@@ -9,14 +9,10 @@ import pygame
 
 from game.settings import (
     TILE_SIZE,
-    COLOR_TREE_TRUNK,
-    COLOR_TREE_LEAVES,
-    COLOR_ROCK_BODY,
-    COLOR_ROCK_SHADE,
-    COLOR_GOLD,
-    TREE_WOOD_YIELD,
-    ROCK_STONE_YIELD,
-    ROCK_GOLD_YIELD,
+    COLOR_TREE_TRUNK, COLOR_TREE_LEAVES,
+    COLOR_ROCK_BODY, COLOR_ROCK_SHADE, COLOR_GOLD,
+    TREE_WOOD_YIELD, ROCK_STONE_YIELD, ROCK_GOLD_YIELD,
+    WHEAT_YIELD, WHEAT_GROW_TIME,
 )
 
 if TYPE_CHECKING:
@@ -179,6 +175,76 @@ class Structure(Resource):
                 (sx, sy - half - 18),
             ]
             pygame.draw.polygon(surface, (178, 34, 34), points)
+
+
+class WheatField(Resource):
+    """A plantable wheat field that grows over time and can be harvested."""
+    kind = "wheat"
+
+    def __init__(self, col: int, row: int):
+        # hp here is the harvest effort (how many harvest_tick calls to collect).
+        # Growth is tracked separately by self.growth.
+        super().__init__(col, row, hp=10, yields={"wheat": WHEAT_YIELD})
+        self.growth = 0          # 0..WHEAT_GROW_TIME
+        self.fully_grown = False
+        self.planted = True
+
+    @property
+    def growth_ratio(self) -> float:
+        return min(1.0, self.growth / WHEAT_GROW_TIME)
+
+    def grow_tick(self):
+        """Call every frame. The field grows passively."""
+        if self.depleted or self.fully_grown:
+            return
+        self.growth += 1
+        if self.growth >= WHEAT_GROW_TIME:
+            self.fully_grown = True
+
+    def harvest_tick(self) -> Optional[dict[str, int]]:
+        """Can only harvest when fully grown."""
+        if not self.fully_grown or self.depleted:
+            return None
+        self.hp -= 1
+        if self.hp <= 0:
+            self.depleted = True
+            return dict(self.yields)
+        return None
+
+    def draw(self, surface: pygame.Surface, camera: Tuple[int, int]):
+        if self.depleted:
+            return
+        cx, cy = self.world_pos
+        sx, sy = cx - camera[0], cy - camera[1]
+        half = TILE_SIZE // 2 - 4
+
+        # ground patch
+        ground = pygame.Rect(sx - half, sy - half + 6, half * 2, half * 2 - 6)
+        pygame.draw.rect(surface, (139, 119, 80), ground, border_radius=4)
+
+        # wheat stalks – height depends on growth
+        stalk_h = int(6 + 20 * self.growth_ratio)
+        col_g = int(100 + 155 * self.growth_ratio)  # green → golden
+        col_r = int(80 + 175 * self.growth_ratio)
+        stalk_color = (col_r, col_g, 30)
+        for dx in range(-half + 4, half, 6):
+            base_x = sx + dx
+            base_y = sy + half - 2
+            pygame.draw.line(surface, stalk_color,
+                             (base_x, base_y), (base_x, base_y - stalk_h), 2)
+            # grain head when grown enough
+            if self.growth_ratio > 0.6:
+                pygame.draw.circle(surface, (218, 195, 80),
+                                   (base_x, base_y - stalk_h), 3)
+
+        # growth bar
+        if not self.fully_grown:
+            _draw_hp_bar(surface, sx, sy - half - 4, self.growth, WHEAT_GROW_TIME, 30)
+        elif self.fully_grown and not self.depleted:
+            # "ready" indicator
+            font = pygame.font.SysFont(None, 14)
+            ready = font.render("READY", True, (255, 230, 80))
+            surface.blit(ready, (sx - ready.get_width() // 2, sy - half - 10))
 
 
 # ── helpers ──────────────────────────────────────────────────────────────

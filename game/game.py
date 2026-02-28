@@ -19,6 +19,7 @@ from game.map import GameMap
 from game.entities import Resource, spawn_resources
 from game.storage import ResourceStorage
 from game.npc import NPC, Action, ActionType
+from game.entities import WheatField
 from game.camera import Camera
 from game.ui import HUD
 from api.voice import VoiceRecorder
@@ -114,6 +115,9 @@ class Game:
         "mine_rock": ActionType.MINE_ROCK,
         "build": ActionType.BUILD,
         "move_to": ActionType.MOVE_TO,
+        "eat": ActionType.EAT,
+        "plant_wheat": ActionType.PLANT_WHEAT,
+        "collect_wheat": ActionType.collect_wheat,
     }
 
     def _on_player_command(self, text: str):
@@ -166,6 +170,8 @@ class Game:
             action_type = self._ACTION_MAP.get(order.action)
             if action_type:
                 if action_type == ActionType.BUILD:
+                    npc.enqueue(Action(action_type, target=npc.tile_pos))
+                elif action_type == ActionType.PLANT_WHEAT:
                     npc.enqueue(Action(action_type, target=npc.tile_pos))
                 else:
                     npc.enqueue(Action(action_type))
@@ -283,6 +289,11 @@ class Game:
 
         for npc in self.npcs:
             npc.update()
+
+        # grow wheat fields
+        for r in self.resources:
+            if isinstance(r, WheatField):
+                r.grow_tick()
 
     # ── draw ─────────────────────────────────────────────────────────────
 

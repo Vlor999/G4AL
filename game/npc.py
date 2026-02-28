@@ -11,6 +11,12 @@ from typing import List, Tuple, Optional
 import pygame
 
 from game.settings import (
+    NPC_HUNGER_MAX,
+    NPC_HUNGER_DRAIN,
+    NPC_HUNGER_DAMAGE,
+    NPC_EAT_TIME,
+    NPC_EAT_RESTORE,
+    EAT_WHEAT_COST,
     NPC_SPEED,
     NPC_MAX_HEALTH,
     NPC_CHOP_TIME,
@@ -18,11 +24,12 @@ from game.settings import (
     NPC_BUILD_TIME,
     BUILD_COST_WOOD,
     BUILD_COST_STONE,
+    WHEAT_PLANT_TIME,
     COLOR_NPC_BODY,
     COLOR_NPC_OUTLINE,
     COLOR_NPC_SELECTED,
 )
-from game.entities import Resource, Tree, Rock, Structure
+from game.entities import Resource, Tree, Rock, Structure, WheatField
 from api.roster import NPC_NAMES
 
 
@@ -47,7 +54,10 @@ class ActionType(Enum):
     CHOP_WOOD = "chop_wood"
     MINE_ROCK = "mine_rock"
     BUILD = "build"
-    MOVE_TO = "move_to"  # explicit move order
+    MOVE_TO = "move_to"
+    EAT = "eat"
+    PLANT_WHEAT = "plant_wheat"
+    collect_wheat = "collect_wheat"
 
 
 class Action:
@@ -173,6 +183,8 @@ class NPC:
         self.health = NPC_MAX_HEALTH
         self.max_health = NPC_MAX_HEALTH
         self.speed = NPC_SPEED
+        self.hunger = NPC_HUNGER_MAX
+        self.max_hunger = NPC_HUNGER_MAX
 
         # FSM
         self.state = State.IDLE
@@ -223,6 +235,11 @@ class NPC:
         # speech bubble countdown
         if self._speech_timer > 0:
             self._speech_timer -= 1
+
+        # hunger drain
+        self.hunger = max(0.0, self.hunger - NPC_HUNGER_DRAIN)
+        if self.hunger <= 0:
+            self.health = max(0, self.health - NPC_HUNGER_DAMAGE)
 
         if self.state == State.IDLE:
             self._bob += 0.05
@@ -298,6 +315,40 @@ class NPC:
             else:
                 self.state = State.DONE
 
+        elif action.action_type == ActionType.EAT:
+            # Consume wheat from global storage, no movement needed
+            if self._storage.get("wheat") < EAT_WHEAT_COST:
+                self.say("No wheat to eat!", 120)
+                self.state = State.DONE
+                return
+            self._storage.spend("wheat", EAT_WHEAT_COST)
+            self._perform_timer = 0
+            self._perform_duration = NPC_EAT_TIME
+            self.state = State.PERFORMING
+
+        elif action.action_type == ActionType.PLANT_WHEAT:
+            # Plant a new wheat field at the given tile or NPC's tile
+            if isinstance(action.target, tuple):
+                col, row = action.target
+            else:
+                col, row = self.tile_pos
+            if not self._map.is_walkable(col, row):
+                self.state = State.DONE
+                return
+            field = WheatField(col, row)
+            self._resources.append(field)
+            action.target = field
+            self._plan_move_to(col, row)
+
+        elif action.action_type == ActionType.collect_wheat:
+            target = action.target or self._find_nearest_ready_wheat()
+            if target is None:
+                self.say("No wheat ready!", 120)
+                self.state = State.DONE
+                return
+            action.target = target
+            self._plan_move_to(target.col, target.row)
+
     def _plan_move_to(self, col: int, row: int):
         start = self.tile_pos
         path = find_path(self._map, start, (col, row))
@@ -345,6 +396,14 @@ class NPC:
             self._perform_timer = 0
             self._perform_duration = NPC_BUILD_TIME
             self.state = State.PERFORMING
+        elif at == ActionType.PLANT_WHEAT:
+            self._perform_timer = 0
+            self._perform_duration = WHEAT_PLANT_TIME
+            self.state = State.PERFORMING
+        elif at == ActionType.collect_wheat:
+            self._perform_timer = 0
+            self._perform_duration = NPC_CHOP_TIME
+            self.state = State.PERFORMING
         elif at == ActionType.MOVE_TO:
             self.state = State.DONE
         else:
@@ -373,6 +432,25 @@ class NPC:
                     if target.built:
                         self.state = State.DONE
                         return
+            elif self._current_action.action_type == ActionType.collect_wheat:
+                if isinstance(target, WheatField) and target.fully_grown:
+                    result = target.harvest_tick()
+                    if result:
+                        for res, amt in result.items():
+                            self._storage.add(res, amt)
+                        self.state = State.DONE
+                        return
+
+        # EAT action completes on timer
+        if (
+            self._current_action
+            and self._current_action.action_type == ActionType.EAT
+            and self._perform_timer >= self._perform_duration
+        ):
+            self.hunger = min(self.max_hunger, self.hunger + NPC_EAT_RESTORE)
+            self.say("Mmm, delicious!", 90)
+            self.state = State.DONE
+            return
 
         if self._perform_timer >= self._perform_duration:
             self.state = State.DONE
@@ -384,6 +462,17 @@ class NPC:
         best_dist = float("inf")
         for r in self._resources:
             if isinstance(r, kind) and not r.depleted:
+                d = abs(r.col - self.tile_pos[0]) + abs(r.row - self.tile_pos[1])
+                if d < best_dist:
+                    best_dist = d
+                    best = r
+        return best
+
+    def _find_nearest_ready_wheat(self) -> Optional[WheatField]:
+        best: Optional[WheatField] = None
+        best_dist = float("inf")
+        for r in self._resources:
+            if isinstance(r, WheatField) and r.fully_grown and not r.depleted:
                 d = abs(r.col - self.tile_pos[0]) + abs(r.row - self.tile_pos[1])
                 if d < best_dist:
                     best_dist = d
@@ -458,9 +547,23 @@ class NPC:
                 28,
             )
 
+        # Hunger bar (always visible, below shadow)
+        self._draw_hunger_bar(surface, int(sx), int(sy) + self._radius + 4)
+
         # speech bubble
         if self._speech_timer > 0 and self._speech_text:
             self._draw_speech_bubble(surface, sx, sy + bob_offset)
+
+    def _draw_hunger_bar(self, surface: pygame.Surface, cx: int, top_y: int):
+        """Small hunger bar below the NPC sprite."""
+        w, h = 24, 4
+        ratio = max(0.0, self.hunger / self.max_hunger)
+        bg = pygame.Rect(cx - w // 2, top_y, w, h)
+        fg = pygame.Rect(cx - w // 2, top_y, int(w * ratio), h)
+        pygame.draw.rect(surface, (60, 60, 60), bg)
+        # orange when healthy, red when starving
+        bar_color = (255, 152, 0) if ratio > 0.25 else (244, 67, 54)
+        pygame.draw.rect(surface, bar_color, fg)
 
     def _draw_speech_bubble(self, surface: pygame.Surface, sx: float, sy: float):
         """Draw a comic-style speech bubble above the NPC."""

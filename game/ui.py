@@ -100,6 +100,8 @@ class HUD:
             ("⛏  Chop Wood", ActionType.CHOP_WOOD),
             ("⛏  Mine Rock", ActionType.MINE_ROCK),
             ("🏗  Build", ActionType.BUILD),
+            ("🌾  Plant", ActionType.PLANT_WHEAT),
+            ("🍞  Eat", ActionType.EAT),
         ]
         for i, (label, at) in enumerate(button_defs):
             rect = pygame.Rect(bx + i * (bw + gap), by, bw, bh)
@@ -169,9 +171,11 @@ class HUD:
     ):
         for npc in npcs:
             if action_type == ActionType.BUILD:
-                # build at NPC's current tile by default
                 target = build_col_row or npc.tile_pos
                 npc.enqueue(Action(ActionType.BUILD, target=target))
+            elif action_type == ActionType.PLANT_WHEAT:
+                target = build_col_row or npc.tile_pos
+                npc.enqueue(Action(ActionType.PLANT_WHEAT, target=target))
             else:
                 npc.enqueue(Action(action_type))
 
@@ -209,6 +213,7 @@ class HUD:
             (f"🪵 Wood: {stock.get('wood', 0)}", (139, 195, 74)),
             (f"🪨 Stone: {stock.get('stone', 0)}", (189, 189, 189)),
             (f"💰 Gold: {stock.get('gold', 0)}", (255, 215, 0)),
+            (f"🌾 Wheat: {stock.get('wheat', 0)}", (218, 195, 80)),
         ]
         for text, color in res_labels:
             rendered = self._font_lg.render(text, True, color)
@@ -218,6 +223,8 @@ class HUD:
         # ── selected NPC info ────────────────────────────────────────────
         if selected_npcs:
             npc = selected_npcs[0]
+            hunger_pct = int(npc.hunger / npc.max_hunger * 100)
+            hunger_color = (255, 152, 0) if hunger_pct > 25 else (244, 67, 54)
             info_lines = [
                 f"{npc.name} (#{npc.id})  HP: {npc.health}/{npc.max_health}",
                 f"State: {npc.state.name}   Queue: {npc.queue_size}",
@@ -227,6 +234,15 @@ class HUD:
                 rendered = self._font.render(line, True, COLOR_UI_TEXT)
                 surface.blit(rendered, (20, iy))
                 iy += 22
+            # hunger bar in the info area
+            hunger_label = self._font.render(f"Hunger: {hunger_pct}%", True, hunger_color)
+            surface.blit(hunger_label, (20, iy))
+            bar_x = 20 + hunger_label.get_width() + 8
+            bar_w, bar_h = 100, 12
+            pygame.draw.rect(surface, (60, 60, 60), (bar_x, iy + 3, bar_w, bar_h))
+            fill_w = int(bar_w * npc.hunger / npc.max_hunger)
+            if fill_w > 0:
+                pygame.draw.rect(surface, hunger_color, (bar_x, iy + 3, fill_w, bar_h))
         else:
             hint = self._font.render(
                 "Click an NPC to select it, then give orders.", True, (180, 180, 180)

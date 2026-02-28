@@ -10,7 +10,8 @@ class ResourceStorage:
         self._stock: dict[str, int] = {
             "wood": 0,
             "stone": 0,
-            "gold": 0,
+            "gold":  0,
+            "wheat": 0,
         }
 
     # ── public API ───────────────────────────────────────────────────────
@@ -39,6 +40,10 @@ class ResourceStorage:
     @property
     def gold(self) -> int:
         return self._stock["gold"]
+
+    @property
+    def wheat(self) -> int:
+        return self._stock["wheat"]
 
     def snapshot(self) -> dict[str, int]:
         return dict(self._stock)

@@ -253,7 +253,8 @@ class NPC:
             self._perform()
 
         elif self.state == State.DONE:
-            # finished current action, try next
+            # finished current action, release reservation and try next
+            self._release_reservation()
             self._current_action = None
             if self.action_queue:
                 self._next_action()
@@ -266,6 +267,8 @@ class NPC:
         if not self.action_queue:
             self.state = State.IDLE
             return
+        # release any previous reservation
+        self._release_reservation()
         action = self.action_queue.popleft()
         self._current_action = action
 
@@ -275,6 +278,7 @@ class NPC:
                 self.state = State.DONE
                 return
             action.target = target
+            target.reserved_by = self.id
             self._plan_move_to(target.col, target.row)
 
         elif action.action_type == ActionType.MINE_ROCK:
@@ -283,6 +287,7 @@ class NPC:
                 self.state = State.DONE
                 return
             action.target = target
+            target.reserved_by = self.id
             self._plan_move_to(target.col, target.row)
 
         elif action.action_type == ActionType.BUILD:
@@ -457,11 +462,21 @@ class NPC:
 
     # ── queries ──────────────────────────────────────────────────────────
 
+    def _release_reservation(self):
+        """Release the resource reservation held by this NPC, if any."""
+        if self._current_action and isinstance(self._current_action.target, Resource):
+            target = self._current_action.target
+            if target.reserved_by == self.id:
+                target.reserved_by = None
+
     def _find_nearest(self, kind: type) -> Optional[Resource]:
         best: Optional[Resource] = None
         best_dist = float("inf")
         for r in self._resources:
             if isinstance(r, kind) and not r.depleted:
+                # skip resources already reserved by another NPC
+                if r.reserved_by is not None and r.reserved_by != self.id:
+                    continue
                 d = abs(r.col - self.tile_pos[0]) + abs(r.row - self.tile_pos[1])
                 if d < best_dist:
                     best_dist = d

@@ -31,6 +31,7 @@ class Resource:
         self.max_hp = hp
         self.yields = yields  # {"wood": 10, …}
         self.depleted = False
+        self.reserved_by: int | None = None  # NPC id that claimed this resource
 
     @property
     def world_pos(self) -> Tuple[float, float]:

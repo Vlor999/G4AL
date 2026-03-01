@@ -85,7 +85,7 @@ def _build_roster_table() -> str:
 
 _client: Mistral | None = None
 TEXT_MODEL = "mistral-small-latest"
-AUDIO_MODEL = "voxtral-mini-latest"
+AUDIO_MODEL = "voxtral-small-latest"
 
 
 def _get_client() -> Mistral:
@@ -125,8 +125,6 @@ Your job:
 
 ─── Rules ───
 • A single command can produce **multiple actions** targeting different (or the same) NPCs.
-• **IMPORTANT: Every voice line MUST be in the exact same language as the player's command.** \
-  If they speak or write in French, reply in French. If Spanish, reply in Spanish. Always match the input language.
 • If the NPC name is misspelled, abbreviated, or mispronounced, do your best to match it.
 • If you truly cannot determine the NPC, pick the first idle NPC from the roster.
 • The voice line MUST reflect the NPC's unique personality.

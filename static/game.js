@@ -167,8 +167,6 @@
     let camX = 0, camY = 0;
     const keysDown = new Set();
 
-    // ── Sound Manager ───────────────────────────────────────────────────────
-    const soundManager = new SoundManager();
 
     // Canvas refs
     const canvas = document.getElementById("game-canvas");
@@ -1013,20 +1011,6 @@
         }
         e.stopPropagation(); // prevent camera from moving
     });
-
-    // ═══════════════════════════════════════════════════════════════════════════
-    //  Sound: Volume Slider Wiring
-    // ═══════════════════════════════════════════════════════════════════════════
-
-    const volSlider = document.getElementById("vol-music");
-    const volVal = document.getElementById("vol-music-val");
-    if (volSlider && volVal) {
-        volSlider.addEventListener("input", () => {
-            const v = parseInt(volSlider.value);
-            volVal.textContent = v;
-            soundManager.volume = v / 100;
-        });
-    }
 
     // ═══════════════════════════════════════════════════════════════════════════
     //  Boot

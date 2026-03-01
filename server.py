@@ -145,7 +145,7 @@ class GameEngine:
                     entity_tiles.add((c, r))
                     archer_placed += 1
                     if archer_placed >= 2:
-                        return
+                        break
             if archer_placed >= 2:
                 return
 
@@ -153,8 +153,28 @@ class GameEngine:
         """Spawn autonomous creatures (sheep, wild archers, etc.)."""
         self.fauna = spawn_fauna(
             self.game_map, self.resources,
-            sheep_count=6, wild_archer_count=3,
+            sheep_count=6, wild_archer_count=0,
         )
+
+        # Spawn 3 enemy wild archers in the bottom-right corner
+        br_col = self.game_map.cols - 3
+        br_row = self.game_map.rows - 3
+        occupied = {(r.col, r.row) for r in self.resources}
+        br_placed = 0
+        for dc in range(-3, 4):
+            for dr in range(-3, 4):
+                c, r = br_col + dc, br_row + dr
+                if self.game_map.is_walkable(c, r) and (c, r) not in occupied:
+                    wx, wy = self.game_map.tile_center(c, r)
+                    wa = WildArcher(wx, wy, self.game_map, self.resources)
+                    self.fauna.append(wa)
+                    occupied.add((c, r))
+                    br_placed += 1
+                    if br_placed >= 3:
+                        break
+            if br_placed >= 3:
+                break
+
         # Give archers references to fauna list and shared arrows
         for npc in self.npcs:
             if isinstance(npc, Archer):

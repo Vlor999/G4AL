@@ -535,6 +535,9 @@ class NPC:
                 if isinstance(target, Structure):
                     target.build_tick()
                     if target.built:
+                        # Houses increase global storage capacity
+                        if target.building_type == "house1":
+                            self._storage.register_house()
                         self.state = State.DONE
                         return
 
@@ -607,6 +610,15 @@ class NPC:
             self._last_harvest_target = None
             self._current_action = None
             self._next_action()
+            return
+
+        # If storage is full, stop collecting and go idle
+        if self._storage.is_full:
+            self.say("Storage is full!", 180)
+            self._last_harvest_action = None
+            self._last_harvest_target = None
+            self._current_action = None
+            self.state = State.IDLE
             return
 
         # Auto-loop: go back to the same (or a new) resource

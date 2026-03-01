@@ -76,6 +76,10 @@ WILD_ARCHER_SHOOT_TIME = 80  # frames between shots (~1.3 s)
 STORAGE_HUT_COL = MAP_COLS // 2 - 1   # tile column of the hut origin
 STORAGE_HUT_ROW = MAP_ROWS // 2 + 1   # tile row    of the hut origin
 
+# ── Storage capacity ─────────────────────────────────────────────────────
+STORAGE_BASE_CAPACITY  = 50   # max total resource units in the initial hut
+HOUSE_CAPACITY_BONUS   = 20   # extra capacity per completed house
+
 # ── Building ─────────────────────────────────────────────────────────────
 BUILD_COST_WOOD = 5
 BUILD_COST_STONE = 3

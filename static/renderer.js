@@ -424,7 +424,7 @@
                         ctx.moveTo(sx - 24, sy - 20); ctx.lineTo(sx + 24, sy - 20); ctx.lineTo(sx, sy - 38);
                         ctx.closePath(); ctx.fill();
                     }
-                    // Storage Hut label (pixel-art style)
+                    // Storage Hut label (pixel-art style) + capacity
                     if (isHut) {
                         const label = "STORAGE HUT";
                         const ly = sy - ts * 2.15;
@@ -440,6 +440,25 @@
                         ctx.fillStyle = "#f5deb3";
                         ctx.fillText(label, sx, ly);
                         ctx.letterSpacing = "0px";
+
+                        // capacity bar under the label
+                        if (G.gameState && G.gameState.storage) {
+                            const used = G.gameState.storage.total || 0;
+                            const cap  = G.gameState.storage.capacity || 50;
+                            const ratio = cap > 0 ? Math.min(1, used / cap) : 0;
+                            const barW = 44, barH = 4;
+                            const bx = sx - barW / 2, by = ly + 4;
+                            ctx.fillStyle = "#1a1008";
+                            ctx.fillRect(bx - 1, by - 1, barW + 2, barH + 2);
+                            ctx.fillStyle = "#333";
+                            ctx.fillRect(bx, by, barW, barH);
+                            ctx.fillStyle = ratio >= 1 ? "#e74c3c" : ratio >= 0.8 ? "#f39c12" : "#8bc34a";
+                            ctx.fillRect(bx, by, barW * ratio, barH);
+                            // capacity text
+                            ctx.font = "bold 7px Consolas, monospace";
+                            ctx.fillStyle = "#fff";
+                            ctx.fillText(used + "/" + cap, sx, by + barH + 8);
+                        }
                     }
                 } else {
                     if (houseSpr) {

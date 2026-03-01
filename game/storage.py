@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from game.settings import STORAGE_BASE_CAPACITY, HOUSE_CAPACITY_BONUS
+
 
 class ResourceStorage:
     """Singleton-like global inventory for the settlement."""
@@ -13,11 +15,40 @@ class ResourceStorage:
             "gold":  0,
             "wheat": 0,
         }
+        self._house_count: int = 0  # completed houses (excluding storage hut)
+
+    # ── capacity ─────────────────────────────────────────────────────────
+
+    @property
+    def capacity(self) -> int:
+        """Maximum total resource units that can be stored."""
+        return STORAGE_BASE_CAPACITY + self._house_count * HOUSE_CAPACITY_BONUS
+
+    @property
+    def total(self) -> int:
+        """Current total resource units stored."""
+        return sum(self._stock.values())
+
+    @property
+    def is_full(self) -> bool:
+        return self.total >= self.capacity
+
+    @property
+    def remaining_space(self) -> int:
+        return max(0, self.capacity - self.total)
+
+    def register_house(self):
+        """Call when a new house is completed to increase capacity."""
+        self._house_count += 1
 
     # ── public API ───────────────────────────────────────────────────────
-    def add(self, resource: str, amount: int):
+    def add(self, resource: str, amount: int) -> int:
+        """Add resources. Returns the amount actually stored (may be capped)."""
         self._stock.setdefault(resource, 0)
-        self._stock[resource] += amount
+        space = self.remaining_space
+        actual = min(amount, space)
+        self._stock[resource] += actual
+        return actual
 
     def spend(self, resource: str, amount: int) -> bool:
         """Try to spend. Returns True on success, False if insufficient."""
@@ -45,8 +76,13 @@ class ResourceStorage:
     def wheat(self) -> int:
         return self._stock["wheat"]
 
-    def snapshot(self) -> dict[str, int]:
-        return dict(self._stock)
+    def snapshot(self) -> dict:
+        return {
+            **self._stock,
+            "capacity": self.capacity,
+            "total": self.total,
+            "houseCount": self._house_count,
+        }
 
     def __repr__(self):
-        return f"Storage({self._stock})"
+        return f"Storage({self._stock}, cap={self.capacity})"

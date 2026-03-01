@@ -28,6 +28,16 @@
         document.getElementById("res-gold").textContent = G.gameState.storage.gold || 0;
         document.getElementById("res-wheat").textContent = G.gameState.storage.wheat || 0;
 
+        // Storage capacity
+        const used = G.gameState.storage.total || 0;
+        const cap  = G.gameState.storage.capacity || 50;
+        document.getElementById("storage-used").textContent = used;
+        document.getElementById("storage-cap").textContent = cap;
+        const pct = cap > 0 ? Math.min(100, (used / cap) * 100) : 0;
+        const capBar = document.getElementById("storage-cap-bar");
+        capBar.style.width = pct + "%";
+        capBar.style.background = pct >= 100 ? "#e74c3c" : pct >= 80 ? "#f39c12" : "#f5deb3";
+
         // Selection panel
         const sel = G.gameState.npcs.find(n => n.id === G.selectedId);
         const unitSection = document.getElementById("unit-select-section");

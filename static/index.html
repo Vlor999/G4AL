@@ -154,6 +154,13 @@
             <aside id="left-panel">
 
                 <div class="panel-label">INVENTORY</div>
+                <!-- Storage capacity bar -->
+                <div id="storage-cap-row" style="display:flex;align-items:center;gap:6px;margin-bottom:6px;font-size:11px;color:#ccc;">
+                    <span style="white-space:nowrap;">📦 <span id="storage-used">0</span> / <span id="storage-cap">50</span></span>
+                    <div style="flex:1;height:6px;background:#333;border-radius:3px;overflow:hidden;">
+                        <div id="storage-cap-bar" style="height:100%;width:0%;background:#f5deb3;border-radius:3px;transition:width .3s;"></div>
+                    </div>
+                </div>
                 <div id="inventory-grid">
                     <div class="inv-item">
                         <span class="inv-icon">🪵</span>

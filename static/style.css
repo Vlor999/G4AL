@@ -467,6 +467,11 @@ body {
     padding-top: 6px;
 }
 
+.roster-entry.enemy-count {
+    color: #ef5350;
+    opacity: 0.65;
+}
+
 /* ── Event Log ───────────────────────────────────────────────────────────── */
 
 #log-section {

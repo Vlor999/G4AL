@@ -38,17 +38,23 @@
             btn.disabled = !G.selectedId;
         });
 
-        // Roster – only show controllable units (pawns)
+        // Roster – only show controllable units (pawns + archers)
         const rosterEl = document.getElementById("roster-list");
-        const pawns = G.gameState.npcs.filter(n => n.controllable !== false);
-        const faunaCount = G.gameState.fauna ? G.gameState.fauna.length : 0;
-        let rosterHTML = pawns.map(n => {
+        const units = G.gameState.npcs.filter(n => n.controllable !== false);
+        const fauna = G.gameState.fauna || [];
+        const sheepCount = fauna.filter(f => f.kind === "sheep").length;
+        const wildArcherCount = fauna.filter(f => f.kind === "wild_archer").length;
+        let rosterHTML = units.map(n => {
             const cls = n.selected ? "roster-entry selected" : "roster-entry";
             const marker = n.selected ? "\u25b8 " : "  ";
-            return `<div class="${cls}" data-npc-id="${n.id}">${marker}${n.name}<span class="state-badge">${n.state}</span></div>`;
+            const icon = n.kind === "archer" ? "\ud83c\udff9 " : "";
+            return `<div class="${cls}" data-npc-id="${n.id}">${marker}${icon}${n.name}<span class="state-badge">${n.state}</span></div>`;
         }).join("");
-        if (faunaCount > 0) {
-            rosterHTML += `<div class="roster-entry fauna-count">\ud83d\udc11 ${faunaCount} fauna</div>`;
+        if (sheepCount > 0) {
+            rosterHTML += `<div class="roster-entry fauna-count">\ud83d\udc11 ${sheepCount} sheep</div>`;
+        }
+        if (wildArcherCount > 0) {
+            rosterHTML += `<div class="roster-entry fauna-count enemy-count">\ud83c\udff9 ${wildArcherCount} enemies</div>`;
         }
         if (rosterEl.innerHTML !== rosterHTML) rosterEl.innerHTML = rosterHTML;
 

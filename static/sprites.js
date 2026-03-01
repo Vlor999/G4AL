@@ -178,6 +178,18 @@ window.G4AL = window.G4AL || {};
             loadImg("sheep_move",  "Terrain/Resources/Meat/Sheep/Sheep_Move.png"),
             loadImg("sheep_grass", "Terrain/Resources/Meat/Sheep/Sheep_Grass.png"),
 
+            // Blue Archer sprites (playable)
+            loadImg("archer_idle",  "Units/Blue Units/Archer/Archer_Idle.png"),
+            loadImg("archer_run",   "Units/Blue Units/Archer/Archer_Run.png"),
+            loadImg("archer_shoot", "Units/Blue Units/Archer/Archer_Shoot.png"),
+            loadImg("archer_arrow", "Units/Blue Units/Archer/Arrow.png"),
+
+            // Red Archer sprites (wild / enemy)
+            loadImg("red_archer_idle",  "Units/Red Units/Archer/Archer_Idle.png"),
+            loadImg("red_archer_run",   "Units/Red Units/Archer/Archer_Run.png"),
+            loadImg("red_archer_shoot", "Units/Red Units/Archer/Archer_Shoot.png"),
+            loadImg("red_archer_arrow", "Units/Red Units/Archer/Arrow.png"),
+
             // Le Chat – 27 individual frames
             ...Array.from({ length: 27 }, (_, i) =>
                 loadImg("lechat_" + i, "lechat/frame_" + String(i).padStart(3, "0") + ".png")

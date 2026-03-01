@@ -497,6 +497,19 @@
             return { spr: spr.pawn_idle_wood || spr.pawn_idle, frames: G.cfgFrames("pawn_idle_wood", 8), speed: G.cfgSpeed("pawn_idle_wood", "normal") };
         }
 
+        // ── Archer (playable, Blue) ─────────────────────────────────────
+        if (npc.kind === "archer") {
+            if (st === "MOVING") {
+                return { spr: spr.archer_run, frames: G.cfgFrames("archer_run", 4), speed: G.cfgSpeed("archer_run", "fast") };
+            }
+            if (st === "PERFORMING") {
+                return { spr: spr.archer_shoot, frames: G.cfgFrames("archer_shoot", 8), speed: G.cfgSpeed("archer_shoot", "fast") };
+            }
+            // IDLE / DONE
+            return { spr: spr.archer_idle, frames: G.cfgFrames("archer_idle", 6), speed: G.cfgSpeed("archer_idle", "normal") };
+        }
+
+        // ── Pawn (default) ──────────────────────────────────────────────
         if (st === "MOVING") {
             switch (act) {
                 case "chop_wood":  return { spr: spr.pawn_run_axe  || spr.pawn_run, frames: G.cfgFrames("pawn_run_axe", 6), speed: G.cfgSpeed("pawn_run_axe", "fast") };
@@ -616,6 +629,19 @@
 
         if (f.kind === "cat") return null;  // cat uses individual frames
 
+        // ── Wild Archer (Red) ───────────────────────────────────────────
+        if (f.kind === "wild_archer") {
+            if (st === "SHOOTING") {
+                return { spr: spr.red_archer_shoot, frames: G.cfgFrames("archer_shoot", 8), speed: G.cfgSpeed("archer_shoot", "fast") };
+            }
+            if (st === "WANDERING") {
+                return { spr: spr.red_archer_run, frames: G.cfgFrames("archer_run", 4), speed: G.cfgSpeed("archer_run", "fast") };
+            }
+            // IDLE
+            return { spr: spr.red_archer_idle, frames: G.cfgFrames("archer_idle", 6), speed: G.cfgSpeed("archer_idle", "normal") };
+        }
+
+        // ── Sheep ───────────────────────────────────────────────────────
         if (st === "GRAZING") {
             return {
                 spr: spr.sheep_grass,
@@ -641,6 +667,11 @@
     function drawFauna(ctx, f, sx, sy) {
         if (f.kind === "cat") {
             drawCat(ctx, f, sx, sy);
+            return;
+        }
+
+        if (f.kind === "wild_archer") {
+            drawWildArcher(ctx, f, sx, sy);
             return;
         }
 
@@ -710,6 +741,53 @@
         ctx.font = "bold 10px Consolas"; ctx.textAlign = "center";
         ctx.fillStyle = "rgba(0,0,0,0.6)"; ctx.fillText(f.name, sx + 1, sy - SIZE + 10);
         ctx.fillStyle = "#fff"; ctx.fillText(f.name, sx, sy - SIZE + 9);
+    }
+
+    // ── Draw Wild Archer (Red team, fauna) ──────────────────────────────
+
+    function drawWildArcher(ctx, f, sx, sy) {
+        const spr = G.sprites;
+        const SIZE = 64;
+        const HALF = SIZE / 2;
+        const facingRight = G.updateFacing(f);
+
+        // Shadow
+        if (spr.shadow) {
+            ctx.globalAlpha = 0.25;
+            ctx.drawImage(spr.shadow, 0, 0, 192, 192, sx - HALF * 0.7, sy - 4, SIZE * 0.7, SIZE * 0.35);
+            ctx.globalAlpha = 1;
+        } else {
+            ctx.fillStyle = "rgba(0,0,0,0.25)";
+            ctx.beginPath(); ctx.ellipse(sx, sy, HALF * 0.6, HALF * 0.25, 0, 0, Math.PI * 2); ctx.fill();
+        }
+
+        // Sprite
+        const info = getFaunaSpriteInfo(f);
+        const frame = G.spriteFrame(info.frames, info.speed, f.id);
+        const spriteDrawn = info.spr && G.drawSpriteFrame(ctx, info.spr, frame, info.frames,
+            sx - HALF, sy - SIZE + 10, SIZE, SIZE, !facingRight);
+
+        if (!spriteDrawn) {
+            // Fallback: red circle
+            ctx.fillStyle = "#c62828";
+            ctx.beginPath(); ctx.arc(sx, sy - 14, 14, 0, Math.PI * 2); ctx.fill();
+            ctx.strokeStyle = "#b71c1c"; ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.arc(sx, sy - 14, 14, 0, Math.PI * 2); ctx.stroke();
+        }
+
+        // Name (red tint)
+        ctx.font = "bold 11px Consolas"; ctx.textAlign = "center";
+        ctx.fillStyle = "rgba(0,0,0,0.7)"; ctx.fillText(f.name, sx + 1, sy - SIZE + 4);
+        ctx.fillStyle = "#ff8a80"; ctx.fillText(f.name, sx, sy - SIZE + 3);
+
+        // State
+        ctx.font = "9px Consolas"; ctx.fillStyle = "#ffab91";
+        ctx.fillText(f.state, sx, sy - SIZE + 14);
+
+        // HP bar
+        if (f.health < f.maxHealth) {
+            drawBar(ctx, sx, sy - SIZE - 2, 28, 4, f.health / f.maxHealth, "#ef5350");
+        }
     }
 
     // ── Drawing helpers ─────────────────────────────────────────────────

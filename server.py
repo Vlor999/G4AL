@@ -39,8 +39,8 @@ from game.settings import (
 from game.map import GameMap
 from game.entities import Resource, spawn_resources, Rock, Structure, WheatField
 from game.storage import ResourceStorage
-from game.npc import NPC, Action, ActionType
-from game.creatures import Fauna, Sheep, spawn_fauna
+from game.npc import NPC, Action, ActionType, Archer
+from game.creatures import Fauna, Sheep, WildArcher, spawn_fauna
 from api.logger import pipeline_logger
 from api.tts import TTSEngine
 
@@ -123,16 +123,34 @@ class GameEngine:
                     entity_tiles.add((c, r))
                     placed += 1
                     if placed >= count:
+                        break
+            if placed >= count:
+                break
+
+        # Spawn 2 playable archers near the starting position
+        archer_placed = 0
+        for dc in range(-4, 5):
+            for dr in range(-4, 5):
+                c, r = cx + dc, cy + dr
+                if self.game_map.is_walkable(c, r) and (c, r) not in entity_tiles:
+                    wx, wy = self.game_map.tile_center(c, r)
+                    archer = Archer(
+                        wx, wy, self.game_map, self.resources,
+                        self.storage, all_npcs=self.npcs,
+                    )
+                    self.npcs.append(archer)
+                    entity_tiles.add((c, r))
+                    archer_placed += 1
+                    if archer_placed >= 2:
                         return
+            if archer_placed >= 2:
+                return
 
     def _spawn_fauna(self):
-        """Spawn autonomous creatures (sheep, etc.) on the map."""
-        entity_tiles = {(r.col, r.row) for r in self.resources}
-        npc_tiles = set()
-        for n in self.npcs:
-            npc_tiles.add(n.tile_pos)
+        """Spawn autonomous creatures (sheep, wild archers, etc.)."""
         self.fauna = spawn_fauna(
-            self.game_map, self.resources, sheep_count=6
+            self.game_map, self.resources,
+            sheep_count=6, wild_archer_count=3,
         )
 
     def _sync_npc_roster(self):

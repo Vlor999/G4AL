@@ -26,6 +26,9 @@
     let camX = 0, camY = 0;
     const keysDown = new Set();
 
+    // ── Sound Manager ───────────────────────────────────────────────────────
+    const soundManager = new SoundManager();
+
     // Canvas refs
     const canvas = document.getElementById("game-canvas");
     const ctx = canvas.getContext("2d");
@@ -518,11 +521,9 @@
 
         // Selection panel
         const sel = gameState.npcs.find(n => n.id === selectedId);
-        const placeholder = document.getElementById("sel-placeholder");
-        const details = document.getElementById("sel-details");
+        const unitSection = document.getElementById("unit-select-section");
         if (sel) {
-            placeholder.style.display = "none";
-            details.style.display = "block";
+            unitSection.style.display = "block";
             document.getElementById("sel-name").textContent = sel.name;
             document.getElementById("sel-hp-text").textContent = `${Math.round(sel.health)}/${sel.maxHealth}`;
             document.getElementById("sel-hp-bar").style.width = `${(sel.health / sel.maxHealth) * 100}%`;
@@ -532,8 +533,7 @@
             hungerBar.classList.toggle("low", sel.hunger / sel.maxHunger < 0.25);
             document.getElementById("sel-state").textContent = sel.state;
         } else {
-            placeholder.style.display = "block";
-            details.style.display = "none";
+            unitSection.style.display = "none";
         }
 
         // Action buttons
@@ -685,6 +685,20 @@
         }
         e.stopPropagation(); // prevent camera from moving
     });
+
+    // ═══════════════════════════════════════════════════════════════════════════
+    //  Sound: Volume Slider Wiring
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    const volSlider = document.getElementById("vol-music");
+    const volVal = document.getElementById("vol-music-val");
+    if (volSlider && volVal) {
+        volSlider.addEventListener("input", () => {
+            const v = parseInt(volSlider.value);
+            volVal.textContent = v;
+            soundManager.volume = v / 100;
+        });
+    }
 
     // ═══════════════════════════════════════════════════════════════════════════
     //  Boot

@@ -350,6 +350,11 @@ def static_files(path):
     return send_from_directory("static", path)
 
 
+@app.route("/favicon.ico")
+def favicon():
+    return send_from_directory("static", "favicon.svg")
+
+
 # ── API endpoints ────────────────────────────────────────────────────────
 
 @app.route("/api/state")

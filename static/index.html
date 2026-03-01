@@ -119,22 +119,21 @@
                     </div>
                 </div>
                 
-                <div class="panel-label">UNIT_SELECT</div>
-                <div id="selection-info">
-                    <div id="sel-placeholder">
-                        &gt; Press G and talk to<br>&gt; give orders
-                    </div>
-                    <div id="sel-details" style="display:none;">
-                        <div class="npc-name-display" id="sel-name"></div>
-                        <div class="stat-row"><span>HP</span><span id="sel-hp-text"></span></div>
-                        <div class="stat-bar">
-                            <div class="stat-bar-fill bar-hp" id="sel-hp-bar"></div>
+                <div id="unit-select-section" style="display:none;">
+                    <div class="panel-label">UNIT_SELECT</div>
+                    <div id="selection-info">
+                        <div id="sel-details">
+                            <div class="npc-name-display" id="sel-name"></div>
+                            <div class="stat-row"><span>HP</span><span id="sel-hp-text"></span></div>
+                            <div class="stat-bar">
+                                <div class="stat-bar-fill bar-hp" id="sel-hp-bar"></div>
+                            </div>
+                            <div class="stat-row"><span>HUNGER</span><span id="sel-hunger-text"></span></div>
+                            <div class="stat-bar">
+                                <div class="stat-bar-fill bar-hunger" id="sel-hunger-bar"></div>
+                            </div>
+                            <div class="stat-row"><span>STATE</span><span id="sel-state"></span></div>
                         </div>
-                        <div class="stat-row"><span>HUNGER</span><span id="sel-hunger-text"></span></div>
-                        <div class="stat-bar">
-                            <div class="stat-bar-fill bar-hunger" id="sel-hunger-bar"></div>
-                        </div>
-                        <div class="stat-row"><span>STATE</span><span id="sel-state"></span></div>
                     </div>
                 </div>
 
@@ -166,6 +165,15 @@
                 <div id="log-section">
                     <div id="log-messages"></div>
                 </div>
+
+                <div class="panel-label">AUDIO</div>
+                <div id="audio-controls">
+                    <div class="vol-row">
+                        <span class="vol-label">MUSIC</span>
+                        <input type="range" class="vol-slider" id="vol-music" min="0" max="100" value="50">
+                        <span class="vol-value" id="vol-music-val">50</span>
+                    </div>
+                </div>
             </aside>
         </main>
 
@@ -187,6 +195,7 @@
     </div>
 
     <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+    <script src="/static/sound.js"></script>
     <script src="/static/game.js"></script>
 </body>
 

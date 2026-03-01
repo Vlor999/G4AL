@@ -517,20 +517,6 @@ def post_action():
     return jsonify({"ok": True})
 
 
-@app.route("/api/command", methods=["POST"])
-def post_command():
-    """Send a natural language command to the LLM interpreter.
-
-    Body: { "text": "Tomas go chop wood!" }
-    """
-    data = request.get_json(force=True)
-    text = data.get("text", "").strip()
-    if not text:
-        return jsonify({"error": "text required"}), 400
-    engine.send_text_command(text)
-    return jsonify({"ok": True})
-
-
 @app.route("/api/select", methods=["POST"])
 def post_select():
     """Select an NPC.  Body: { "npcId": 1 }"""

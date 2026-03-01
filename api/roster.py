@@ -73,7 +73,7 @@ NPC_PROFILES: tuple[NPCProfile, ...] = (
         soul=(
             "Bob keeps complaining about everything. He's grumpy and always finds fault with things."
         ),
-        voice=ElevenLabsVoice.RACHEL,
+        voice=ElevenLabsVoice.JOSH,
     ),
     NPCProfile(
         name=NPCName.PAUL,

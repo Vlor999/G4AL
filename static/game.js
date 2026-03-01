@@ -26,6 +26,26 @@
     let spritesLoaded = false;
     let decorations = [];
     const npcFacing = {};
+    let clouds = [];       // floating cloud decorations
+    let waterRocks = [];   // decorative rocks on water tiles
+    const particles = [];  // active particle FX
+
+    /**
+     * Read frame count from SPRITE_CONFIG (details.js).
+     * Falls back to the provided default if the key doesn't exist.
+     */
+    function cfgFrames(key, fallback) {
+        if (typeof SPRITE_CONFIG !== "undefined" && SPRITE_CONFIG[key]) {
+            return SPRITE_CONFIG[key].frames;
+        }
+        return fallback;
+    }
+    function cfgSpeed(key, fallback) {
+        if (typeof SPRITE_CONFIG !== "undefined" && SPRITE_CONFIG[key]) {
+            return SPRITE_CONFIG[key].speed || fallback;
+        }
+        return fallback;
+    }
 
     function loadImg(key, path) {
         return new Promise(resolve => {
@@ -45,36 +65,68 @@
             loadImg("water_bg", "Terrain/Tileset/Water Background color.png"),
             loadImg("water_foam","Terrain/Tileset/Water Foam.png"),
 
-            // Trees
+            // Trees (4 variants, 8 frames wind anim each)
             loadImg("tree1", "Terrain/Resources/Wood/Trees/Tree1.png"),
             loadImg("tree2", "Terrain/Resources/Wood/Trees/Tree2.png"),
             loadImg("tree3", "Terrain/Resources/Wood/Trees/Tree3.png"),
             loadImg("tree4", "Terrain/Resources/Wood/Trees/Tree4.png"),
+            // Stumps (4 variants, static)
             loadImg("stump1","Terrain/Resources/Wood/Trees/Stump 1.png"),
             loadImg("stump2","Terrain/Resources/Wood/Trees/Stump 2.png"),
+            loadImg("stump3","Terrain/Resources/Wood/Trees/Stump 3.png"),
+            loadImg("stump4","Terrain/Resources/Wood/Trees/Stump 4.png"),
 
-            // Rocks
+            // Rocks (4 variants, static)
             loadImg("rock1", "Terrain/Decorations/Rocks/Rock1.png"),
             loadImg("rock2", "Terrain/Decorations/Rocks/Rock2.png"),
             loadImg("rock3", "Terrain/Decorations/Rocks/Rock3.png"),
             loadImg("rock4", "Terrain/Decorations/Rocks/Rock4.png"),
 
-            // Gold stones
+            // Gold stones (6 variants, static + 6 highlight overlays, animated)
             loadImg("gold1", "Terrain/Resources/Gold/Gold Stones/Gold Stone 1.png"),
             loadImg("gold2", "Terrain/Resources/Gold/Gold Stones/Gold Stone 2.png"),
             loadImg("gold3", "Terrain/Resources/Gold/Gold Stones/Gold Stone 3.png"),
+            loadImg("gold4", "Terrain/Resources/Gold/Gold Stones/Gold Stone 4.png"),
+            loadImg("gold5", "Terrain/Resources/Gold/Gold Stones/Gold Stone 5.png"),
+            loadImg("gold6", "Terrain/Resources/Gold/Gold Stones/Gold Stone 6.png"),
+            loadImg("gold_hl1", "Terrain/Resources/Gold/Gold Stones/Gold Stone 1_Highlight.png"),
+            loadImg("gold_hl2", "Terrain/Resources/Gold/Gold Stones/Gold Stone 2_Highlight.png"),
+            loadImg("gold_hl3", "Terrain/Resources/Gold/Gold Stones/Gold Stone 3_Highlight.png"),
+            loadImg("gold_hl4", "Terrain/Resources/Gold/Gold Stones/Gold Stone 4_Highlight.png"),
+            loadImg("gold_hl5", "Terrain/Resources/Gold/Gold Stones/Gold Stone 5_Highlight.png"),
+            loadImg("gold_hl6", "Terrain/Resources/Gold/Gold Stones/Gold Stone 6_Highlight.png"),
 
-            // Bushes (decorative)
+            // Bushes (4 variants, 8 frames wind anim)
             loadImg("bush1", "Terrain/Decorations/Bushes/Bushe1.png"),
             loadImg("bush2", "Terrain/Decorations/Bushes/Bushe2.png"),
             loadImg("bush3", "Terrain/Decorations/Bushes/Bushe3.png"),
             loadImg("bush4", "Terrain/Decorations/Bushes/Bushe4.png"),
 
-            // Buildings
-            loadImg("house1", "Buildings/Blue Buildings/House1.png"),
-            loadImg("house2", "Buildings/Blue Buildings/House2.png"),
-            loadImg("house3", "Buildings/Blue Buildings/House3.png"),
-            loadImg("castle", "Buildings/Blue Buildings/Castle.png"),
+            // Clouds (8 variants, floating decoration)
+            loadImg("cloud1", "Terrain/Decorations/Clouds/Clouds_01.png"),
+            loadImg("cloud2", "Terrain/Decorations/Clouds/Clouds_02.png"),
+            loadImg("cloud3", "Terrain/Decorations/Clouds/Clouds_03.png"),
+            loadImg("cloud4", "Terrain/Decorations/Clouds/Clouds_04.png"),
+            loadImg("cloud5", "Terrain/Decorations/Clouds/Clouds_05.png"),
+            loadImg("cloud6", "Terrain/Decorations/Clouds/Clouds_06.png"),
+            loadImg("cloud7", "Terrain/Decorations/Clouds/Clouds_07.png"),
+            loadImg("cloud8", "Terrain/Decorations/Clouds/Clouds_08.png"),
+
+            // Water rocks (4 variants, decorative)
+            loadImg("water_rock1", "Terrain/Decorations/Rocks in the Water/Water Rocks_01.png"),
+            loadImg("water_rock2", "Terrain/Decorations/Rocks in the Water/Water Rocks_02.png"),
+            loadImg("water_rock3", "Terrain/Decorations/Rocks in the Water/Water Rocks_03.png"),
+            loadImg("water_rock4", "Terrain/Decorations/Rocks in the Water/Water Rocks_04.png"),
+
+            // Buildings (Blue)
+            loadImg("house1",    "Buildings/Blue Buildings/House1.png"),
+            loadImg("house2",    "Buildings/Blue Buildings/House2.png"),
+            loadImg("house3",    "Buildings/Blue Buildings/House3.png"),
+            loadImg("castle",    "Buildings/Blue Buildings/Castle.png"),
+            loadImg("barracks",  "Buildings/Blue Buildings/Barracks.png"),
+            loadImg("tower",     "Buildings/Blue Buildings/Tower.png"),
+            loadImg("archery",   "Buildings/Blue Buildings/Archery.png"),
+            loadImg("monastery", "Buildings/Blue Buildings/Monastery.png"),
 
             // Pawn sprites (Blue)
             loadImg("pawn_idle",      "Units/Blue Units/Pawn/Pawn_Idle.png"),
@@ -96,6 +148,12 @@
             loadImg("pawn_act_pick",  "Units/Blue Units/Pawn/Pawn_Interact Pickaxe.png"),
             loadImg("pawn_act_ham",   "Units/Blue Units/Pawn/Pawn_Interact Hammer.png"),
             loadImg("pawn_act_knife", "Units/Blue Units/Pawn/Pawn_Interact Knife.png"),
+
+            // Particle FX
+            loadImg("dust1",  "Particle FX/Dust_01.png"),
+            loadImg("dust2",  "Particle FX/Dust_02.png"),
+            loadImg("fire1",  "Particle FX/Fire_01.png"),
+            loadImg("fire2",  "Particle FX/Fire_02.png"),
 
             // Shadow
             loadImg("shadow", "Terrain/Tileset/Shadow.png"),
@@ -153,7 +211,9 @@
     function updateFacing(npc) {
         if (!npcFacing[npc.id]) npcFacing[npc.id] = { lx: npc.x, r: true };
         const f = npcFacing[npc.id];
-        if (Math.abs(npc.x - f.lx) > 0.3) f.r = npc.x > f.lx;
+        // Lock facing when performing an action (stationary) — avoid flip jitter
+        if (npc.state === "PERFORMING") return f.r;
+        if (Math.abs(npc.x - f.lx) > 1.0) f.r = npc.x > f.lx;
         f.lx = npc.x;
         return f.r;
     }
@@ -374,6 +434,16 @@
      *  FIX: use only (1,1) and add subtle brightness variation.
      */
 
+    /** Spawn a particle effect at world position (wx, wy) */
+    function spawnParticle(type, wx, wy) {
+        particles.push({
+            type,      // "dust" | "fire"
+            wx, wy,
+            birth: gameFrame,
+            life: type === "dust" ? 30 : 40, // frames to live
+        });
+    }
+
     function buildMapImage() {
         if (!mapCached) return;
         const { cols, rows, tileSize, tiles } = mapCached;
@@ -382,6 +452,7 @@
         mapCanvas.height = rows * tileSize;
         const mctx = mapCanvas.getContext("2d");
         decorations = [];
+        waterRocks = [];
 
         // Source tile: always the center (1,1) of the first auto-tile group
         const SRC_X = 1 * 64;
@@ -404,6 +475,14 @@
                     } else {
                         mctx.fillStyle = "#42a5f5";
                         mctx.fillRect(px, py, tileSize, tileSize);
+                    }
+                    // ~8% chance of decorative water rocks
+                    if (posHash(c + 5, r + 7, 12) === 0) {
+                        waterRocks.push({
+                            variant: posHash(c, r, 4) + 1,
+                            x: px + tileSize / 2,
+                            y: py + tileSize / 2,
+                        });
                     }
                     continue;
                 }
@@ -436,6 +515,21 @@
                     });
                 }
             }
+        }
+
+        // Generate floating clouds (scattered across the map)
+        clouds = [];
+        const mapW = cols * tileSize;
+        const mapH = rows * tileSize;
+        const cloudCount = Math.floor(cols * rows / 40); // ~1 cloud per 40 tiles
+        for (let i = 0; i < cloudCount; i++) {
+            clouds.push({
+                variant: (posHash(i, i * 3 + 7, 8)) + 1,
+                x: posHash(i * 7, i * 13, mapW),
+                y: posHash(i * 11, i * 5, mapH),
+                speed: 0.15 + posHash(i, i + 99, 100) / 500, // 0.15–0.35 px/frame
+                scale: 0.8 + posHash(i + 3, i * 2, 40) / 100, // 0.8–1.2
+            });
         }
     }
 
@@ -472,7 +566,8 @@
         // ── Water foam animation overlay ────────────────────────────────
         if (sprites.water_foam && mapCached) {
             const ts = mapCached.tileSize;
-            const foamFrame = spriteFrame(16, "slow", 0);
+            const foamFrames = cfgFrames("water_foam", 16);
+            const foamFrame = spriteFrame(foamFrames, cfgSpeed("water_foam", "slow"), 0);
             for (let r = 0; r < mapCached.rows; r++) {
                 for (let c = 0; c < mapCached.cols; c++) {
                     if (mapCached.tiles[r][c] !== 3) continue;
@@ -480,13 +575,26 @@
                     const wy = r * ts - camY;
                     if (wx < -ts || wx > W + ts || wy < -ts || wy > H + ts) continue;
                     ctx.globalAlpha = 0.3;
-                    drawSpriteFrame(ctx, sprites.water_foam, foamFrame, 16, wx, wy, ts, ts, false);
+                    drawSpriteFrame(ctx, sprites.water_foam, foamFrame, foamFrames, wx, wy, ts, ts, false);
                     ctx.globalAlpha = 1;
                 }
             }
         }
 
+        // ── Water rocks (decorative, on water tiles) ────────────────────
+        for (const wr of waterRocks) {
+            const dx = wr.x - camX;
+            const dy = wr.y - camY;
+            if (dx < -80 || dx > W + 80 || dy < -80 || dy > H + 80) continue;
+            const wrSpr = sprites["water_rock" + wr.variant];
+            if (wrSpr) {
+                const sz = 48;
+                ctx.drawImage(wrSpr, dx - sz / 2, dy - sz / 2, sz, sz);
+            }
+        }
+
         // ── Decorations (bushes – animated wind) ────────────────────────
+        // Bushes are small ground-level decorations, drawn before the depth pass
         for (const deco of decorations) {
             const dx = deco.x - camX;
             const dy = deco.y - camY;
@@ -494,31 +602,95 @@
             const bushSpr = sprites["bush" + deco.variant];
             if (bushSpr) {
                 const sz = 30;
-                const fi = spriteFrame(8, "slow", deco.offset);
-                drawSpriteFrame(ctx, bushSpr, fi, 8,
+                const bushFrames = cfgFrames("bushes", 8);
+                const fi = spriteFrame(bushFrames, cfgSpeed("bushes", "slow"), deco.offset);
+                drawSpriteFrame(ctx, bushSpr, fi, bushFrames,
                     dx - sz / 2, dy - sz / 2, sz, sz, false);
             }
         }
 
-        // ── Resources ───────────────────────────────────────────────────
+        // ═════════════════════════════════════════════════════════════════
+        //  2.5D depth sort: merge resources + NPCs, sort by foot-Y
+        // ═════════════════════════════════════════════════════════════════
         const ts = mapCached.tileSize;
+        const drawList = [];
+
+        // Add resources with their "foot" Y (bottom of the tile they sit on)
         for (const res of gameState.resources) {
-            const sx = res.col * ts + ts / 2 - camX;
-            const sy = res.row * ts + ts / 2 - camY;
-
-            // Cull off-screen (expanded for large sprites)
-            if (sx < -ts * 2 || sx > W + ts * 2 || sy < -ts * 2 || sy > H + ts * 2) continue;
-
-            drawResource(ctx, res, sx, sy, ts);
+            const footY = (res.row + 1) * ts; // bottom edge of the tile
+            drawList.push({ type: "res", obj: res, footY });
         }
 
-        // ── NPCs (sorted by y for depth) ────────────────────────────────
-        const npcs = [...gameState.npcs].sort((a, b) => a.y - b.y);
-        for (const npc of npcs) {
-            const sx = npc.x - camX;
-            const sy = npc.y - camY;
-            if (sx < -80 || sx > W + 80 || sy < -80 || sy > H + 80) continue;
-            drawNPC(ctx, npc, sx, sy);
+        // Add NPCs with their actual Y as foot position
+        for (const npc of gameState.npcs) {
+            drawList.push({ type: "npc", obj: npc, footY: npc.y });
+        }
+
+        // Sort by footY so objects lower on screen are drawn on top
+        drawList.sort((a, b) => a.footY - b.footY);
+
+        for (const item of drawList) {
+            if (item.type === "res") {
+                const res = item.obj;
+                const sx = res.col * ts + ts / 2 - camX;
+                const sy = res.row * ts + ts / 2 - camY;
+                if (sx < -ts * 3 || sx > W + ts * 3 || sy < -ts * 3 || sy > H + ts * 3) continue;
+                drawResource(ctx, res, sx, sy, ts);
+            } else {
+                const npc = item.obj;
+                const sx = npc.x - camX;
+                const sy = npc.y - camY;
+                if (sx < -80 || sx > W + 80 || sy < -80 || sy > H + 80) continue;
+                drawNPC(ctx, npc, sx, sy);
+            }
+        }
+
+        // ── Particle FX (action sparks / dust) ─────────────────────────
+        for (let i = particles.length - 1; i >= 0; i--) {
+            const p = particles[i];
+            const age = gameFrame - p.birth;
+            if (age >= p.life) { particles.splice(i, 1); continue; }
+            const progress = age / p.life;
+            const px = p.wx - camX;
+            const py = p.wy - camY;
+            if (px < -64 || px > W + 64 || py < -64 || py > H + 64) continue;
+            ctx.globalAlpha = 1 - progress; // fade out
+            if (p.type === "dust") {
+                const spr = sprites.dust1 || sprites.dust2;
+                if (spr) {
+                    const dustFrames = cfgFrames("dust_1", 8);
+                    const fi = spriteFrame(dustFrames, cfgSpeed("dust_1", "fast"), p.birth);
+                    drawSpriteFrame(ctx, spr, fi, dustFrames, px - 24, py - 24, 48, 48, false);
+                }
+            } else if (p.type === "fire") {
+                const spr = sprites.fire1 || sprites.fire2;
+                if (spr) {
+                    const fireFrames = cfgFrames("fire_1", 8);
+                    const fi = spriteFrame(fireFrames, cfgSpeed("fire_1", "fast"), p.birth);
+                    drawSpriteFrame(ctx, spr, fi, fireFrames, px - 16, py - 32, 32, 32, false);
+                }
+            }
+            ctx.globalAlpha = 1;
+        }
+
+        // ── Floating clouds (top layer, semi-transparent) ──────────────
+        if (mapCached) {
+            const mapW = mapCached.cols * mapCached.tileSize;
+            ctx.globalAlpha = 0.35;
+            for (const cl of clouds) {
+                // Drift rightward, wrap around
+                cl.x = (cl.x + cl.speed) % (mapW + 300);
+                const cx = cl.x - camX - 150;
+                const cy = cl.y - camY;
+                if (cx < -300 || cx > W + 300 || cy < -200 || cy > H + 200) continue;
+                const cloudSpr = sprites["cloud" + cl.variant];
+                if (cloudSpr) {
+                    const cw = 160 * cl.scale;
+                    const ch = (cloudSpr.height / cloudSpr.width) * cw;
+                    ctx.drawImage(cloudSpr, cx, cy, cw, ch);
+                }
+            }
+            ctx.globalAlpha = 1;
         }
 
         // ── UI overlay updates ──────────────────────────────────────────
@@ -538,12 +710,13 @@
                 const v = posHash(res.col, res.row, 4) + 1;
                 const spr = sprites["tree" + v];
                 if (spr) {
-                    // Tree sprite: 8 frames wind animation (1536×256 → 192×256 per frame)
-                    const offset = posHash(res.col, res.row, 8); // desync wind
-                    const frame = spriteFrame(8, "slow", offset);
+                    // Tree sprite: animated wind
+                    const treeFrames = cfgFrames("trees", 8);
+                    const offset = posHash(res.col, res.row, treeFrames); // desync wind
+                    const frame = spriteFrame(treeFrames, cfgSpeed("trees", "slow"), offset);
                     const dw = ts * 2.0;
                     const dh = ts * 2.6;
-                    drawSpriteFrame(ctx, spr, frame, 8,
+                    drawSpriteFrame(ctx, spr, frame, treeFrames,
                         sx - dw / 2, sy - dh + ts * 0.5, dw, dh, false);
                 } else {
                     // Fallback: simple shapes
@@ -563,11 +736,21 @@
 
             case "rock": {
                 if (res.hasGold) {
-                    const v = posHash(res.col, res.row, 3) + 1;
+                    const v = posHash(res.col, res.row, 6) + 1;
                     const spr = sprites["gold" + v];
                     if (spr) {
                         const sz = ts * 1.0;
                         ctx.drawImage(spr, sx - sz / 2, sy - sz / 2, sz, sz);
+                        // Animated gold highlight shimmer overlay
+                        const hlSpr = sprites["gold_hl" + v];
+                        if (hlSpr) {
+                            const hlFrames = cfgFrames("gold_highlight", 6);
+                            const hlFrame = spriteFrame(hlFrames, cfgSpeed("gold_highlight", "slow"), posHash(res.col, res.row, 6));
+                            ctx.globalAlpha = 0.6;
+                            drawSpriteFrame(ctx, hlSpr, hlFrame, hlFrames,
+                                sx - sz / 2, sy - sz / 2, sz, sz, false);
+                            ctx.globalAlpha = 1;
+                        }
                     } else {
                         ctx.fillStyle = "#9e9e9e";
                         ctx.beginPath();
@@ -691,35 +874,59 @@
     //  Draw NPC (animated sprite-based with fallback)
     // ═══════════════════════════════════════════════════════════════════════════
 
-    /** Pick the right sprite sheet + frame count + speed based on NPC state & action */
+    /** Pick the right sprite sheet + frame count + speed based on NPC state & action.
+     *  Frame counts are read from SPRITE_CONFIG (details.js) so they stay in sync
+     *  with the actual sprite sheets. */
     function getNpcSprite(npc) {
         const st = npc.state;
         const act = npc.actionType || "";
 
         if (st === "MOVING") {
-            return { spr: sprites.pawn_run, frames: 6, speed: "fast" };
+            // Tool-aware walking: show the right tool while moving to a task
+            switch (act) {
+                case "chop_wood":
+                    return { spr: sprites.pawn_run_axe  || sprites.pawn_run, frames: cfgFrames("pawn_run_axe", 6), speed: cfgSpeed("pawn_run_axe", "fast") };
+                case "mine_rock":
+                    return { spr: sprites.pawn_run_pick || sprites.pawn_run, frames: cfgFrames("pawn_run_pickaxe", 6), speed: cfgSpeed("pawn_run_pickaxe", "fast") };
+                case "build":
+                    return { spr: sprites.pawn_run_ham  || sprites.pawn_run, frames: cfgFrames("pawn_run_hammer", 6), speed: cfgSpeed("pawn_run_hammer", "fast") };
+                default:
+                    return { spr: sprites.pawn_run, frames: cfgFrames("pawn_run", 6), speed: cfgSpeed("pawn_run", "fast") };
+            }
         }
 
         if (st === "PERFORMING") {
             switch (act) {
                 case "chop_wood":
-                    return { spr: sprites.pawn_act_axe,   frames: 6, speed: "fast" };
+                    if (gameFrame % 20 === 0) spawnParticle("dust", npc.x, npc.y + 5);
+                    return { spr: sprites.pawn_act_axe,   frames: cfgFrames("pawn_interact_axe", 6),     speed: cfgSpeed("pawn_interact_axe", "fast") };
                 case "mine_rock":
-                    return { spr: sprites.pawn_act_pick,  frames: 6, speed: "fast" };
+                    if (gameFrame % 18 === 0) spawnParticle("fire", npc.x, npc.y - 10);
+                    return { spr: sprites.pawn_act_pick,  frames: cfgFrames("pawn_interact_pickaxe", 6), speed: cfgSpeed("pawn_interact_pickaxe", "fast") };
                 case "build":
-                    return { spr: sprites.pawn_act_ham,   frames: 6, speed: "fast" };
+                    if (gameFrame % 25 === 0) spawnParticle("dust", npc.x, npc.y + 5);
+                    return { spr: sprites.pawn_act_ham,   frames: cfgFrames("pawn_interact_hammer", 3),  speed: cfgSpeed("pawn_interact_hammer", "fast") };
                 case "plant_wheat":
                 case "collect_wheat":
-                    return { spr: sprites.pawn_act_knife, frames: 6, speed: "fast" };
+                    return { spr: sprites.pawn_act_knife, frames: cfgFrames("pawn_interact_knife", 6),   speed: cfgSpeed("pawn_interact_knife", "fast") };
                 case "eat":
-                    return { spr: sprites.pawn_idle_meat, frames: 8, speed: "normal" };
+                    return { spr: sprites.pawn_idle_meat, frames: cfgFrames("pawn_idle_meat", 8),        speed: cfgSpeed("pawn_idle_meat", "normal") };
                 default:
-                    return { spr: sprites.pawn_idle, frames: 8, speed: "normal" };
+                    return { spr: sprites.pawn_idle,      frames: cfgFrames("pawn_idle", 8),             speed: cfgSpeed("pawn_idle", "normal") };
             }
         }
 
-        // IDLE, DONE, etc.
-        return { spr: sprites.pawn_idle, frames: 8, speed: "normal" };
+        // IDLE with context: show held item if just finished an action
+        switch (act) {
+            case "chop_wood":
+                return { spr: sprites.pawn_idle_axe  || sprites.pawn_idle, frames: cfgFrames("pawn_idle_axe", 8),    speed: cfgSpeed("pawn_idle_axe", "normal") };
+            case "mine_rock":
+                return { spr: sprites.pawn_idle_pick || sprites.pawn_idle, frames: cfgFrames("pawn_idle_pickaxe", 8),speed: cfgSpeed("pawn_idle_pickaxe", "normal") };
+            case "build":
+                return { spr: sprites.pawn_idle_ham  || sprites.pawn_idle, frames: cfgFrames("pawn_idle_hammer", 8), speed: cfgSpeed("pawn_idle_hammer", "normal") };
+            default:
+                return { spr: sprites.pawn_idle,                          frames: cfgFrames("pawn_idle", 8),        speed: cfgSpeed("pawn_idle", "normal") };
+        }
     }
 
     function drawNPC(ctx, npc, sx, sy) {

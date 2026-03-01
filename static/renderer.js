@@ -22,6 +22,33 @@
     G.decorations = decorations;
     G.particles = particles;
 
+    // ── Arrow SFX (procedural Web Audio) ────────────────────────────────
+
+    let _arrowSfxCooldown = 0;
+    let _audioCtx = null;
+
+    function playArrowSfx() {
+        if (G.gameFrame - _arrowSfxCooldown < 20) return;  // min 20 frames between sounds
+        _arrowSfxCooldown = G.gameFrame;
+        try {
+            if (!_audioCtx) _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const ctx = _audioCtx;
+            const t = ctx.currentTime;
+            // Quick "twang" noise burst
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = "sawtooth";
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.frequency.setValueAtTime(600, t);
+            osc.frequency.exponentialRampToValueAtTime(120, t + 0.12);
+            gain.gain.setValueAtTime(0.15, t);
+            gain.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
+            osc.start(t);
+            osc.stop(t + 0.18);
+        } catch (e) { /* audio not available */ }
+    }
+
     // ── Particles ───────────────────────────────────────────────────────
 
     G.spawnParticle = function (type, wx, wy) {
@@ -232,6 +259,64 @@
                 }
             }
             ctx.globalAlpha = 1;
+        }
+
+        // Arrow projectiles
+        if (G.gameState.arrows) {
+            for (const arrow of G.gameState.arrows) {
+                const p = arrow.progress;
+                // Play SFX for newly spawned arrows
+                if (p < 0.15) playArrowSfx();
+                // Interpolate position
+                const ax = arrow.fromX + (arrow.toX - arrow.fromX) * p;
+                const ay = arrow.fromY + (arrow.toY - arrow.fromY) * p;
+                const sx = ax - G.camX;
+                const sy = ay - G.camY;
+                if (sx < -64 || sx > W + 64 || sy < -64 || sy > H + 64) continue;
+
+                // Calculate angle from source to target
+                const dx = arrow.toX - arrow.fromX;
+                const dy = arrow.toY - arrow.fromY;
+                const angle = Math.atan2(dy, dx);
+
+                // Try to use arrow sprite
+                const arrowSpr = arrow.team === "red" ? spr.red_archer_arrow : spr.archer_arrow;
+                if (arrowSpr) {
+                    ctx.save();
+                    ctx.translate(sx, sy);
+                    ctx.rotate(angle);
+                    const aw = 28, ah = 10;
+                    ctx.drawImage(arrowSpr, -aw / 2, -ah / 2, aw, ah);
+                    ctx.restore();
+                } else {
+                    // Fallback: draw a line
+                    const color = arrow.team === "red" ? "#ef5350" : "#42a5f5";
+                    ctx.save();
+                    ctx.translate(sx, sy);
+                    ctx.rotate(angle);
+                    ctx.strokeStyle = color;
+                    ctx.lineWidth = 2.5;
+                    ctx.beginPath();
+                    ctx.moveTo(-12, 0);
+                    ctx.lineTo(12, 0);
+                    ctx.stroke();
+                    // Arrowhead
+                    ctx.fillStyle = color;
+                    ctx.beginPath();
+                    ctx.moveTo(12, 0);
+                    ctx.lineTo(7, -3);
+                    ctx.lineTo(7, 3);
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.restore();
+                }
+
+                // Fade out near the end
+                if (p > 0.8) {
+                    ctx.globalAlpha = 1 - (p - 0.8) / 0.2;
+                }
+                ctx.globalAlpha = 1;
+            }
         }
 
         // Floating clouds
@@ -507,11 +592,18 @@
 
         // ── Archer (playable, Blue) ─────────────────────────────────────
         if (npc.kind === "archer") {
-            if (st === "MOVING") {
+            if (st === "MOVING" || st === "RETURNING") {
                 return { spr: spr.archer_run, frames: G.cfgFrames("archer_run", 4), speed: G.cfgSpeed("archer_run", "fast") };
             }
             if (st === "PERFORMING") {
-                return { spr: spr.archer_shoot, frames: G.cfgFrames("archer_shoot", 8), speed: G.cfgSpeed("archer_shoot", "fast") };
+                if (act === "eat") {
+                    return { spr: spr.archer_idle, frames: G.cfgFrames("archer_idle", 6), speed: G.cfgSpeed("archer_idle", "slow") };
+                }
+                // Shoot: only play shoot anim during fire phase, idle during aim
+                if (npc.isFiring) {
+                    return { spr: spr.archer_shoot, frames: G.cfgFrames("archer_shoot", 8), speed: G.cfgSpeed("archer_shoot", "fast") };
+                }
+                return { spr: spr.archer_idle, frames: G.cfgFrames("archer_idle", 6), speed: G.cfgSpeed("archer_idle", "normal") };
             }
             // IDLE / DONE
             return { spr: spr.archer_idle, frames: G.cfgFrames("archer_idle", 6), speed: G.cfgSpeed("archer_idle", "normal") };
@@ -640,7 +732,11 @@
         // ── Wild Archer (Red) ───────────────────────────────────────────
         if (f.kind === "wild_archer") {
             if (st === "SHOOTING") {
-                return { spr: spr.red_archer_shoot, frames: G.cfgFrames("archer_shoot", 8), speed: G.cfgSpeed("archer_shoot", "fast") };
+                // Only play shoot anim during fire phase, idle during aim
+                if (f.isFiring) {
+                    return { spr: spr.red_archer_shoot, frames: G.cfgFrames("archer_shoot", 8), speed: G.cfgSpeed("archer_shoot", "fast") };
+                }
+                return { spr: spr.red_archer_idle, frames: G.cfgFrames("archer_idle", 6), speed: G.cfgSpeed("archer_idle", "normal") };
             }
             if (st === "WANDERING") {
                 return { spr: spr.red_archer_run, frames: G.cfgFrames("archer_run", 4), speed: G.cfgSpeed("archer_run", "fast") };

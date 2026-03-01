@@ -5,6 +5,18 @@
 (function (G) {
     "use strict";
 
+    // ── Action labels per action type ───────────────────────────────────
+    const ACTION_LABELS = {
+        chop_wood:     "\u{1fa93} CHOP",
+        mine_rock:     "\u26cf\ufe0f MINE",
+        build:         "\ud83d\udee0\ufe0f BUILD",
+        plant_wheat:   "\ud83c\udf3e PLANT",
+        collect_wheat: "\ud83c\udf3e COLLECT",
+        eat:           "\ud83c\udf56 EAT",
+        shoot:         "\ud83c\udff9 SHOOT",
+        defend:        "\ud83d\udee1\ufe0f DEFEND",
+    };
+
     // ── DOM UI update (called every frame from render loop) ─────────────
 
     G.updateUI = function () {
@@ -33,10 +45,23 @@
             unitSection.style.display = "none";
         }
 
-        // Action buttons
-        document.querySelectorAll(".action-btn").forEach(btn => {
-            btn.disabled = !G.selectedId;
-        });
+        // Action buttons – rebuild dynamically based on selected unit's allowed actions
+        const actionEl = document.getElementById("action-buttons");
+        if (sel && sel.allowedActions) {
+            const btnHTML = sel.allowedActions
+                .filter(a => a !== "move_to")  // move_to is done via right-click
+                .map(a => `<button class="action-btn" data-action="${a}">${ACTION_LABELS[a] || a.toUpperCase()}</button>`)
+                .join("");
+            if (actionEl.dataset.lastKind !== sel.kind) {
+                actionEl.innerHTML = btnHTML;
+                actionEl.dataset.lastKind = sel.kind;
+            }
+        } else {
+            if (actionEl.dataset.lastKind !== "__none") {
+                actionEl.innerHTML = "";
+                actionEl.dataset.lastKind = "__none";
+            }
+        }
 
         // Roster – only show controllable units (pawns + archers)
         const rosterEl = document.getElementById("roster-list");
@@ -48,7 +73,8 @@
             const cls = n.selected ? "roster-entry selected" : "roster-entry";
             const marker = n.selected ? "\u25b8 " : "  ";
             const icon = n.kind === "archer" ? "\ud83c\udff9 " : "";
-            return `<div class="${cls}" data-npc-id="${n.id}">${marker}${icon}${n.name}<span class="state-badge">${n.state}</span></div>`;
+            const stateLabel = n.isDefending ? "DEFENDING" : n.state;
+            return `<div class="${cls}" data-npc-id="${n.id}">${marker}${icon}${n.name}<span class="state-badge">${stateLabel}</span></div>`;
         }).join("");
         if (sheepCount > 0) {
             rosterHTML += `<div class="roster-entry fauna-count">\ud83d\udc11 ${sheepCount} sheep</div>`;

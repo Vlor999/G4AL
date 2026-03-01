@@ -16,7 +16,14 @@ import random
 from enum import Enum, auto
 from typing import List, Tuple, Optional, TYPE_CHECKING
 
-from game.settings import TILE_SIZE
+from game.settings import (
+    TILE_SIZE,
+    ARCHER_FIRE_ANIM_TIME,
+    WILD_ARCHER_RANGE,
+    WILD_ARCHER_DAMAGE,
+    WILD_ARCHER_SHOOT_TIME,
+    ARCHER_ARROW_FLIGHT,
+)
 
 if TYPE_CHECKING:
     from game.map import GameMap
@@ -289,7 +296,7 @@ def _pick_wild_name() -> str:
 
 
 class WildArcher(Fauna):
-    """Autonomous red archer that patrols, idles, and occasionally shoots."""
+    """Autonomous red archer that patrols, idles, and attacks nearby units."""
 
     kind = "wild_archer"
 
@@ -305,10 +312,16 @@ class WildArcher(Fauna):
         self.health = 50
         self.max_health = 50
         self._shoot_duration = 0
+        self._attack_target = None  # NPC we are shooting at
+        self._all_npcs: list = []   # set by server after spawn
+        self._arrows: list = []     # shared arrow projectile list
+        self._is_firing: bool = False  # True during brief fire anim
         self._start_idle()
 
     def update(self):
-        """Override base: adds SHOOTING state."""
+        """Override base: adds SHOOTING + CHASING states."""
+        if self.health <= 0:
+            return
         if self.state == FaunaState.IDLE:
             self._do_idle()
         elif self.state == FaunaState.WANDERING:
@@ -316,19 +329,43 @@ class WildArcher(Fauna):
         elif self.state == FaunaState.SHOOTING:
             self._do_shoot()
 
+    # ── enemy detection ──────────────────────────────────────────────────
+
+    def _find_nearest_npc(self):
+        """Find the nearest living playable NPC."""
+        best = None
+        best_dist = float("inf")
+        mc, mr = self.tile_pos
+        for npc in self._all_npcs:
+            if npc.health <= 0:
+                continue
+            nc, nr = npc.tile_pos
+            d = abs(nc - mc) + abs(nr - mr)
+            if d < best_dist:
+                best_dist = d
+                best = npc
+        return best, best_dist
+
     # ── overrides / new behaviours ───────────────────────────────────────
 
     def _do_idle(self):
         self._timer += 1
         if self._timer >= self._idle_duration:
             self._timer = 0
+            # Check for nearby enemies first
+            target, dist = self._find_nearest_npc()
+            if target and dist <= WILD_ARCHER_RANGE:
+                self._attack_target = target
+                self._start_shoot()
+                return
+            if target and dist <= 6:
+                # Chase toward the player unit
+                self._chase_target(target)
+                return
             roll = random.random()
             if roll < 0.35:
                 self._start_wander()
-            elif roll < 0.55:
-                self._start_shoot()
             else:
-                # stay idle a bit longer
                 self._idle_duration = random.randint(90, 300)
 
     def _start_wander(self):
@@ -346,16 +383,100 @@ class WildArcher(Fauna):
         self._path_index = 0
         self.state = FaunaState.WANDERING
 
+    def _do_wander(self):
+        """Override: check for enemies while walking."""
+        if self._path_index >= len(self._path):
+            self._start_idle()
+            return
+        # Scan for nearby enemies while patrolling
+        target, dist = self._find_nearest_npc()
+        if target and dist <= WILD_ARCHER_RANGE:
+            self._attack_target = target
+            self._start_shoot()
+            return
+        self._follow_path()
+
+    def _chase_target(self, target):
+        """Walk toward a player unit to get in attack range."""
+        tc, tr = target.tile_pos
+        mc, mr = self.tile_pos
+        # Find closest walkable tile within range of target
+        best_tile = None
+        best_cost = float("inf")
+        for dc in range(-WILD_ARCHER_RANGE, WILD_ARCHER_RANGE + 1):
+            for dr in range(-WILD_ARCHER_RANGE, WILD_ARCHER_RANGE + 1):
+                if abs(dc) + abs(dr) > WILD_ARCHER_RANGE:
+                    continue
+                c, r = tc + dc, tr + dr
+                if not self._map.is_walkable(c, r):
+                    continue
+                cost = abs(c - mc) + abs(r - mr)
+                if cost < best_cost:
+                    best_cost = cost
+                    best_tile = (c, r)
+        if best_tile is None:
+            self._start_idle()
+            return
+        path = self._simple_path((mc, mr), best_tile)
+        if not path:
+            self._start_idle()
+            return
+        self._path = path
+        self._path_index = 0
+        self.state = FaunaState.WANDERING
+
     def _start_shoot(self):
-        """Play a brief shoot-stance animation (cosmetic only for now)."""
+        """Begin shooting at the current attack target."""
         self.state = FaunaState.SHOOTING
         self._timer = 0
-        self._shoot_duration = random.randint(48, 96)  # ~1-1.5s
+        self._shoot_duration = WILD_ARCHER_SHOOT_TIME
+        self._is_firing = False
 
     def _do_shoot(self):
         self._timer += 1
-        if self._timer >= self._shoot_duration:
+        target = self._attack_target
+        # Target dead or gone
+        if target is None or target.health <= 0:
+            self._attack_target = None
+            self._is_firing = False
             self._start_idle()
+            return
+
+        fire_start = self._shoot_duration - ARCHER_FIRE_ANIM_TIME
+
+        # Transition aim → fire phase
+        if not self._is_firing and self._timer >= fire_start:
+            self._is_firing = True
+            # Check range before firing
+            mc, mr = self.tile_pos
+            tc, tr = target.tile_pos
+            dist = abs(tc - mc) + abs(tr - mr)
+            if dist > WILD_ARCHER_RANGE:
+                self._attack_target = None
+                self._is_firing = False
+                self._start_idle()
+                return
+            # Deal damage + spawn arrow
+            target.health = max(0, target.health - WILD_ARCHER_DAMAGE)
+            if self._arrows is not None:
+                self._arrows.append({
+                    "fromX": self.x,
+                    "fromY": self.y - 20,
+                    "toX": target.x,
+                    "toY": target.y - 10,
+                    "frame": 0,
+                    "totalFrames": ARCHER_ARROW_FLIGHT,
+                    "team": "red",
+                })
+
+        # End of full cycle
+        if self._timer >= self._shoot_duration:
+            self._is_firing = False
+            if target.health > 0:
+                self._timer = 0  # reset for next shot
+            else:
+                self._attack_target = None
+                self._start_idle()
 
 
 # ═══════════════════════════════════════════════════════════════════════════

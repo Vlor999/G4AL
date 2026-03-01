@@ -46,7 +46,7 @@ class CommandResponse:
     actions: list[NPCOrder]  # individual orders
 
 
-VALID_ACTIONS = ["chop_wood", "mine_rock", "build", "move_to", "eat", "plant_wheat", "collect_wheat"]
+VALID_ACTIONS = ["chop_wood", "mine_rock", "build", "move_to", "eat", "plant_wheat", "collect_wheat", "shoot", "defend"]
 
 
 # ═══════════════════════════════════════════════════════════════════════════

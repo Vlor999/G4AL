@@ -67,6 +67,8 @@ _ACTION_MAP = {
     "eat": ActionType.EAT,
     "plant_wheat": ActionType.PLANT_WHEAT,
     "collect_wheat": ActionType.collect_wheat,
+    "shoot": ActionType.SHOOT,
+    "defend": ActionType.DEFEND,
 }
 
 
@@ -79,6 +81,7 @@ class GameEngine:
         self.resources: List[Resource] = spawn_resources(self.game_map)
         self.npcs: List[NPC] = []
         self.fauna: List[Fauna] = []
+        self.arrows: list[dict] = []  # active arrow projectiles
         self.tts = TTSEngine()
         self.log_messages: list[str] = []
         self._lock = threading.Lock()
@@ -152,6 +155,16 @@ class GameEngine:
             self.game_map, self.resources,
             sheep_count=6, wild_archer_count=3,
         )
+        # Give archers references to fauna list and shared arrows
+        for npc in self.npcs:
+            if isinstance(npc, Archer):
+                npc._all_fauna = self.fauna
+                npc._arrows = self.arrows
+        # Give wild archers references to NPC list and shared arrows
+        for creature in self.fauna:
+            if isinstance(creature, WildArcher):
+                creature._all_npcs = self.npcs
+                creature._arrows = self.arrows
 
     def _sync_npc_roster(self):
         if not _HAS_LLM:
@@ -181,6 +194,23 @@ class GameEngine:
             for r in self.resources:
                 if isinstance(r, WheatField):
                     r.grow_tick()
+
+            # Advance arrow projectiles (mutate in-place to keep shared ref)
+            for arrow in self.arrows:
+                arrow["frame"] += 1
+            self.arrows[:] = [a for a in self.arrows if a["frame"] < a["totalFrames"]]
+
+            # Remove dead fauna
+            self.fauna = [f for f in self.fauna if f.health > 0]
+
+            # Remove dead NPCs (mutate in-place to keep shared ref with WildArchers)
+            dead_npcs = [n for n in self.npcs if n.health <= 0]
+            if dead_npcs:
+                selected_died = any(n.selected for n in dead_npcs)
+                self.npcs[:] = [n for n in self.npcs if n.health > 0]
+                # If the selected NPC died, auto-select another one
+                if selected_died and self.npcs:
+                    self.npcs[0].selected = True
 
     # ── commands ─────────────────────────────────────────────────────────
 
@@ -267,6 +297,7 @@ class GameEngine:
                 "resources": self._serialize_resources(),
                 "npcs": self._serialize_npcs(),
                 "fauna": self._serialize_fauna(),
+                "arrows": self._serialize_arrows(),
                 "storage": self.storage.snapshot(),
                 "log": list(self.log_messages[-20:]),
             }
@@ -305,6 +336,7 @@ class GameEngine:
                 "name": n.name,
                 "kind": n.kind,
                 "controllable": n.controllable,
+                "allowedActions": [a.value for a in n.allowed_actions],
                 "x": round(n.x, 1),
                 "y": round(n.y, 1),
                 "tileCol": n.tile_pos[0],
@@ -317,6 +349,8 @@ class GameEngine:
                 "actionType": n._current_action.action_type.value if n._current_action else "",
                 "selected": n.selected,
                 "speechText": n._speech_text if n._speech_timer > 0 else "",
+                "isFiring": getattr(n, '_is_firing', False),
+                "isDefending": getattr(n, '_defending', False),
                 "queueSize": n.queue_size,
                 "isCarrying": n.is_carrying,
                 "carrying": dict(n.carrying),
@@ -338,6 +372,21 @@ class GameEngine:
                 "health": round(f.health, 1),
                 "maxHealth": f.max_health,
                 "state": f.state.name,
+                "isFiring": getattr(f, '_is_firing', False),
+            })
+        return result
+
+    def _serialize_arrows(self) -> list[dict]:
+        result = []
+        for a in self.arrows:
+            progress = a["frame"] / max(1, a["totalFrames"])
+            result.append({
+                "fromX": round(a["fromX"], 1),
+                "fromY": round(a["fromY"], 1),
+                "toX": round(a["toX"], 1),
+                "toY": round(a["toY"], 1),
+                "progress": round(progress, 3),
+                "team": a.get("team", "blue"),
             })
         return result
 

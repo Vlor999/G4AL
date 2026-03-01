@@ -130,12 +130,19 @@ class GameEngine:
             if placed >= count:
                 break
 
-        # Spawn 2 playable archers near the starting position
+        # Spawn 2 playable archers close to the storage hut
+        hut_col, hut_row = STORAGE_HUT_COL, STORAGE_HUT_ROW
         archer_placed = 0
-        for dc in range(-4, 5):
-            for dr in range(-4, 5):
-                c, r = cx + dc, cy + dr
-                if self.game_map.is_walkable(c, r) and (c, r) not in entity_tiles:
+        for dist in range(1, 6):
+            for dc in range(-dist, dist + 1):
+                for dr in range(-dist, dist + 1):
+                    if abs(dc) != dist and abs(dr) != dist:
+                        continue
+                    c, r = hut_col + dc, hut_row + dr
+                    if not self.game_map.is_walkable(c, r):
+                        continue
+                    if (c, r) in entity_tiles:
+                        continue
                     wx, wy = self.game_map.tile_center(c, r)
                     archer = Archer(
                         wx, wy, self.game_map, self.resources,
@@ -146,6 +153,8 @@ class GameEngine:
                     archer_placed += 1
                     if archer_placed >= 2:
                         break
+                if archer_placed >= 2:
+                    break
             if archer_placed >= 2:
                 return
 

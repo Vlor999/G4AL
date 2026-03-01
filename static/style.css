@@ -401,7 +401,7 @@ body {
 
 #game-canvas {
     display: block;
-    cursor: crosshair;
+    cursor: url('assets/UI%20Elements/UI%20Elements/Cursors/Cursor_01.png') 23 17, crosshair;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════

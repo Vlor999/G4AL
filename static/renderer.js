@@ -199,7 +199,8 @@
         const ts = G.mapCached.tileSize;
         const drawList = [];
         for (const res of G.gameState.resources) {
-            drawList.push({ type: "res", obj: res, footY: (res.row + 1) * ts });
+            const gh = res.gridHeight || 1;
+            drawList.push({ type: "res", obj: res, footY: (res.row + gh) * ts });
         }
         for (const npc of G.gameState.npcs) {
             drawList.push({ type: "npc", obj: npc, footY: npc.y });
@@ -214,8 +215,10 @@
         for (const item of drawList) {
             if (item.type === "res") {
                 const res = item.obj;
-                const sx = res.col * ts + ts / 2 - G.camX;
-                const sy = res.row * ts + ts / 2 - G.camY;
+                const gw = res.gridWidth || 1;
+                const gh = res.gridHeight || 1;
+                const sx = res.col * ts + (gw * ts) / 2 - G.camX;
+                const sy = res.row * ts + (gh * ts) / 2 - G.camY;
                 if (sx < -ts * 3 || sx > W + ts * 3 || sy < -ts * 3 || sy > H + ts * 3) continue;
                 drawResource(ctx, res, sx, sy, ts);
             } else if (item.type === "npc") {
@@ -414,10 +417,17 @@
                 const isHut = res.buildingType === "storage_hut";
                 const houseKey = isHut ? "house1" : "house" + (posHash(res.col, res.row, 3) + 1);
                 const houseSpr = spr[houseKey] || spr.house1;
+                const sgw = res.gridWidth || 2;
+                const sgh = res.gridHeight || 2;
+                // Sprite width = footprint width; height = 1.5× width (room for roof)
+                const dw = sgw * ts;
+                const dh = dw * 1.5;
+                // Anchor sprite base at the bottom of the footprint
+                // sy is the footprint center, so bottom = sy + (sgh * ts) / 2
+                const baseY = sy + (sgh * ts) / 2;
                 if (res.built) {
                     if (houseSpr) {
-                        const dw = ts * 2, dh = ts * 3;
-                        ctx.drawImage(houseSpr, sx - dw / 2, sy - dh + ts * 0.6, dw, dh);
+                        ctx.drawImage(houseSpr, sx - dw / 2, baseY - dh, dw, dh);
                     } else {
                         ctx.fillStyle = "#654321"; ctx.fillRect(sx - 20, sy - 20, 40, 40);
                         ctx.strokeStyle = "#503018"; ctx.lineWidth = 2; ctx.strokeRect(sx - 20, sy - 20, 40, 40);
@@ -428,7 +438,7 @@
                     // Storage Hut label (pixel-art style) + capacity
                     if (isHut) {
                         const label = "STORAGE HUT";
-                        const ly = sy - ts * 2.15;
+                        const ly = baseY - dh - 8;
                         ctx.font = "bold 9px Consolas, monospace";
                         ctx.textAlign = "center";
                         ctx.letterSpacing = "2px";
@@ -464,14 +474,13 @@
                 } else {
                     if (houseSpr) {
                         ctx.globalAlpha = 0.2 + 0.8 * (res.buildProgress / 100);
-                        const dw = ts * 2, dh = ts * 3;
-                        ctx.drawImage(houseSpr, sx - dw / 2, sy - dh + ts * 0.6, dw, dh);
+                        ctx.drawImage(houseSpr, sx - dw / 2, baseY - dh, dw, dh);
                         ctx.globalAlpha = 1;
                     } else {
                         ctx.fillStyle = "#8b7765"; ctx.fillRect(sx - 20, sy - 20, 40, 40);
                         ctx.strokeStyle = "#50403c"; ctx.lineWidth = 2; ctx.strokeRect(sx - 20, sy - 20, 40, 40);
                     }
-                    drawBar(ctx, sx, sy - ts - 10, 36, 5, res.buildProgress / 100, "#4caf50");
+                    drawBar(ctx, sx, baseY - dh - 10, 36, 5, res.buildProgress / 100, "#4caf50");
                 }
                 break;
             }

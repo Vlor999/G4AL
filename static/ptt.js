@@ -18,7 +18,7 @@
             el.id = "ptt-indicator";
             el.textContent = "\ud83c\udfa4 Recording\u2026";
             el.style.cssText = `
-                position:fixed; top:12px; left:50%; transform:translateX(-50%);
+                position:fixed; top:48px; left:50%; transform:translateX(-50%);
                 background:#e53935; color:#fff; padding:6px 18px; border-radius:20px;
                 font-weight:bold; font-size:14px; z-index:9999;
                 box-shadow:0 2px 8px rgba(0,0,0,0.4); display:none;

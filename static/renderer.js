@@ -339,14 +339,22 @@
                         ctx.moveTo(sx - 24, sy - 20); ctx.lineTo(sx + 24, sy - 20); ctx.lineTo(sx, sy - 38);
                         ctx.closePath(); ctx.fill();
                     }
-                    // Storage Hut label
+                    // Storage Hut label (pixel-art style)
                     if (isHut) {
-                        ctx.font = "bold 10px 'JetBrains Mono', Consolas, monospace";
+                        const label = "STORAGE HUT";
+                        const ly = sy - ts * 2.15;
+                        ctx.font = "bold 9px Consolas, monospace";
                         ctx.textAlign = "center";
-                        ctx.fillStyle = "rgba(0,0,0,0.6)";
-                        ctx.fillText("\u26fa Storage Hut", sx + 1, sy - ts * 2.1 + 1);
-                        ctx.fillStyle = "#ffe066";
-                        ctx.fillText("\u26fa Storage Hut", sx, sy - ts * 2.1);
+                        ctx.letterSpacing = "2px";
+                        // thick dark outline
+                        ctx.fillStyle = "#2a1a08";
+                        for (let ox = -1; ox <= 1; ox++)
+                            for (let oy = -1; oy <= 1; oy++)
+                                if (ox || oy) ctx.fillText(label, sx + ox, ly + oy);
+                        // bright fill
+                        ctx.fillStyle = "#f5deb3";
+                        ctx.fillText(label, sx, ly);
+                        ctx.letterSpacing = "0px";
                     }
                 } else {
                     if (houseSpr) {

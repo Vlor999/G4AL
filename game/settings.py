@@ -61,7 +61,7 @@ NPC_COLLECT_UNIT_TIME = 90   # frames to harvest 1 unit of any resource (1.5 s)
 
 # ── Storage Hut (deposit point for carried resources) ────────────────────
 STORAGE_HUT_COL = MAP_COLS // 2 - 1   # tile column of the hut origin
-STORAGE_HUT_ROW = MAP_ROWS // 2 - 1   # tile row    of the hut origin
+STORAGE_HUT_ROW = MAP_ROWS // 2 + 1   # tile row    of the hut origin
 
 # ── Building ─────────────────────────────────────────────────────────────
 BUILD_COST_WOOD = 5

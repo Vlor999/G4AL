@@ -408,7 +408,7 @@ class NPC:
 
     def _plan_move_to(self, col: int, row: int):
         start = self.tile_pos
-        blocked = self._occupied_by_npcs() | self._occupied_by_structures()
+        blocked = self._occupied_by_structures()
         path = find_path(self._map, start, (col, row), blocked=blocked)
         if not path:
             self.state = State.DONE
@@ -427,14 +427,6 @@ class NPC:
             return
 
         target_col, target_row = self._path[self._path_index]
-
-        # ── NPC-to-NPC tile collision: push blocker immediately ──────
-        my_tile = self.tile_pos
-        if my_tile != (target_col, target_row) and self._all_npcs:
-            for n in self._all_npcs:
-                if n.id != self.id and n.tile_pos == (target_col, target_row):
-                    self._push_npc_off_tile((target_col, target_row))
-                    break
 
         tx, ty = self._map.tile_center(target_col, target_row)
         dx, dy = tx - self.x, ty - self.y
@@ -472,10 +464,6 @@ class NPC:
             self._perform_duration = WHEAT_PLANT_TIME
             self.state = State.PERFORMING
         elif at == ActionType.collect_wheat:
-            # Push any NPC blocking the wheat field before harvesting
-            target = self._current_action.target
-            if target is not None:
-                self._push_npc_off_tile((target.col, target.row))
             self._perform_timer = 0
             self._perform_duration = NPC_COLLECT_UNIT_TIME
             self.state = State.PERFORMING
@@ -561,7 +549,7 @@ class NPC:
             self._deposit_at_hut()
             return
         start = self.tile_pos
-        blocked = self._occupied_by_npcs() | self._occupied_by_structures()
+        blocked = self._occupied_by_structures()
         path = find_path(self._map, start, adj, blocked=blocked)
         if not path:
             self._deposit_at_hut()

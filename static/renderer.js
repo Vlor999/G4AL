@@ -168,7 +168,7 @@
             }
         }
 
-        // 2.5D depth sort: merge resources + NPCs
+        // 2.5D depth sort: merge resources + NPCs + fauna
         const ts = G.mapCached.tileSize;
         const drawList = [];
         for (const res of G.gameState.resources) {
@@ -176,6 +176,11 @@
         }
         for (const npc of G.gameState.npcs) {
             drawList.push({ type: "npc", obj: npc, footY: npc.y });
+        }
+        if (G.gameState.fauna) {
+            for (const f of G.gameState.fauna) {
+                drawList.push({ type: "fauna", obj: f, footY: f.y });
+            }
         }
         drawList.sort((a, b) => a.footY - b.footY);
 
@@ -186,12 +191,18 @@
                 const sy = res.row * ts + ts / 2 - G.camY;
                 if (sx < -ts * 3 || sx > W + ts * 3 || sy < -ts * 3 || sy > H + ts * 3) continue;
                 drawResource(ctx, res, sx, sy, ts);
-            } else {
+            } else if (item.type === "npc") {
                 const npc = item.obj;
                 const sx = npc.x - G.camX;
                 const sy = npc.y - G.camY;
                 if (sx < -80 || sx > W + 80 || sy < -80 || sy > H + 80) continue;
                 drawNPC(ctx, npc, sx, sy);
+            } else if (item.type === "fauna") {
+                const f = item.obj;
+                const sx = f.x - G.camX;
+                const sy = f.y - G.camY;
+                if (sx < -80 || sx > W + 80 || sy < -80 || sy > H + 80) continue;
+                drawFauna(ctx, f, sx, sy);
             }
         }
 
@@ -553,6 +564,70 @@
         // Hunger bar
         const hungerRatio = npc.hunger / npc.maxHunger;
         drawBar(ctx, sx, sy + 8, 24, 4, hungerRatio, hungerRatio > 0.25 ? "#ff9800" : "#f44336");
+    }
+
+    // ── Draw Fauna (autonomous creatures like sheep) ──────────────────
+
+    function getFaunaSpriteInfo(f) {
+        const spr = G.sprites;
+        const st = f.state;
+
+        if (st === "GRAZING") {
+            return {
+                spr: spr.sheep_grass,
+                frames: G.cfgFrames("sheep_grass", 12),
+                speed: G.cfgSpeed("sheep_grass", "normal"),
+            };
+        }
+        if (st === "WANDERING") {
+            return {
+                spr: spr.sheep_move,
+                frames: G.cfgFrames("sheep_move", 4),
+                speed: G.cfgSpeed("sheep_move", "normal"),
+            };
+        }
+        // IDLE
+        return {
+            spr: spr.sheep_idle,
+            frames: G.cfgFrames("sheep_idle", 6),
+            speed: G.cfgSpeed("sheep_idle", "normal"),
+        };
+    }
+
+    function drawFauna(ctx, f, sx, sy) {
+        const spr = G.sprites;
+        const SIZE = 48;
+        const HALF = SIZE / 2;
+        const facingRight = G.updateFacing(f);
+
+        // Shadow
+        if (spr.shadow) {
+            ctx.globalAlpha = 0.2;
+            ctx.drawImage(spr.shadow, 0, 0, 192, 192, sx - HALF * 0.6, sy - 2, SIZE * 0.6, SIZE * 0.25);
+            ctx.globalAlpha = 1;
+        } else {
+            ctx.fillStyle = "rgba(0,0,0,0.18)";
+            ctx.beginPath(); ctx.ellipse(sx, sy, HALF * 0.5, HALF * 0.2, 0, 0, Math.PI * 2); ctx.fill();
+        }
+
+        // Sprite
+        const info = getFaunaSpriteInfo(f);
+        const frame = G.spriteFrame(info.frames, info.speed, f.id);
+        const spriteDrawn = info.spr && G.drawSpriteFrame(ctx, info.spr, frame, info.frames,
+            sx - HALF, sy - SIZE + 12, SIZE, SIZE, !facingRight);
+
+        if (!spriteDrawn) {
+            // Fallback: simple colored ellipse
+            ctx.fillStyle = "#e8e0d0";
+            ctx.beginPath(); ctx.ellipse(sx, sy - 10, 14, 10, 0, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = "#d0c8b8";
+            ctx.beginPath(); ctx.arc(sx + 10, sy - 12, 6, 0, Math.PI * 2); ctx.fill();
+        }
+
+        // HP bar (only if damaged)
+        if (f.health < f.maxHealth) {
+            drawBar(ctx, sx, sy - SIZE + 2, 24, 3, f.health / f.maxHealth, "#4caf50");
+        }
     }
 
     // ── Drawing helpers ─────────────────────────────────────────────────

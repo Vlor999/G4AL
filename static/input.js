@@ -33,8 +33,10 @@
         const wx = mx + G.camX;
         const wy = my + G.camY;
 
+        // Only select controllable entities (pawns), not fauna
         let clicked = null;
         for (const npc of G.gameState.npcs) {
+            if (!npc.controllable) continue;
             const dx = wx - npc.x;
             const dy = wy - npc.y;
             if (Math.sqrt(dx * dx + dy * dy) <= 30) {

@@ -38,13 +38,18 @@
             btn.disabled = !G.selectedId;
         });
 
-        // Roster
+        // Roster – only show controllable units (pawns)
         const rosterEl = document.getElementById("roster-list");
-        const rosterHTML = G.gameState.npcs.map(n => {
+        const pawns = G.gameState.npcs.filter(n => n.controllable !== false);
+        const faunaCount = G.gameState.fauna ? G.gameState.fauna.length : 0;
+        let rosterHTML = pawns.map(n => {
             const cls = n.selected ? "roster-entry selected" : "roster-entry";
             const marker = n.selected ? "\u25b8 " : "  ";
             return `<div class="${cls}" data-npc-id="${n.id}">${marker}${n.name}<span class="state-badge">${n.state}</span></div>`;
         }).join("");
+        if (faunaCount > 0) {
+            rosterHTML += `<div class="roster-entry fauna-count">\ud83d\udc11 ${faunaCount} fauna</div>`;
+        }
         if (rosterEl.innerHTML !== rosterHTML) rosterEl.innerHTML = rosterHTML;
 
         // Log

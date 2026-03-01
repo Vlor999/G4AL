@@ -173,6 +173,11 @@ window.G4AL = window.G4AL || {};
             loadImg("pawn_act_ham",   "Units/Blue Units/Pawn/Pawn_Interact Hammer.png"),
             loadImg("pawn_act_knife", "Units/Blue Units/Pawn/Pawn_Interact Knife.png"),
 
+            // Sheep sprites
+            loadImg("sheep_idle",  "Terrain/Resources/Meat/Sheep/Sheep_Idle.png"),
+            loadImg("sheep_move",  "Terrain/Resources/Meat/Sheep/Sheep_Move.png"),
+            loadImg("sheep_grass", "Terrain/Resources/Meat/Sheep/Sheep_Grass.png"),
+
             // Particle FX
             loadImg("dust1",  "Particle FX/Dust_01.png"),
             loadImg("dust2",  "Particle FX/Dust_02.png"),

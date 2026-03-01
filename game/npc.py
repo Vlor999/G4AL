@@ -160,6 +160,10 @@ def _pick_name() -> str:
 
 
 class NPC:
+    """Playable pawn – receives voice/click commands and has an action queue."""
+
+    kind: str = "pawn"
+    controllable: bool = True
     _next_id = 1
 
     def __init__(

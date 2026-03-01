@@ -39,6 +39,7 @@ from game.map import GameMap
 from game.entities import Resource, spawn_resources, Rock, Structure, WheatField
 from game.storage import ResourceStorage
 from game.npc import NPC, Action, ActionType
+from game.creatures import Fauna, Sheep, spawn_fauna
 from api.logger import pipeline_logger
 from api.tts import TTSEngine
 
@@ -76,6 +77,7 @@ class GameEngine:
         self.storage = ResourceStorage()
         self.resources: List[Resource] = spawn_resources(self.game_map)
         self.npcs: List[NPC] = []
+        self.fauna: List[Fauna] = []
         self.tts = TTSEngine()
         self.log_messages: list[str] = []
         self._lock = threading.Lock()
@@ -83,6 +85,7 @@ class GameEngine:
         self._pending_response: Optional[CommandResponse] = None
 
         self._spawn_initial_npcs(3)
+        self._spawn_fauna()
         self._sync_npc_roster()
 
     def _spawn_initial_npcs(self, count: int):
@@ -103,6 +106,16 @@ class GameEngine:
                     placed += 1
                     if placed >= count:
                         return
+
+    def _spawn_fauna(self):
+        """Spawn autonomous creatures (sheep, etc.) on the map."""
+        entity_tiles = {(r.col, r.row) for r in self.resources}
+        npc_tiles = set()
+        for n in self.npcs:
+            npc_tiles.add(n.tile_pos)
+        self.fauna = spawn_fauna(
+            self.game_map, self.resources, sheep_count=6
+        )
 
     def _sync_npc_roster(self):
         if not _HAS_LLM:
@@ -125,6 +138,9 @@ class GameEngine:
 
             for npc in self.npcs:
                 npc.update()
+
+            for creature in self.fauna:
+                creature.update()
 
             for r in self.resources:
                 if isinstance(r, WheatField):
@@ -214,6 +230,7 @@ class GameEngine:
                 },
                 "resources": self._serialize_resources(),
                 "npcs": self._serialize_npcs(),
+                "fauna": self._serialize_fauna(),
                 "storage": self.storage.snapshot(),
                 "log": list(self.log_messages[-20:]),
             }
@@ -250,6 +267,8 @@ class GameEngine:
             result.append({
                 "id": n.id,
                 "name": n.name,
+                "kind": n.kind,
+                "controllable": n.controllable,
                 "x": round(n.x, 1),
                 "y": round(n.y, 1),
                 "tileCol": n.tile_pos[0],
@@ -263,6 +282,24 @@ class GameEngine:
                 "selected": n.selected,
                 "speechText": n._speech_text if n._speech_timer > 0 else "",
                 "queueSize": n.queue_size,
+            })
+        return result
+
+    def _serialize_fauna(self) -> list[dict]:
+        result = []
+        for f in self.fauna:
+            result.append({
+                "id": f.id,
+                "name": f.name,
+                "kind": f.kind,
+                "controllable": False,
+                "x": round(f.x, 1),
+                "y": round(f.y, 1),
+                "tileCol": f.tile_pos[0],
+                "tileRow": f.tile_pos[1],
+                "health": round(f.health, 1),
+                "maxHealth": f.max_health,
+                "state": f.state.name,
             })
         return result
 

@@ -457,6 +457,16 @@ body {
     text-transform: uppercase;
 }
 
+.roster-entry.fauna-count {
+    color: var(--primary);
+    opacity: 0.5;
+    font-size: 11px;
+    cursor: default;
+    border-top: 1px solid rgba(245, 240, 230, 0.08);
+    margin-top: 4px;
+    padding-top: 6px;
+}
+
 /* ── Event Log ───────────────────────────────────────────────────────────── */
 
 #log-section {

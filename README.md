@@ -40,12 +40,6 @@ Flask + Socket.IO Server (server.py)
 - A **Mistral API key** ([console.mistral.ai](https://console.mistral.ai/))
 - (Optional) An **ElevenLabs API key** for NPC voice lines ([elevenlabs.io](https://elevenlabs.io/))
 
-### Install PortAudio (macOS)
-
-```bash
-brew install portaudio
-```
-
 ---
 
 ## 🚀 Quickstart
@@ -53,8 +47,8 @@ brew install portaudio
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/Vlor999/g4al-survival.git
-cd g4al-survival
+git clone https://github.com/Vlor999/G4AL.git
+cd G4AL
 ```
 
 ### 2. Install dependencies

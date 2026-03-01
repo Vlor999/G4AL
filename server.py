@@ -272,6 +272,7 @@ class GameEngine:
                 "hunger": round(n.hunger, 1),
                 "maxHunger": n.max_hunger,
                 "state": n.state.name,
+                "actionType": n._current_action.action_type.value if n._current_action else "",
                 "selected": n.selected,
                 "speechText": n._speech_text if n._speech_timer > 0 else "",
                 "queueSize": n.queue_size,
@@ -464,9 +465,9 @@ def main():
     )
     game_thread.start()
 
-    print("\n  G4AL Web UI → http://127.0.0.1:5000\n")
+    print("\n  G4AL Web UI → http://127.0.0.1:8000\n")
     try:
-        socketio.run(app, host="0.0.0.0", port=5000,
+        socketio.run(app, host="0.0.0.0", port=8000,
                      debug=False, use_reloader=False,
                      allow_unsafe_werkzeug=True)
     except KeyboardInterrupt:

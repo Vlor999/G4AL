@@ -45,7 +45,6 @@ from api.tts import TTSEngine
 # Lazy-import LLM
 try:
     from api.interpreter import (
-        interpret_command,
         interpret_audio_command,
         register_npcs,
         CommandResponse,
@@ -160,21 +159,6 @@ class GameEngine:
         with self._lock:
             for n in self.npcs:
                 n.selected = False
-
-    def send_text_command(self, text: str):
-        """Process a natural language command via LLM (runs in bg thread)."""
-        if not _HAS_LLM:
-            self._add_log("LLM not available")
-            return
-        self._add_log("Thinking...")
-        threading.Thread(
-            target=self._llm_worker, args=(text,), daemon=True
-        ).start()
-
-    def _llm_worker(self, text: str):
-        result = interpret_command(text)
-        with self._lock:
-            self._pending_response = result
 
     def _apply_pending_response(self):
         response = self._pending_response

@@ -84,5 +84,12 @@ class ResourceStorage:
             "houseCount": self._house_count,
         }
 
+    def discard(self, resource: str, amount: int) -> int:
+        """Discard (destroy) resources. Returns the amount actually removed."""
+        current = self._stock.get(resource, 0)
+        actual = min(amount, current)
+        self._stock[resource] -= actual
+        return actual
+
     def __repr__(self):
         return f"Storage({self._stock}, cap={self.capacity})"

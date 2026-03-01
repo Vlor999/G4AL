@@ -45,7 +45,8 @@ class State(Enum):
     IDLE = auto()
     MOVING = auto()
     PERFORMING = auto()
-    RETURNING = auto()   # carrying a resource back to the storage hut
+    RETURNING = auto()        # carrying a resource back to the storage hut
+    WAITING_DEPOSIT = auto()  # at the hut, waiting for storage space
     DONE = auto()
 
 
@@ -308,6 +309,11 @@ class NPC:
 
         elif self.state == State.RETURNING:
             self._follow_path()          # reuses the standard path follower
+
+        elif self.state == State.WAITING_DEPOSIT:
+            # Stand at the hut waiting for the player to free up storage
+            if not self._storage.is_full:
+                self._deposit_at_hut()
 
         elif self.state == State.DONE:
             # finished current action, release reservation and try next
@@ -612,13 +618,10 @@ class NPC:
             self._next_action()
             return
 
-        # If storage is full, stop collecting and go idle
+        # If storage is full, wait at the hut for the player to discard
         if self._storage.is_full:
-            self.say("Storage is full!", 180)
-            self._last_harvest_action = None
-            self._last_harvest_target = None
-            self._current_action = None
-            self.state = State.IDLE
+            self.say("Storage full!", 180)
+            self.state = State.WAITING_DEPOSIT
             return
 
         # Auto-loop: go back to the same (or a new) resource

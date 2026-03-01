@@ -304,6 +304,11 @@ class GameEngine:
     def get_state(self) -> dict:
         """Return full game state as a JSON-serializable dict."""
         with self._lock:
+            # Check if any NPC is waiting to deposit (storage full alert)
+            from game.npc import State as NpcState
+            storage_full_alert = any(
+                n.state == NpcState.WAITING_DEPOSIT for n in self.npcs
+            )
             return {
                 "map": {
                     "cols": self.game_map.cols,
@@ -319,6 +324,7 @@ class GameEngine:
                 "fauna": self._serialize_fauna(),
                 "arrows": self._serialize_arrows(),
                 "storage": self.storage.snapshot(),
+                "storageFullAlert": storage_full_alert,
                 "log": list(self.log_messages[-20:]),
             }
 
@@ -548,6 +554,43 @@ def post_move():
         return jsonify({"error": "npcId, col, row required"}), 400
     engine.enqueue_action(npc_id, "move_to", [col, row])
     return jsonify({"ok": True})
+
+
+@app.route("/api/discard", methods=["POST"])
+def post_discard():
+    """Discard resources from storage to free up capacity.
+
+    Body: { "wood": 5, "stone": 3, "gold": 0, "wheat": 2 }
+    Each field is optional; only listed resources are discarded.
+    """
+    data = request.get_json(force=True)
+    discarded = {}
+    with engine._lock:
+        for res_type in ("wood", "stone", "gold", "wheat"):
+            amount = data.get(res_type, 0)
+            if isinstance(amount, (int, float)) and amount > 0:
+                actual = engine.storage.discard(res_type, int(amount))
+                if actual > 0:
+                    discarded[res_type] = actual
+    return jsonify({"ok": True, "discarded": discarded})
+
+
+@app.route("/api/dismiss_storage", methods=["POST"])
+def post_dismiss_storage():
+    """Release all NPCs stuck in WAITING_DEPOSIT → IDLE."""
+    from game.npc import State as NpcState
+    released = 0
+    with engine._lock:
+        for npc in engine.npcs:
+            if npc.state == NpcState.WAITING_DEPOSIT:
+                npc.is_carrying = False
+                npc.carrying = {}
+                npc._last_harvest_action = None
+                npc._last_harvest_target = None
+                npc._current_action = None
+                npc.state = NpcState.IDLE
+                released += 1
+    return jsonify({"ok": True, "released": released})
 
 
 @app.route("/api/audio", methods=["POST"])

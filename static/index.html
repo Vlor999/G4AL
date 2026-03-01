@@ -130,6 +130,62 @@
         </div>
     </div>
 
+    <!-- ══ STORAGE FULL MODAL ══════════════════════════════════════ -->
+    <div id="storage-full-modal" class="hidden">
+        <div id="storage-full-modal-box">
+            <div class="modal-border-top"></div>
+            <div class="modal-header">
+                <div>STORAGE_FULL</div>
+                <button id="storage-full-close-btn" class="modal-close-btn">[X]</button>
+            </div>
+            <div class="modal-body">
+                <p class="modal-line">// STORAGE CAPACITY REACHED</p>
+                <p class="modal-line dim">Your NPCs can't deposit resources. Discard items to free up space.</p>
+
+                <div id="discard-grid" style="margin:14px 0;">
+                    <div class="discard-row">
+                        <span class="discard-icon">🪵</span>
+                        <span class="discard-label">WOOD</span>
+                        <span class="discard-current" id="discard-wood-cur">0</span>
+                        <button class="discard-btn minus" data-res="wood" data-dir="-1">−</button>
+                        <span class="discard-amount" id="discard-wood-amt">0</span>
+                        <button class="discard-btn plus" data-res="wood" data-dir="1">+</button>
+                    </div>
+                    <div class="discard-row">
+                        <span class="discard-icon">🪨</span>
+                        <span class="discard-label">STONE</span>
+                        <span class="discard-current" id="discard-stone-cur">0</span>
+                        <button class="discard-btn minus" data-res="stone" data-dir="-1">−</button>
+                        <span class="discard-amount" id="discard-stone-amt">0</span>
+                        <button class="discard-btn plus" data-res="stone" data-dir="1">+</button>
+                    </div>
+                    <div class="discard-row">
+                        <span class="discard-icon">💰</span>
+                        <span class="discard-label">GOLD</span>
+                        <span class="discard-current" id="discard-gold-cur">0</span>
+                        <button class="discard-btn minus" data-res="gold" data-dir="-1">−</button>
+                        <span class="discard-amount" id="discard-gold-amt">0</span>
+                        <button class="discard-btn plus" data-res="gold" data-dir="1">+</button>
+                    </div>
+                    <div class="discard-row">
+                        <span class="discard-icon">🌾</span>
+                        <span class="discard-label">WHEAT</span>
+                        <span class="discard-current" id="discard-wheat-cur">0</span>
+                        <button class="discard-btn minus" data-res="wheat" data-dir="-1">−</button>
+                        <span class="discard-amount" id="discard-wheat-amt">0</span>
+                        <button class="discard-btn plus" data-res="wheat" data-dir="1">+</button>
+                    </div>
+                </div>
+
+                <p class="modal-line dim" id="discard-summary" style="color:var(--accent);font-weight:700;">Select resources to discard</p>
+                <button id="discard-confirm-btn">[CONFIRM_DISCARD]</button>
+            </div>
+            <div class="modal-footer">
+                <span class="modal-cursor">█</span> WORKERS WAITING...
+            </div>
+        </div>
+    </div>
+
     <!-- CRT scanline overlay -->
     <div id="crt-overlay" aria-hidden="true"></div>
 

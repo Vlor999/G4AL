@@ -83,7 +83,9 @@
             const cls = n.selected ? "roster-entry selected" : "roster-entry";
             const marker = n.selected ? "\u25b8 " : "  ";
             const icon = n.kind === "archer" ? "\ud83c\udff9 " : "";
-            const stateLabel = n.isDefending ? "DEFENDING" : n.state;
+            const stateLabel = n.isDefending ? "DEFENDING"
+                : n.state === "WAITING_DEPOSIT" ? "STORAGE FULL"
+                : n.state;
             return `<div class="${cls}" data-npc-id="${n.id}">${marker}${icon}${n.name}<span class="state-badge">${stateLabel}</span></div>`;
         }).join("");
         if (sheepCount > 0) {
@@ -235,5 +237,142 @@
             if (e.key === "ArrowRight") showGuidePage(currentGuidePage + 1);
         });
     }
+
+    // ── Storage Full Modal ────────────────────────────────────────────────
+
+    const sfModal        = document.getElementById("storage-full-modal");
+    const sfCloseBtn     = document.getElementById("storage-full-close-btn");
+    const sfConfirmBtn   = document.getElementById("discard-confirm-btn");
+    const sfSummary      = document.getElementById("discard-summary");
+    let sfOpen = false;          // true while the modal is visible
+    let sfDismissed = false;     // true after the user closes without discarding
+    const discardAmounts = { wood: 0, stone: 0, gold: 0, wheat: 0 };
+
+    function resetDiscardAmounts() {
+        for (const k in discardAmounts) discardAmounts[k] = 0;
+        ["wood", "stone", "gold", "wheat"].forEach(r => {
+            const el = document.getElementById("discard-" + r + "-amt");
+            if (el) el.textContent = "0";
+        });
+        updateDiscardSummary();
+    }
+
+    function updateDiscardSummary() {
+        const total = discardAmounts.wood + discardAmounts.stone + discardAmounts.gold + discardAmounts.wheat;
+        if (total === 0) {
+            sfSummary.textContent = "Select resources to discard";
+            sfConfirmBtn.disabled = true;
+        } else {
+            sfSummary.textContent = "Discard " + total + " item" + (total > 1 ? "s" : "");
+            sfConfirmBtn.disabled = false;
+        }
+    }
+
+    function populateDiscardCurrent() {
+        if (!G.gameState) return;
+        const s = G.gameState.storage;
+        ["wood", "stone", "gold", "wheat"].forEach(r => {
+            const el = document.getElementById("discard-" + r + "-cur");
+            if (el) el.textContent = s[r] || 0;
+        });
+    }
+
+    function showStorageFullModal() {
+        if (sfOpen) return;     // already visible – don't duplicate
+        sfOpen = true;
+        sfDismissed = false;
+        resetDiscardAmounts();
+        populateDiscardCurrent();
+        sfModal.classList.remove("hidden");
+    }
+
+    function hideStorageFullModal() {
+        sfOpen = false;
+        sfModal.classList.add("hidden");
+    }
+
+    // +/- buttons
+    if (sfModal) {
+        sfModal.querySelectorAll(".discard-btn").forEach(btn => {
+            btn.addEventListener("click", () => {
+                const res = btn.dataset.res;
+                const dir = parseInt(btn.dataset.dir, 10);
+                if (!res || !G.gameState) return;
+                const current = G.gameState.storage[res] || 0;
+                const newVal = discardAmounts[res] + dir;
+                discardAmounts[res] = Math.max(0, Math.min(newVal, current));
+                const el = document.getElementById("discard-" + res + "-amt");
+                if (el) el.textContent = discardAmounts[res];
+                updateDiscardSummary();
+            });
+        });
+    }
+
+    // Close button – dismiss without discarding; release waiting NPCs
+    if (sfCloseBtn) {
+        sfCloseBtn.addEventListener("click", () => {
+            sfDismissed = true;
+            hideStorageFullModal();
+            fetch("/api/dismiss_storage", { method: "POST" }).catch(() => {});
+        });
+    }
+
+    // Click outside modal box
+    if (sfModal) {
+        sfModal.addEventListener("click", (e) => {
+            if (e.target === sfModal) {
+                sfDismissed = true;
+                hideStorageFullModal();
+                fetch("/api/dismiss_storage", { method: "POST" }).catch(() => {});
+            }
+        });
+    }
+
+    // Confirm discard
+    if (sfConfirmBtn) {
+        sfConfirmBtn.addEventListener("click", async () => {
+            const total = discardAmounts.wood + discardAmounts.stone + discardAmounts.gold + discardAmounts.wheat;
+            if (total === 0) return;
+            sfConfirmBtn.disabled = true;
+            sfConfirmBtn.textContent = "[DISCARDING...]";
+            try {
+                await fetch("/api/discard", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(discardAmounts),
+                });
+            } catch (err) {
+                console.warn("Discard failed:", err);
+            }
+            sfConfirmBtn.textContent = "[CONFIRM_DISCARD]";
+            hideStorageFullModal();
+            sfDismissed = false;  // allow modal to re-appear if still full later
+        });
+    }
+
+    // ── Auto-show / auto-hide based on game state ───────────────────────
+
+    G._checkStorageFullAlert = function () {
+        if (!G.gameState) return;
+
+        const alert = G.gameState.storageFullAlert;
+
+        // Auto-hide if storage is no longer full (e.g. resources spent on building)
+        if (sfOpen && !alert) {
+            hideStorageFullModal();
+            sfDismissed = false;
+            return;
+        }
+
+        // Show if alert active and not already showing and not dismissed
+        if (alert && !sfOpen && !sfDismissed) {
+            showStorageFullModal();
+        }
+
+        // If dismissed BUT alert is gone then reset dismissed flag
+        if (!alert) {
+            sfDismissed = false;
+        }
+    };
 
 })(window.G4AL);

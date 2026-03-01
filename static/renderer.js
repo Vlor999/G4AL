@@ -341,6 +341,7 @@
         // UI overlay
         G.updateUI();
         G.updateSpeechBubbles();
+        if (G._checkStorageFullAlert) G._checkStorageFullAlert();
 
         requestAnimationFrame(G.render);
     };

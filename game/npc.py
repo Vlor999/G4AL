@@ -602,8 +602,21 @@ class NPC:
 
     def _deposit_at_hut(self):
         """Deposit carried resources into global storage and auto-loop."""
+        leftover: dict[str, int] = {}
         for res_type, amount in self.carrying.items():
-            self._storage.add(res_type, amount)
+            actual = self._storage.add(res_type, amount)
+            remaining = amount - actual
+            if remaining > 0:
+                leftover[res_type] = remaining
+
+        # If not everything could be deposited, keep the remainder
+        if leftover:
+            self.carrying = leftover
+            self.is_carrying = True
+            self.say("Storage full!", 180)
+            self.state = State.WAITING_DEPOSIT
+            return
+
         self.is_carrying = False
         self.carrying = {}
 
@@ -616,12 +629,6 @@ class NPC:
             self._last_harvest_target = None
             self._current_action = None
             self._next_action()
-            return
-
-        # If storage is full, wait at the hut for the player to discard
-        if self._storage.is_full:
-            self.say("Storage full!", 180)
-            self.state = State.WAITING_DEPOSIT
             return
 
         # Auto-loop: go back to the same (or a new) resource
@@ -651,10 +658,6 @@ class NPC:
             target = self._current_action.target
             if target.reserved_by == self.id:
                 target.reserved_by = None
-
-    def _occupied_by_npcs(self) -> set[Tuple[int, int]]:
-        """Return set of tiles currently occupied by *other* NPCs."""
-        return {n.tile_pos for n in self._all_npcs if n.id != self.id}
 
     def _occupied_by_structures(self) -> set[Tuple[int, int]]:
         """Return set of tiles occupied by non-depleted multi-tile structures."""
@@ -776,29 +779,6 @@ class NPC:
         mc, mr = self.tile_pos
         return min(candidates, key=lambda p: abs(p[0] - mc) + abs(p[1] - mr))
 
-    def _push_npc_off_tile(self, tile: Tuple[int, int]) -> bool:
-        """If another NPC is standing on *tile*, nudge them to an adjacent
-        free walkable tile.  Returns True if the tile is now clear."""
-        blocker: Optional[NPC] = None
-        for n in self._all_npcs:
-            if n.id != self.id and n.tile_pos == tile:
-                blocker = n
-                break
-        if blocker is None:
-            return True  # already clear
-
-        # find an adjacent walkable tile that isn't occupied by yet another NPC
-        occupied = self._occupied_by_npcs()
-        for dc, dr in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
-            nc, nr = tile[0] + dc, tile[1] + dr
-            if self._map.is_walkable(nc, nr) and (nc, nr) not in occupied:
-                # teleport the blocker to the adjacent tile center
-                bx, by = self._map.tile_center(nc, nr)
-                blocker.x, blocker.y = bx, by
-                blocker.say("Excuse me!", 60)
-                return True
-        return False  # no room to push
-
     def _find_nearest(self, kind: type) -> Optional[Resource]:
         best: Optional[Resource] = None
         best_dist = float("inf")
@@ -860,11 +840,13 @@ class Archer(NPC):
         all_npcs: Optional[List["NPC"]] = None,
         name: Optional[str] = None,
         all_fauna: Optional[list] = None,
+        hut: Optional[Structure] = None,
     ):
         super().__init__(
             x, y, game_map, resources, storage,
             all_npcs=all_npcs,
             name=name or _pick_archer_name(),
+            hut=hut,
         )
         self.speed = NPC_SPEED * 1.1  # archers are slightly faster
         self.max_health = 70

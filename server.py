@@ -48,6 +48,7 @@ from api.tts import TTSEngine
 try:
     from api.interpreter import (
         interpret_audio_command,
+        interpret_text_command,
         register_npcs,
         CommandResponse,
     )
@@ -140,6 +141,7 @@ class GameEngine:
                     archer = Archer(
                         wx, wy, self.game_map, self.resources,
                         self.storage, all_npcs=self.npcs,
+                        hut=self.storage_hut,
                     )
                     self.npcs.append(archer)
                     entity_tiles.add((c, r))
@@ -220,8 +222,8 @@ class GameEngine:
                 arrow["frame"] += 1
             self.arrows[:] = [a for a in self.arrows if a["frame"] < a["totalFrames"]]
 
-            # Remove dead fauna
-            self.fauna = [f for f in self.fauna if f.health > 0]
+            # Remove dead fauna (mutate in-place to keep shared references)
+            self.fauna[:] = [f for f in self.fauna if f.health > 0]
 
             # Remove dead NPCs (mutate in-place to keep shared ref with WildArchers)
             dead_npcs = [n for n in self.npcs if n.health <= 0]
@@ -428,8 +430,23 @@ class GameEngine:
             target=self._audio_worker, args=(wav_bytes,), daemon=True
         ).start()
 
+    def send_text_command(self, text: str):
+        """Process a natural-language text command via LLM (runs in bg thread)."""
+        if not _HAS_LLM:
+            self._add_log("LLM not available")
+            return
+        self._add_log(f"Command: {text}")
+        threading.Thread(
+            target=self._text_worker, args=(text,), daemon=True
+        ).start()
+
     def _audio_worker(self, wav_bytes: bytes):
         result = interpret_audio_command(wav_bytes)
+        with self._lock:
+            self._pending_response = result
+
+    def _text_worker(self, text: str):
+        result = interpret_text_command(text)
         with self._lock:
             self._pending_response = result
 
@@ -552,6 +569,9 @@ def post_move():
     row = data.get("row")
     if npc_id is None or col is None or row is None:
         return jsonify({"error": "npcId, col, row required"}), 400
+    # Validate tile coordinates are within map bounds
+    if not (0 <= col < engine.game_map.cols and 0 <= row < engine.game_map.rows):
+        return jsonify({"error": "col/row out of bounds"}), 400
     engine.enqueue_action(npc_id, "move_to", [col, row])
     return jsonify({"ok": True})
 
@@ -577,14 +597,14 @@ def post_discard():
 
 @app.route("/api/dismiss_storage", methods=["POST"])
 def post_dismiss_storage():
-    """Release all NPCs stuck in WAITING_DEPOSIT → IDLE."""
+    """Release all NPCs stuck in WAITING_DEPOSIT → IDLE.
+    NPCs keep their carried resources; they will auto-return to the hut
+    when storage has space again (or when a new action is enqueued)."""
     from game.npc import State as NpcState
     released = 0
     with engine._lock:
         for npc in engine.npcs:
             if npc.state == NpcState.WAITING_DEPOSIT:
-                npc.is_carrying = False
-                npc.carrying = {}
                 npc._last_harvest_action = None
                 npc._last_harvest_target = None
                 npc._current_action = None

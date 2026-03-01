@@ -342,28 +342,107 @@
                 break;
             }
             case "wheat": {
-                const half = ts / 2 - 4;
-                ctx.fillStyle = "#8b7750";
-                roundRect(ctx, sx - half, sy - half + 4, half * 2, half * 2 - 4, 4);
-                ctx.fill();
-                const stalkH = 6 + 20 * res.growthRatio;
-                const r_val = Math.floor(80 + 175 * res.growthRatio);
-                const g_val = Math.floor(100 + 155 * res.growthRatio);
-                ctx.strokeStyle = `rgb(${r_val},${g_val},30)`;
-                ctx.lineWidth = 2;
-                for (let dx = -half + 4; dx < half; dx += 6) {
-                    const bx = sx + dx, by = sy + half - 2;
-                    ctx.beginPath(); ctx.moveTo(bx, by); ctx.lineTo(bx, by - stalkH); ctx.stroke();
-                    if (res.growthRatio > 0.6) {
-                        ctx.fillStyle = "#dac350";
-                        ctx.beginPath(); ctx.arc(bx, by - stalkH, 3, 0, Math.PI * 2); ctx.fill();
+                const half = ts / 2 - 2;
+                const gr = res.growthRatio;         // 0 → 1
+                const sway = Math.sin(G.gameFrame / 28 + posHash(res.col, res.row, 100)) * 1.5 * gr;
+
+                const px = sx - half, py = sy - half + 6;
+                const pw = half * 2, ph = half * 2 - 6;
+
+                // ── Wheat stalks ──
+                const stalkCount = 5;
+                const spacing = (pw - 8) / (stalkCount - 1);
+                const maxStalkH = ts * 0.65;
+                const stalkH = 4 + maxStalkH * gr;
+
+                for (let i = 0; i < stalkCount; i++) {
+                    const bx = px + 4 + i * spacing;
+                    const baseY = py + ph - 2;
+                    const tipX = bx + sway + (i % 2 === 0 ? sway * 0.3 : -sway * 0.3);
+                    const tipY = baseY - stalkH;
+
+                    // Stalk color transitions green → golden
+                    const stalkR = Math.floor(75 + 145 * gr);
+                    const stalkG = Math.floor(130 + 90 * gr);
+                    const stalkB = Math.floor(30 - 10 * gr);
+
+                    // Thick outlined stalk (pixel-art style)
+                    ctx.strokeStyle = `rgb(${Math.floor(stalkR * 0.55)},${Math.floor(stalkG * 0.55)},${Math.floor(stalkB * 0.6)})`;
+                    ctx.lineWidth = 4; ctx.lineCap = "round";
+                    ctx.beginPath(); ctx.moveTo(bx, baseY); ctx.lineTo(tipX, tipY); ctx.stroke();
+                    ctx.strokeStyle = `rgb(${stalkR},${stalkG},${stalkB})`;
+                    ctx.lineWidth = 2;
+                    ctx.beginPath(); ctx.moveTo(bx, baseY); ctx.lineTo(tipX, tipY); ctx.stroke();
+
+                    // Leaf sprout (small triangle on stalk, only when partially grown)
+                    if (gr > 0.2 && gr < 0.85) {
+                        const leafY = baseY - stalkH * 0.4;
+                        const leafDir = i % 2 === 0 ? 1 : -1;
+                        ctx.fillStyle = `rgb(${stalkR},${Math.min(255, stalkG + 20)},${stalkB})`;
+                        ctx.beginPath();
+                        ctx.moveTo(bx + sway * 0.4, leafY);
+                        ctx.lineTo(bx + sway * 0.4 + leafDir * 5, leafY - 2);
+                        ctx.lineTo(bx + sway * 0.4 + leafDir * 2, leafY + 3);
+                        ctx.closePath(); ctx.fill();
+                    }
+
+                    // Wheat head (only when > 50% grown)
+                    if (gr > 0.5) {
+                        const headAlpha = Math.min(1, (gr - 0.5) * 4);
+                        const headW = 3 + 2 * gr;
+                        const headH = 4 + 5 * gr;
+                        ctx.globalAlpha = headAlpha;
+                        // Outline
+                        ctx.fillStyle = "#8b6914";
+                        roundRect(ctx, tipX - headW - 0.5, tipY - headH - 0.5, headW * 2 + 1, headH + 1, 2);
+                        ctx.fill();
+                        // Body
+                        ctx.fillStyle = gr > 0.85 ? "#f0c535" : "#c8a82e";
+                        roundRect(ctx, tipX - headW, tipY - headH, headW * 2, headH, 2);
+                        ctx.fill();
+                        // Inner highlight
+                        ctx.fillStyle = "rgba(255,245,180,0.4)";
+                        roundRect(ctx, tipX - headW + 1, tipY - headH + 1, headW * 2 - 2, headH * 0.4, 1);
+                        ctx.fill();
+                        // Tiny awns (spiky top)
+                        ctx.strokeStyle = gr > 0.85 ? "#d4a820" : "#9e8524";
+                        ctx.lineWidth = 1; ctx.lineCap = "round";
+                        for (let a = -1; a <= 1; a++) {
+                            ctx.beginPath();
+                            ctx.moveTo(tipX + a * 2, tipY - headH);
+                            ctx.lineTo(tipX + a * 3 + sway * 0.5, tipY - headH - 3 - gr * 2);
+                            ctx.stroke();
+                        }
+                        ctx.globalAlpha = 1;
                     }
                 }
+
+                // ── Growth indicator ──
                 if (!res.fullyGrown) {
-                    drawBar(ctx, sx, sy - half - 6, 30, 5, res.growthRatio, "#4caf50");
+                    drawBar(ctx, sx, py - 6, 30, 5, gr, "#7cb342");
                 } else {
-                    ctx.fillStyle = "#ffe650"; ctx.font = "bold 11px Consolas";
-                    ctx.textAlign = "center"; ctx.fillText("READY", sx, sy - half - 4);
+                    // Golden sparkle particles for READY state
+                    const sparkleT = G.gameFrame / 15;
+                    ctx.globalAlpha = 0.7 + 0.3 * Math.sin(sparkleT);
+                    ctx.fillStyle = "#ffe066";
+                    for (let si = 0; si < 3; si++) {
+                        const sa = sparkleT + si * 2.1 + posHash(res.col, res.row, 10);
+                        const sparkX = sx + Math.cos(sa) * (half * 0.7);
+                        const sparkY = py + ph * 0.3 + Math.sin(sa * 1.3) * (half * 0.4);
+                        const ss = 1.5 + Math.sin(sparkleT + si) * 0.8;
+                        ctx.beginPath();
+                        // 4-pointed star
+                        ctx.moveTo(sparkX, sparkY - ss * 2);
+                        ctx.lineTo(sparkX + ss * 0.6, sparkY - ss * 0.6);
+                        ctx.lineTo(sparkX + ss * 2, sparkY);
+                        ctx.lineTo(sparkX + ss * 0.6, sparkY + ss * 0.6);
+                        ctx.lineTo(sparkX, sparkY + ss * 2);
+                        ctx.lineTo(sparkX - ss * 0.6, sparkY + ss * 0.6);
+                        ctx.lineTo(sparkX - ss * 2, sparkY);
+                        ctx.lineTo(sparkX - ss * 0.6, sparkY - ss * 0.6);
+                        ctx.closePath(); ctx.fill();
+                    }
+                    ctx.globalAlpha = 1;
                 }
                 break;
             }

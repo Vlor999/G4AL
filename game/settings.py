@@ -38,9 +38,9 @@ COLOR_HP_RED = (244, 67, 54)
 # ── NPC ──────────────────────────────────────────────────────────────────
 NPC_SPEED = 2.5  # pixels / frame
 NPC_MAX_HEALTH = 100
-NPC_CHOP_TIME = 90  # frames to chop a tree
-NPC_MINE_TIME = 120  # frames to mine a rock
-NPC_BUILD_TIME = 180  # frames to build a structure
+NPC_CHOP_TIME = 600  # frames to chop a tree
+NPC_MINE_TIME = 600  # frames to mine a rock
+NPC_BUILD_TIME = 900  # frames to build a structure
 NPC_HUNGER_MAX = 100
 NPC_HUNGER_DRAIN = 0.005  # hunger lost per frame (≈ 1 per ~67 frames ≈ ~1.1s at 60 fps)
 NPC_EAT_TIME = 60  # frames to eat

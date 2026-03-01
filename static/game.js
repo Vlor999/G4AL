@@ -165,6 +165,7 @@
 
     // Camera
     let camX = 0, camY = 0;
+    let cameraCentered = false;
     const keysDown = new Set();
 
 
@@ -181,6 +182,17 @@
         if (!mapCached && gameState.map) {
             mapCached = gameState.map;
             buildMapImage();
+        }
+        // Center camera on first NPC once
+        if (!cameraCentered && mapCached && gameState.npcs && gameState.npcs.length > 0) {
+            const npc = gameState.npcs[0];
+            const W = canvas.width  || container.clientWidth;
+            const H = canvas.height || container.clientHeight;
+            const maxX = mapCached.cols * mapCached.tileSize - W;
+            const maxY = mapCached.rows * mapCached.tileSize - H;
+            camX = Math.max(0, Math.min(npc.x - W / 2, maxX));
+            camY = Math.max(0, Math.min(npc.y - H / 2, maxY));
+            cameraCentered = true;
         }
     });
 

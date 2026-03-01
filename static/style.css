@@ -733,7 +733,8 @@ body {
 }
 
 #mic-modal.hidden,
-#team-modal.hidden {
+#team-modal.hidden,
+#guide-modal.hidden {
     display: none;
 }
 
@@ -748,7 +749,8 @@ body {
 }
 
 #mic-modal-box,
-#team-modal-box {
+#team-modal-box,
+#guide-modal-box {
     border: 1px solid var(--primary);
     background: var(--bg);
     width: 420px;
@@ -929,6 +931,131 @@ body {
 .modal-cursor {
     color: var(--accent);
     animation: blink 0.8s steps(2, start) infinite;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Guide Modal
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+#guide-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(20, 20, 22, 0.92);
+    backdrop-filter: blur(4px);
+    animation: modalFadeIn 0.3s ease;
+}
+
+#guide-modal-box {
+    width: 480px;
+}
+
+#guide-body {
+    min-height: 220px;
+    position: relative;
+}
+
+.guide-page {
+    display: none;
+}
+
+.guide-page.active {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    animation: guidePageIn 0.25s ease;
+}
+
+@keyframes guidePageIn {
+    from { opacity: 0; transform: translateX(12px); }
+    to   { opacity: 1; transform: translateX(0); }
+}
+
+#guide-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+#guide-page-num {
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    color: var(--primary);
+    opacity: 0.5;
+}
+
+.guide-nav-btn {
+    background: transparent;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    padding: 6px 14px;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+}
+
+.guide-nav-btn:hover {
+    background: var(--accent);
+    color: var(--bg);
+}
+
+.guide-nav-btn:disabled {
+    opacity: 0.25;
+    cursor: default;
+    pointer-events: none;
+}
+
+.guide-example {
+    font-size: 12px;
+    color: var(--primary);
+    opacity: 0.6;
+    padding: 6px 12px;
+    border-left: 2px solid var(--accent);
+    font-style: italic;
+}
+
+.guide-prompt {
+    color: var(--accent);
+    font-weight: 700;
+    font-style: normal;
+}
+
+.guide-keys-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+#guide-btn {
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+    letter-spacing: 0.08em;
+    padding: 6px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+}
+
+#guide-btn:hover {
+    background: var(--accent);
+    color: var(--bg);
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════

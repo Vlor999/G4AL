@@ -769,6 +769,54 @@
         });
     }
 
+    //  Guide Modal (page-turning help)
+    // ═══════════════════════════════════════════════════════════════════════════
+
+    const guideModal = document.getElementById("guide-modal");
+    const guideOpenBtn = document.getElementById("guide-btn");
+    const guideCloseBtn = document.getElementById("guide-close-btn");
+    const guidePrev = document.getElementById("guide-prev");
+    const guideNext = document.getElementById("guide-next");
+    const guidePageNum = document.getElementById("guide-page-num");
+    const guidePages = document.querySelectorAll(".guide-page");
+    const totalPages = guidePages.length;
+    let currentGuidePage = 1;
+
+    function showGuidePage(n) {
+        currentGuidePage = Math.max(1, Math.min(n, totalPages));
+        guidePages.forEach(p => p.classList.remove("active"));
+        const target = document.querySelector(`.guide-page[data-page="${currentGuidePage}"]`);
+        if (target) target.classList.add("active");
+        guidePageNum.textContent = `${currentGuidePage} / ${totalPages}`;
+        guidePrev.disabled = currentGuidePage === 1;
+        guideNext.disabled = currentGuidePage === totalPages;
+    }
+
+    if (guideModal && guideOpenBtn) {
+        guideOpenBtn.addEventListener("click", () => {
+            showGuidePage(1);
+            guideModal.classList.remove("hidden");
+        });
+
+        guideCloseBtn.addEventListener("click", () => {
+            guideModal.classList.add("hidden");
+        });
+
+        guidePrev.addEventListener("click", () => showGuidePage(currentGuidePage - 1));
+        guideNext.addEventListener("click", () => showGuidePage(currentGuidePage + 1));
+
+        guideModal.addEventListener("click", (e) => {
+            if (e.target === guideModal) guideModal.classList.add("hidden");
+        });
+
+        document.addEventListener("keydown", (e) => {
+            if (guideModal.classList.contains("hidden")) return;
+            if (e.key === "Escape") guideModal.classList.add("hidden");
+            if (e.key === "ArrowLeft") showGuidePage(currentGuidePage - 1);
+            if (e.key === "ArrowRight") showGuidePage(currentGuidePage + 1);
+        });
+    }
+
     // Start render loop (state arrives via WebSocket)
     requestAnimationFrame(render);
 

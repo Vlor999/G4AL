@@ -66,6 +66,82 @@
         </div>
     </div>
 
+    <!-- ══ GUIDE MODAL ════════════════════════════════════════ -->
+    <div id="guide-modal" class="hidden">
+        <div id="guide-modal-box">
+            <div class="modal-border-top"></div>
+            <div class="modal-header">
+                <div>HOW_TO_PLAY</div>
+                <button id="guide-close-btn" class="modal-close-btn">[X]</button>
+            </div>
+            <div class="modal-body" id="guide-body">
+                <!-- Page 1: Overview -->
+                <div class="guide-page active" data-page="1">
+                    <p class="modal-line">// MISSION BRIEFING</p>
+                    <p class="modal-line dim">You are the commander of a small colony. Your units are autonomous NPCs — they idle, wander, and survive on their own.</p>
+                    <p class="modal-line dim">Your role is to <span style="color:var(--accent);font-weight:700;">give them orders</span> — gather resources, build structures, farm wheat, and keep everyone fed.</p>
+                    <p class="modal-line dim">Use your <span style="color:var(--accent);">voice</span>, the <span style="color:var(--accent);">text terminal</span>, or <span style="color:var(--accent);">manual clicks</span> to command your units.</p>
+                </div>
+                <!-- Page 2: Voice Commands -->
+                <div class="guide-page" data-page="2">
+                    <p class="modal-line">// VOICE COMMANDS</p>
+                    <div class="modal-key-hint">
+                        <span class="key-badge">G</span>
+                        <span>HOLD TO TALK</span>
+                    </div>
+                    <p class="modal-line dim">Hold <span style="color:var(--accent);font-weight:700;">G</span> and speak naturally. The AI will interpret your intent and dispatch orders to the right NPCs.</p>
+                    <p class="modal-line" style="color:var(--accent);font-size:12px;">EXAMPLES:</p>
+                    <p class="modal-line dim" style="font-style:italic;">"Send Marcus to chop wood"</p>
+                    <p class="modal-line dim" style="font-style:italic;">"Have everyone gather stone"</p>
+                    <p class="modal-line dim" style="font-style:italic;">"Tell Luna to build a house"</p>
+                    <p class="modal-line dim" style="font-style:italic;">"Plant wheat near the river"</p>
+                </div>
+                <!-- Page 3: Text Commands -->
+                <div class="guide-page" data-page="3">
+                    <p class="modal-line">// TEXT TERMINAL</p>
+                    <p class="modal-line dim">Prefer typing? Use the command input at the bottom of the screen.</p>
+                    <p class="modal-line dim">Type the same natural-language orders you would speak — the AI interprets them identically.</p>
+                    <div class="guide-example">
+                        <span class="guide-prompt">&gt;</span> tell Felix to mine rock
+                    </div>
+                    <div class="guide-example">
+                        <span class="guide-prompt">&gt;</span> everyone eat
+                    </div>
+                </div>
+                <!-- Page 4: Manual Controls -->
+                <div class="guide-page" data-page="4">
+                    <p class="modal-line">// MANUAL CONTROLS</p>
+                    <div class="guide-keys-grid">
+                        <div class="modal-key-hint">
+                            <span class="key-badge" style="width:32px;height:32px;font-size:16px;">↑</span>
+                            <span>MOVE CAMERA</span>
+                        </div>
+                        <div class="modal-key-hint">
+                            <span class="key-badge" style="width:32px;height:32px;font-size:16px;">←↓→</span>
+                            <span>ARROW KEYS TO PAN</span>
+                        </div>
+                    </div>
+                    <p class="modal-line dim" style="margin-top:8px;"><span style="color:var(--accent);">Click</span> on an NPC to select it, then use the action buttons on the left panel to issue manual orders:</p>
+                    <p class="modal-line dim">[CHOP_WOOD] · [MINE_ROCK] · [BUILD] · [PLANT] · [COLLECT] · [EAT]</p>
+                </div>
+                <!-- Page 5: Tips -->
+                <div class="guide-page" data-page="5">
+                    <p class="modal-line">// SURVIVAL TIPS</p>
+                    <p class="modal-line dim">🌾 NPCs get hungry over time — plant &amp; collect wheat, then order them to <span style="color:var(--accent);">[EAT]</span> before they starve.</p>
+                    <p class="modal-line dim">🪵 Wood and stone are needed to <span style="color:var(--accent);">[BUILD]</span> structures.</p>
+                    <p class="modal-line dim">📋 Check the <span style="color:var(--accent);">ROSTER</span> panel to monitor all your units at once.</p>
+                    <p class="modal-line dim">📜 The <span style="color:var(--accent);">EVENT_LOG</span> shows every action and AI interpretation in real time.</p>
+                    <p class="modal-line" style="margin-top:12px;color:var(--accent);font-weight:700;">Good luck, Commander.</p>
+                </div>
+            </div>
+            <div class="modal-footer" id="guide-footer">
+                <button id="guide-prev" class="guide-nav-btn">[◄ PREV]</button>
+                <span id="guide-page-num">1 / 5</span>
+                <button id="guide-next" class="guide-nav-btn">[NEXT ►]</button>
+            </div>
+        </div>
+    </div>
+
     <!-- CRT scanline overlay -->
     <div id="crt-overlay" aria-hidden="true"></div>
 
@@ -79,6 +155,7 @@
             </div>
             <span id="g4al-logo-btn" class="g4al-logo" style="cursor: pointer;" title="G4AL Team Info">G4AL</span>
             <span class="header-filler"></span>
+            <button id="guide-btn" title="How to Play">[HOW TO PLAY]</button>
         </header>
 
         <!-- ══ MAIN ════════════════════════════════════════════════ -->

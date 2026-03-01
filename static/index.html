@@ -96,20 +96,8 @@
                     <p class="modal-line dim" style="font-style:italic;">"Tell Luna to build a house"</p>
                     <p class="modal-line dim" style="font-style:italic;">"Plant wheat near the river"</p>
                 </div>
-                <!-- Page 3: Text Commands -->
+                <!-- Page 3: Manual Controls -->
                 <div class="guide-page" data-page="3">
-                    <p class="modal-line">// TEXT TERMINAL</p>
-                    <p class="modal-line dim">Prefer typing? Use the command input at the bottom of the screen.</p>
-                    <p class="modal-line dim">Type the same natural-language orders you would speak — the AI interprets them identically.</p>
-                    <div class="guide-example">
-                        <span class="guide-prompt">&gt;</span> tell Felix to mine rock
-                    </div>
-                    <div class="guide-example">
-                        <span class="guide-prompt">&gt;</span> everyone eat
-                    </div>
-                </div>
-                <!-- Page 4: Manual Controls -->
-                <div class="guide-page" data-page="4">
                     <p class="modal-line">// MANUAL CONTROLS</p>
                     <div class="guide-keys-grid">
                         <div class="modal-key-hint">
@@ -124,8 +112,8 @@
                     <p class="modal-line dim" style="margin-top:8px;"><span style="color:var(--accent);">Click</span> on an NPC to select it, then use the action buttons on the left panel to issue manual orders:</p>
                     <p class="modal-line dim">[CHOP_WOOD] · [MINE_ROCK] · [BUILD] · [PLANT] · [COLLECT] · [EAT]</p>
                 </div>
-                <!-- Page 5: Tips -->
-                <div class="guide-page" data-page="5">
+                <!-- Page 4: Tips -->
+                <div class="guide-page" data-page="4">
                     <p class="modal-line">// SURVIVAL TIPS</p>
                     <p class="modal-line dim">🌾 NPCs get hungry over time — plant &amp; collect wheat, then order them to <span style="color:var(--accent);">[EAT]</span> before they starve.</p>
                     <p class="modal-line dim">🪵 Wood and stone are needed to <span style="color:var(--accent);">[BUILD]</span> structures.</p>
@@ -136,7 +124,7 @@
             </div>
             <div class="modal-footer" id="guide-footer">
                 <button id="guide-prev" class="guide-nav-btn">[◄ PREV]</button>
-                <span id="guide-page-num">1 / 5</span>
+                <span id="guide-page-num">1 / 4</span>
                 <button id="guide-next" class="guide-nav-btn">[NEXT ►]</button>
             </div>
         </div>
@@ -246,21 +234,6 @@
             </aside>
         </main>
 
-        <!-- ══ BOTTOM: Voice Terminal ══════════════════════════════ -->
-        <footer id="voice-terminal">
-            <div id="terminal-left">
-                <span class="mic-indicator">[<span class="mic-blink">MIC ACTIVE</span>]</span>
-                <span class="terminal-sep">|</span>
-                <span class="voice-transcript">VOICE_INPUT&gt; <em>"Prioritize allocation to Entry_03..."</em> <span
-                        class="cmd-status">[ACCEPTED]</span></span>
-            </div>
-            <div id="terminal-right">
-                <div id="command-section">
-                    <input type="text" id="command-input" placeholder="&gt; type command...">
-                </div>
-            </div>
-            <span class="cursor-blink">█</span>
-        </footer>
     </div>
 
     <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>

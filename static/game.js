@@ -934,8 +934,6 @@
 
     // Keyboard (camera scrolling + push-to-talk)
     document.addEventListener("keydown", e => {
-        // Don't capture keys when typing in command input
-        if (document.activeElement === document.getElementById("command-input")) return;
         keysDown.add(e.key);
 
         // G key = push-to-talk
@@ -1006,22 +1004,6 @@
         if (!btn || !selectedId) return;
         const action = btn.dataset.action;
         postJSON("/api/action", { npcId: selectedId, action });
-    });
-
-    // Command input
-    document.getElementById("command-input").addEventListener("keydown", e => {
-        if (e.key === "Enter") {
-            const input = e.target;
-            const text = input.value.trim();
-            if (text) {
-                postJSON("/api/command", { text });
-                input.value = "";
-            }
-        }
-        if (e.key === "Escape") {
-            e.target.blur();
-        }
-        e.stopPropagation(); // prevent camera from moving
     });
 
     // ═══════════════════════════════════════════════════════════════════════════

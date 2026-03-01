@@ -2,9 +2,8 @@
 structured NPC orders with in-character voice lines.
 
 Supports two input modes:
-  • **Text** – ``interpret_command(text)`` uses ``mistral-small-latest``.
   • **Audio** – ``interpret_audio_command(wav_bytes)`` sends audio + system
-    prompt to ``voxtral-mini-latest`` in a single multimodal call (no
+    prompt to ``voxtral-small-latest`` in a single multimodal call (no
     intermediate transcription step).
 
 Uses the Mistral API with JSON-mode to guarantee a parseable response.
@@ -84,7 +83,6 @@ def _build_roster_table() -> str:
 # ═══════════════════════════════════════════════════════════════════════════
 
 _client: Mistral | None = None
-TEXT_MODEL = "mistral-small-latest"
 AUDIO_MODEL = "voxtral-small-latest"
 
 
@@ -218,56 +216,6 @@ def _parse_response(raw_json: str) -> CommandResponse:
         )
 
     return CommandResponse(n=len(orders), actions=orders)
-
-
-# ═══════════════════════════════════════════════════════════════════════════
-#  Public API — text input
-# ═══════════════════════════════════════════════════════════════════════════
-
-
-def interpret_command(player_input: str) -> Optional[CommandResponse]:
-    """Send a text command to Mistral and return a structured CommandResponse
-    containing one or more NPCOrder items.
-
-    Returns None if parsing fails or the API is unavailable.
-    """
-    client = _get_client()
-    system = _build_system_prompt()
-
-    pipeline_logger.llm_start(input_text=player_input)
-
-    try:
-        response = client.chat.complete(
-            model=TEXT_MODEL,
-            messages=[
-                {"role": "system", "content": system},
-                {"role": "user", "content": player_input},
-            ],
-            response_format={"type": "json_object"},
-            temperature=0.7,
-            max_tokens=1024,
-        )
-
-        raw = response.choices[0].message.content
-        if isinstance(raw, list):
-            raw = "".join(str(c) for c in raw)
-        raw = (raw or "").strip()
-
-        result = _parse_response(raw)
-
-        usage = response.usage
-        pipeline_logger.llm_end(
-            order=asdict(result) if result else None,
-            prompt_tokens=usage.prompt_tokens or 0 if usage else 0,
-            completion_tokens=usage.completion_tokens or 0 if usage else 0,
-            model=TEXT_MODEL,
-        )
-        return result
-
-    except Exception as e:
-        pipeline_logger.llm_end(order=None, error=str(e))
-        print(f"[LLM ERROR] {e}")
-        return None
 
 
 # ═══════════════════════════════════════════════════════════════════════════

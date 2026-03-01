@@ -325,7 +325,8 @@
                 break;
             }
             case "structure": {
-                const houseKey = "house" + (posHash(res.col, res.row, 3) + 1);
+                const isHut = res.buildingType === "storage_hut";
+                const houseKey = isHut ? "house1" : "house" + (posHash(res.col, res.row, 3) + 1);
                 const houseSpr = spr[houseKey] || spr.house1;
                 if (res.built) {
                     if (houseSpr) {
@@ -337,6 +338,15 @@
                         ctx.fillStyle = "#b22222"; ctx.beginPath();
                         ctx.moveTo(sx - 24, sy - 20); ctx.lineTo(sx + 24, sy - 20); ctx.lineTo(sx, sy - 38);
                         ctx.closePath(); ctx.fill();
+                    }
+                    // Storage Hut label
+                    if (isHut) {
+                        ctx.font = "bold 10px 'JetBrains Mono', Consolas, monospace";
+                        ctx.textAlign = "center";
+                        ctx.fillStyle = "rgba(0,0,0,0.6)";
+                        ctx.fillText("\u26fa Storage Hut", sx + 1, sy - ts * 2.1 + 1);
+                        ctx.fillStyle = "#ffe066";
+                        ctx.fillText("\u26fa Storage Hut", sx, sy - ts * 2.1);
                     }
                 } else {
                     if (houseSpr) {
@@ -469,6 +479,23 @@
         const spr = G.sprites;
         const st = npc.state;
         const act = npc.actionType || "";
+        const carrying = npc.carrying || {};
+        const hasWood  = (carrying.wood  || 0) > 0;
+        const hasGold  = (carrying.gold  || 0) > 0;
+
+        // ── Carrying sprites (RETURNING to hut or idle while carrying) ──
+        if (npc.isCarrying) {
+            if (st === "RETURNING" || st === "MOVING") {
+                if (hasWood)  return { spr: spr.pawn_run_wood  || spr.pawn_run, frames: G.cfgFrames("pawn_run_wood",  6), speed: G.cfgSpeed("pawn_run_wood",  "fast") };
+                if (hasGold)  return { spr: spr.pawn_run_gold  || spr.pawn_run, frames: G.cfgFrames("pawn_run_gold",  6), speed: G.cfgSpeed("pawn_run_gold",  "fast") };
+                // stone / wheat – reuse wood carry sprite
+                return { spr: spr.pawn_run_wood  || spr.pawn_run, frames: G.cfgFrames("pawn_run_wood", 6), speed: G.cfgSpeed("pawn_run_wood", "fast") };
+            }
+            // idle while carrying
+            if (hasWood)  return { spr: spr.pawn_idle_wood || spr.pawn_idle, frames: G.cfgFrames("pawn_idle_wood", 8), speed: G.cfgSpeed("pawn_idle_wood", "normal") };
+            if (hasGold)  return { spr: spr.pawn_idle_gold || spr.pawn_idle, frames: G.cfgFrames("pawn_idle_gold", 8), speed: G.cfgSpeed("pawn_idle_gold", "normal") };
+            return { spr: spr.pawn_idle_wood || spr.pawn_idle, frames: G.cfgFrames("pawn_idle_wood", 8), speed: G.cfgSpeed("pawn_idle_wood", "normal") };
+        }
 
         if (st === "MOVING") {
             switch (act) {
@@ -564,6 +591,18 @@
         // Hunger bar
         const hungerRatio = npc.hunger / npc.maxHunger;
         drawBar(ctx, sx, sy + 8, 24, 4, hungerRatio, hungerRatio > 0.25 ? "#ff9800" : "#f44336");
+
+        // Carrying indicator (small emoji badge next to name)
+        if (npc.isCarrying) {
+            const carry = npc.carrying || {};
+            let icon = "\ud83e\udea8";  // generic
+            if (carry.wood  > 0) icon = "\ud83e\udeb5";
+            if (carry.gold  > 0) icon = "\ud83e\ude99";
+            if (carry.stone > 0) icon = "\ud83e\udea8";
+            if (carry.wheat > 0) icon = "\ud83c\udf3e";
+            ctx.font = "12px serif";
+            ctx.fillText(icon, sx + 18, sy - SIZE + 6);
+        }
     }
 
     // ── Draw Fauna (autonomous creatures like sheep) ──────────────────

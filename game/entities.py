@@ -32,6 +32,10 @@ class Resource:
         self.depleted = False
         self.reserved_by: int | None = None  # NPC id that claimed this resource
 
+        # Per-unit collection tracking
+        self.remaining_yields: dict[str, int] = dict(yields)
+        self._total_units: int = sum(yields.values())
+
     @property
     def world_pos(self) -> Tuple[float, float]:
         return (
@@ -48,6 +52,28 @@ class Resource:
             self.depleted = True
             return dict(self.yields)
         return None
+
+    def collect_one_unit(self) -> Optional[Tuple[str, int]]:
+        """Collect a single unit from this resource.
+
+        Returns ``(resource_type, 1)`` or *None* if nothing remains.
+        Marks the resource as depleted once all units are gone.
+        """
+        for res_type in list(self.remaining_yields.keys()):
+            if self.remaining_yields[res_type] > 0:
+                self.remaining_yields[res_type] -= 1
+                total_left = sum(self.remaining_yields.values())
+                # Update HP proportionally for visual feedback
+                self.hp = max(0, round(self.max_hp * total_left / max(1, self._total_units)))
+                if total_left <= 0:
+                    self.depleted = True
+                return (res_type, 1)
+        self.depleted = True
+        return None
+
+    @property
+    def units_remaining(self) -> int:
+        return sum(self.remaining_yields.values())
 
 
 class Tree(Resource):
@@ -77,14 +103,15 @@ class Structure(Resource):
 
     # Default grid footprint per building type (tiles wide × deep)
     GRID_SIZES: dict[str, Tuple[int, int]] = {
-        "house1":    (2, 2),
-        "house2":    (2, 2),
-        "house3":    (2, 2),
-        "castle":    (5, 3),
-        "barracks":  (3, 3),
-        "archery":   (3, 3),
-        "tower":     (2, 2),
-        "monastery": (3, 3),
+        "house1":       (2, 2),
+        "house2":       (2, 2),
+        "house3":       (2, 2),
+        "castle":       (5, 3),
+        "barracks":     (3, 3),
+        "archery":      (3, 3),
+        "tower":        (2, 2),
+        "monastery":    (3, 3),
+        "storage_hut":  (2, 2),
     }
 
     def __init__(

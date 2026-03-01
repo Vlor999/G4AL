@@ -56,6 +56,13 @@ WHEAT_YIELD = 5  # wheat per fully grown field
 WHEAT_GROW_TIME = 300  # frames to grow (5 s at 60 fps)
 WHEAT_PLANT_TIME = 60  # frames to plant
 
+# ── Per-unit resource collection ──────────────────────────────────────────
+NPC_COLLECT_UNIT_TIME = 90   # frames to harvest 1 unit of any resource (1.5 s)
+
+# ── Storage Hut (deposit point for carried resources) ────────────────────
+STORAGE_HUT_COL = MAP_COLS // 2 - 1   # tile column of the hut origin
+STORAGE_HUT_ROW = MAP_ROWS // 2 - 1   # tile row    of the hut origin
+
 # ── Building ─────────────────────────────────────────────────────────────
 BUILD_COST_WOOD = 5
 BUILD_COST_STONE = 3

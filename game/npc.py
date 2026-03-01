@@ -23,6 +23,7 @@ from game.settings import (
     BUILD_COST_WOOD,
     BUILD_COST_STONE,
     WHEAT_PLANT_TIME,
+    NPC_COLLECT_UNIT_TIME,
 )
 from game.entities import Resource, Tree, Rock, Structure, WheatField
 from api.roster import NPC_NAMES
@@ -37,6 +38,7 @@ class State(Enum):
     IDLE = auto()
     MOVING = auto()
     PERFORMING = auto()
+    RETURNING = auto()   # carrying a resource back to the storage hut
     DONE = auto()
 
 
@@ -175,6 +177,7 @@ class NPC:
         storage: "ResourceStorage",
         all_npcs: Optional[List["NPC"]] = None,
         name: Optional[str] = None,
+        hut: Optional[Structure] = None,
     ):
         self.id = NPC._next_id
         NPC._next_id += 1
@@ -191,6 +194,7 @@ class NPC:
         self._all_npcs: List["NPC"] = all_npcs if all_npcs is not None else []
         self._wait_counter = 0  # frames spent waiting for a blocked tile
         self._repath_attempts = 0  # consecutive re-paths without progress
+        self._hut: Optional[Structure] = hut  # storage hut (deposit point)
 
         # stats
         self.health = NPC_MAX_HEALTH
@@ -207,6 +211,12 @@ class NPC:
         self._path_index = 0
         self._perform_timer = 0
         self._perform_duration = 0
+
+        # carrying / return-to-hut state
+        self.is_carrying: bool = False
+        self.carrying: dict[str, int] = {}
+        self._last_harvest_action: Optional[ActionType] = None
+        self._last_harvest_target: Optional[Resource] = None
 
         # selection
         self.selected = False
@@ -263,6 +273,9 @@ class NPC:
         elif self.state == State.PERFORMING:
             self._perform()
 
+        elif self.state == State.RETURNING:
+            self._follow_path()          # reuses the standard path follower
+
         elif self.state == State.DONE:
             # finished current action, release reservation and try next
             self._release_reservation()
@@ -275,6 +288,11 @@ class NPC:
     # ── internal FSM helpers ─────────────────────────────────────────────
 
     def _next_action(self):
+        # Must deposit carried resource before starting any new action
+        if self.is_carrying:
+            self._start_return_to_hut()
+            return
+
         if not self.action_queue:
             self.state = State.IDLE
             return
@@ -401,8 +419,11 @@ class NPC:
 
     def _follow_path(self):
         if self._path_index >= len(self._path):
-            # arrived
-            self._on_arrival()
+            # arrived – deposit if carrying, otherwise normal arrival
+            if self.state == State.RETURNING:
+                self._deposit_at_hut()
+            else:
+                self._on_arrival()
             return
 
         target_col, target_row = self._path[self._path_index]
@@ -436,11 +457,11 @@ class NPC:
         at = self._current_action.action_type
         if at == ActionType.CHOP_WOOD:
             self._perform_timer = 0
-            self._perform_duration = NPC_CHOP_TIME
+            self._perform_duration = NPC_COLLECT_UNIT_TIME
             self.state = State.PERFORMING
         elif at == ActionType.MINE_ROCK:
             self._perform_timer = 0
-            self._perform_duration = NPC_MINE_TIME
+            self._perform_duration = NPC_COLLECT_UNIT_TIME
             self.state = State.PERFORMING
         elif at == ActionType.BUILD:
             self._perform_timer = 0
@@ -456,7 +477,7 @@ class NPC:
             if target is not None:
                 self._push_npc_off_tile((target.col, target.row))
             self._perform_timer = 0
-            self._perform_duration = NPC_CHOP_TIME
+            self._perform_duration = NPC_COLLECT_UNIT_TIME
             self.state = State.PERFORMING
         elif at == ActionType.MOVE_TO:
             self.state = State.DONE
@@ -468,32 +489,50 @@ class NPC:
 
         target = self._current_action.target if self._current_action else None
 
-        # per-frame work on target
+        # ── Harvest actions: collect 1 unit then carry it back to hut ──
         if isinstance(target, Resource) and not target.depleted:
             if self._current_action.action_type in (
                 ActionType.CHOP_WOOD,
                 ActionType.MINE_ROCK,
             ):
-                result = target.harvest_tick()
-                if result:
-                    for res, amt in result.items():
-                        self._storage.add(res, amt)
-                    self.state = State.DONE
-                    return
+                if self._perform_timer >= NPC_COLLECT_UNIT_TIME:
+                    result = target.collect_one_unit()
+                    if result:
+                        res_type, amount = result
+                        self.is_carrying = True
+                        self.carrying = {res_type: amount}
+                        self._last_harvest_action = self._current_action.action_type
+                        self._last_harvest_target = target
+                        self._start_return_to_hut()
+                        return
+                    else:
+                        self.state = State.DONE
+                        return
+                return  # still working, wait for timer
+
             elif self._current_action.action_type == ActionType.BUILD:
                 if isinstance(target, Structure):
                     target.build_tick()
                     if target.built:
                         self.state = State.DONE
                         return
+
             elif self._current_action.action_type == ActionType.collect_wheat:
                 if isinstance(target, WheatField) and target.fully_grown:
-                    result = target.harvest_tick()
-                    if result:
-                        for res, amt in result.items():
-                            self._storage.add(res, amt)
-                        self.state = State.DONE
-                        return
+                    if self._perform_timer >= NPC_COLLECT_UNIT_TIME:
+                        result = target.collect_one_unit()
+                        if result:
+                            res_type, amount = result
+                            self.is_carrying = True
+                            self.carrying = {res_type: amount}
+                            self._last_harvest_action = self._current_action.action_type
+                            self._last_harvest_target = target
+                            self._start_return_to_hut()
+                            return
+                        else:
+                            self.state = State.DONE
+                            return
+                    return  # still working
 
         # EAT action completes on timer
         if (
@@ -508,6 +547,65 @@ class NPC:
 
         if self._perform_timer >= self._perform_duration:
             self.state = State.DONE
+
+    # ── carry / return-to-hut helpers ────────────────────────────────────
+
+    def _start_return_to_hut(self):
+        """Path to the storage hut to deposit carried resources."""
+        if self._hut is None:
+            # No hut registered – deposit immediately (fallback)
+            self._deposit_at_hut()
+            return
+        adj = self._adjacent_to_structure(self._hut)
+        if adj is None:
+            self._deposit_at_hut()
+            return
+        start = self.tile_pos
+        blocked = self._occupied_by_npcs() | self._occupied_by_structures()
+        path = find_path(self._map, start, adj, blocked=blocked)
+        if not path:
+            self._deposit_at_hut()
+            return
+        self._path = path
+        self._path_index = 0
+        self.state = State.RETURNING
+
+    def _deposit_at_hut(self):
+        """Deposit carried resources into global storage and auto-loop."""
+        for res_type, amount in self.carrying.items():
+            self._storage.add(res_type, amount)
+        self.is_carrying = False
+        self.carrying = {}
+
+        # Release current reservation (the resource we were harvesting)
+        self._release_reservation()
+
+        # If the player queued a new action, honour it
+        if self.action_queue:
+            self._last_harvest_action = None
+            self._last_harvest_target = None
+            self._current_action = None
+            self._next_action()
+            return
+
+        # Auto-loop: go back to the same (or a new) resource
+        if self._last_harvest_action:
+            action_type = self._last_harvest_action
+            target = self._last_harvest_target
+            if target and not target.depleted:
+                # Re-reserve and head back
+                self._current_action = Action(action_type, target=target)
+                target.reserved_by = self.id
+                self._plan_move_to(target.col, target.row)
+            else:
+                # Resource depleted – go idle, wait for new orders
+                self._last_harvest_action = None
+                self._last_harvest_target = None
+                self._current_action = None
+                self.state = State.IDLE
+        else:
+            self._current_action = None
+            self.state = State.IDLE
 
     # ── queries ──────────────────────────────────────────────────────────
 

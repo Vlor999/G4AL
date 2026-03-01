@@ -34,6 +34,7 @@ pygame.mixer.init()  # mixer is used by api/tts.py for mp3 playback
 from game.settings import (
     TILE_SIZE, FPS,
     TTS_MAX_SPEAKERS,
+    STORAGE_HUT_COL, STORAGE_HUT_ROW,
 )
 from game.map import GameMap
 from game.entities import Resource, spawn_resources, Rock, Structure, WheatField
@@ -84,13 +85,29 @@ class GameEngine:
         self._running = False
         self._pending_response: Optional[CommandResponse] = None
 
+        # Place the Storage Hut at the centre of the map
+        self.storage_hut = Structure(
+            STORAGE_HUT_COL, STORAGE_HUT_ROW,
+            build_progress=100,
+            building_type="storage_hut",
+        )
+        self.storage_hut.built = True
+        self.resources.append(self.storage_hut)
+
         self._spawn_initial_npcs(3)
         self._spawn_fauna()
         self._sync_npc_roster()
 
     def _spawn_initial_npcs(self, count: int):
         cx, cy = self.game_map.cols // 2, self.game_map.rows // 2
-        entity_tiles = {(r.col, r.row) for r in self.resources}
+        # Collect ALL occupied tiles (including multi-tile structures like the hut)
+        entity_tiles: set = set()
+        for r in self.resources:
+            if isinstance(r, Structure):
+                for t in r.occupied_tiles:
+                    entity_tiles.add(t)
+            else:
+                entity_tiles.add((r.col, r.row))
         placed = 0
         for dc in range(-3, 4):
             for dr in range(-3, 4):
@@ -100,6 +117,7 @@ class GameEngine:
                     npc = NPC(
                         wx, wy, self.game_map, self.resources,
                         self.storage, all_npcs=self.npcs,
+                        hut=self.storage_hut,
                     )
                     self.npcs.append(npc)
                     entity_tiles.add((c, r))
@@ -282,6 +300,8 @@ class GameEngine:
                 "selected": n.selected,
                 "speechText": n._speech_text if n._speech_timer > 0 else "",
                 "queueSize": n.queue_size,
+                "isCarrying": n.is_carrying,
+                "carrying": dict(n.carrying),
             })
         return result
 

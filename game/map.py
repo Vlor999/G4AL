@@ -48,22 +48,16 @@ class GameMap:
                         if dx * dx + dy * dy <= radius * radius:
                             grid[ny][nx] = TileType.DIRT
 
-        # a couple of small ponds (water surrounded by sand)
+        # a couple of small ponds (water only, no sand border)
         for _ in range(3):
             cx, cy = random.randint(3, self.cols - 4), random.randint(3, self.rows - 4)
             radius = random.randint(1, 2)
-            for dy in range(-radius - 1, radius + 2):
-                for dx in range(-radius - 1, radius + 2):
+            for dy in range(-radius, radius + 1):
+                for dx in range(-radius, radius + 1):
                     nx, ny = cx + dx, cy + dy
                     if 0 <= nx < self.cols and 0 <= ny < self.rows:
-                        dist2 = dx * dx + dy * dy
-                        if dist2 <= radius * radius:
+                        if dx * dx + dy * dy <= radius * radius:
                             grid[ny][nx] = TileType.WATER
-                        elif (
-                            dist2 <= (radius + 1) ** 2
-                            and grid[ny][nx] != TileType.WATER
-                        ):
-                            grid[ny][nx] = TileType.SAND
         return grid
 
     # ── queries ──────────────────────────────────────────────────────────

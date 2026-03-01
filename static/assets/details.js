@@ -359,6 +359,7 @@ const SPRITE_CONFIG = {
     },
 
     // --- Bâtiments (Blue) ---
+    // gridWidth / gridHeight = ground-footprint in tiles
     buildings: {
         frames: 1, type: 'static',
         files_or_dir: {
@@ -370,6 +371,16 @@ const SPRITE_CONFIG = {
             house3:     "static/assets/Buildings/Blue Buildings/House3.png",
             monastery:  "static/assets/Buildings/Blue Buildings/Monastery.png",
             tower:      "static/assets/Buildings/Blue Buildings/Tower.png",
+        },
+        grid: {
+            archery:   { w: 3, h: 3 },
+            barracks:  { w: 3, h: 3 },
+            castle:    { w: 5, h: 3 },
+            house1:    { w: 2, h: 2 },
+            house2:    { w: 2, h: 2 },
+            house3:    { w: 2, h: 2 },
+            monastery: { w: 3, h: 3 },
+            tower:     { w: 2, h: 2 },
         }
     },
 

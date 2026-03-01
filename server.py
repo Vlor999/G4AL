@@ -235,6 +235,9 @@ class GameEngine:
             elif isinstance(r, Structure):
                 d["built"] = r.built
                 d["buildProgress"] = r.build_progress
+                d["buildingType"] = r.building_type
+                d["gridWidth"] = r.grid_width
+                d["gridHeight"] = r.grid_height
             elif isinstance(r, WheatField):
                 d["fullyGrown"] = r.fully_grown
                 d["growthRatio"] = round(r.growth_ratio, 2)

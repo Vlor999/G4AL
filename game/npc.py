@@ -299,16 +299,23 @@ class NPC:
 
         elif action.action_type == ActionType.BUILD:
             if isinstance(action.target, Structure):
-                # Already have a structure object – just walk there
-                self._plan_move_to(action.target.col, action.target.row)
+                # Already have a structure object – walk to an adjacent tile
+                adj = self._adjacent_to_structure(action.target)
+                if adj is None:
+                    self.state = State.DONE
+                    return
+                self._plan_move_to(*adj)
             else:
                 # Resolve location: explicit (col, row) or fallback to NPC tile
                 if isinstance(action.target, tuple):
                     col, row = action.target
                 else:
                     col, row = self.tile_pos
-                # Auto-find a nearby valid tile (walkable + no entity)
-                resolved = self._find_nearby_free_tile(col, row)
+                # Determine building type grid size
+                btype = "house1"
+                gw, gh = Structure.GRID_SIZES.get(btype, (2, 2))
+                # Find a free area big enough for the multi-tile structure
+                resolved = self._find_free_area(col, row, gw, gh)
                 if resolved is None:
                     self.say("No space to build!", 120)
                     self.state = State.DONE
@@ -323,10 +330,15 @@ class NPC:
                     return
                 self._storage.spend("wood", BUILD_COST_WOOD)
                 self._storage.spend("stone", BUILD_COST_STONE)
-                struct = Structure(col, row)
+                struct = Structure(col, row, building_type=btype)
                 self._resources.append(struct)
                 action.target = struct
-                self._plan_move_to(col, row)
+                # Walk to an adjacent tile (not onto the structure)
+                adj = self._adjacent_to_structure(struct)
+                if adj is None:
+                    self._plan_move_to(col, row)
+                else:
+                    self._plan_move_to(*adj)
 
         elif action.action_type == ActionType.MOVE_TO:
             if isinstance(action.target, tuple):
@@ -374,7 +386,8 @@ class NPC:
 
     def _plan_move_to(self, col: int, row: int):
         start = self.tile_pos
-        path = find_path(self._map, start, (col, row), blocked=self._occupied_by_npcs())
+        blocked = self._occupied_by_npcs() | self._occupied_by_structures()
+        path = find_path(self._map, start, (col, row), blocked=blocked)
         if not path:
             self.state = State.DONE
             return
@@ -505,11 +518,33 @@ class NPC:
         """Return set of tiles currently occupied by *other* NPCs."""
         return {n.tile_pos for n in self._all_npcs if n.id != self.id}
 
-    def _entity_at_tile(self, col: int, row: int) -> Optional[Resource]:
-        """Return the first non-depleted entity sitting on (col, row), or None."""
+    def _occupied_by_structures(self) -> set[Tuple[int, int]]:
+        """Return set of tiles occupied by non-depleted multi-tile structures."""
+        tiles: set[Tuple[int, int]] = set()
         for r in self._resources:
-            if r.col == col and r.row == row and not r.depleted:
-                return r
+            if r.depleted:
+                continue
+            if isinstance(r, Structure):
+                for t in r.occupied_tiles:
+                    tiles.add(t)
+            else:
+                tiles.add((r.col, r.row))
+        return tiles
+
+    def _entity_at_tile(self, col: int, row: int) -> Optional[Resource]:
+        """Return the first non-depleted entity sitting on (col, row), or None.
+        Supports multi-tile structures."""
+        for r in self._resources:
+            if r.depleted:
+                continue
+            if isinstance(r, Structure):
+                for dc in range(r.grid_width):
+                    for dr in range(r.grid_height):
+                        if r.col + dc == col and r.row + dr == row:
+                            return r
+            else:
+                if r.col == col and r.row == row:
+                    return r
         return None
 
     def _find_nearby_free_tile(
@@ -545,6 +580,63 @@ class NPC:
                     return (nc, nr)
                 queue.append((nc, nr))
         return None
+
+    def _find_free_area(
+        self, col: int, row: int, gw: int, gh: int, max_radius: int = 8
+    ) -> Optional[Tuple[int, int]]:
+        """BFS to find the nearest origin (c, r) where a gw×gh block of
+        tiles is entirely walkable and free of entities."""
+        from collections import deque as _deque
+
+        def _area_free(c: int, r: int) -> bool:
+            for dc in range(gw):
+                for dr in range(gh):
+                    tc, tr = c + dc, r + dr
+                    if not self._map.is_walkable(tc, tr):
+                        return False
+                    if self._entity_at_tile(tc, tr) is not None:
+                        return False
+            return True
+
+        visited: set[Tuple[int, int]] = set()
+        queue: _deque[Tuple[int, int]] = _deque()
+        if _area_free(col, row):
+            return (col, row)
+        visited.add((col, row))
+        queue.append((col, row))
+        while queue:
+            c, r = queue.popleft()
+            for dc, dr in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+                nc, nr = c + dc, r + dr
+                if (nc, nr) in visited:
+                    continue
+                if abs(nc - col) > max_radius or abs(nr - row) > max_radius:
+                    continue
+                visited.add((nc, nr))
+                if _area_free(nc, nr):
+                    return (nc, nr)
+                queue.append((nc, nr))
+        return None
+
+    def _adjacent_to_structure(self, struct: Structure) -> Optional[Tuple[int, int]]:
+        """Return the nearest walkable tile *cardinally* adjacent to the
+        structure footprint (sharing an edge, not diagonal-only), closest
+        to the NPC's current position."""
+        occupied = set(struct.occupied_tiles)
+        candidates: set[Tuple[int, int]] = set()
+        # For each occupied tile, check its 4 cardinal neighbours
+        for oc, orow in occupied:
+            for dc, dr in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+                nc, nr = oc + dc, orow + dr
+                if (nc, nr) in occupied:
+                    continue
+                if not self._map.is_walkable(nc, nr):
+                    continue
+                candidates.add((nc, nr))
+        if not candidates:
+            return None
+        mc, mr = self.tile_pos
+        return min(candidates, key=lambda p: abs(p[0] - mc) + abs(p[1] - mr))
 
     def _push_npc_off_tile(self, tile: Tuple[int, int]) -> bool:
         """If another NPC is standing on *tile*, nudge them to an adjacent

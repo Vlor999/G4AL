@@ -75,11 +75,42 @@ class Structure(Resource):
 
     kind = "structure"
 
-    def __init__(self, col: int, row: int, build_progress: int = 0):
+    # Default grid footprint per building type (tiles wide × deep)
+    GRID_SIZES: dict[str, Tuple[int, int]] = {
+        "house1":    (2, 2),
+        "house2":    (2, 2),
+        "house3":    (2, 2),
+        "castle":    (5, 3),
+        "barracks":  (3, 3),
+        "archery":   (3, 3),
+        "tower":     (2, 2),
+        "monastery": (3, 3),
+    }
+
+    def __init__(
+        self,
+        col: int,
+        row: int,
+        build_progress: int = 0,
+        building_type: str = "house1",
+    ):
         super().__init__(col, row, hp=100, yields={})
         self.build_progress = build_progress  # 0..100
         self.built = False
+        self.building_type = building_type
+        gw, gh = self.GRID_SIZES.get(building_type, (2, 2))
+        self.grid_width = gw
+        self.grid_height = gh
         self._size = 40
+
+    @property
+    def occupied_tiles(self) -> List[Tuple[int, int]]:
+        """Return every (col, row) this structure covers."""
+        tiles = []
+        for dc in range(self.grid_width):
+            for dr in range(self.grid_height):
+                tiles.append((self.col + dc, self.row + dr))
+        return tiles
 
     def build_tick(self):
         self.build_progress = min(100, self.build_progress + 1)

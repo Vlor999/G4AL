@@ -139,24 +139,7 @@
         // Map
         if (mapCanvas) ctx.drawImage(mapCanvas, -G.camX, -G.camY);
 
-        // Water foam
         const spr = G.sprites;
-        if (spr.water_foam && G.mapCached) {
-            const ts = G.mapCached.tileSize;
-            const foamFrames = G.cfgFrames("water_foam", 16);
-            const foamFrame = G.spriteFrame(foamFrames, G.cfgSpeed("water_foam", "slow"), 0);
-            for (let r = 0; r < G.mapCached.rows; r++) {
-                for (let c = 0; c < G.mapCached.cols; c++) {
-                    if (G.mapCached.tiles[r][c] !== 3) continue;
-                    const wx = c * ts - G.camX;
-                    const wy = r * ts - G.camY;
-                    if (wx < -ts || wx > W + ts || wy < -ts || wy > H + ts) continue;
-                    ctx.globalAlpha = 0.3;
-                    G.drawSpriteFrame(ctx, spr.water_foam, foamFrame, foamFrames, wx, wy, ts, ts, false);
-                    ctx.globalAlpha = 1;
-                }
-            }
-        }
 
         // Water rocks
         for (const wr of waterRocks) {

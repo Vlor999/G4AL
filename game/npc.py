@@ -266,15 +266,19 @@ class NPC:
         self._speech_text = text
         self._speech_timer = duration_frames
 
-    def enqueue(self, action: Action):
-        """Add an action to this NPC's queue (validates allowed actions)."""
+    def enqueue(self, action: Action) -> bool:
+        """Add an action to this NPC's queue (validates allowed actions).
+
+        Returns True if the action was accepted, False if rejected.
+        """
         if action.action_type not in self.allowed_actions:
-            self.say(f"I can't do that!", 90)
-            return
+            self.say("I can't do that!", 180)
+            return False
         self.action_queue.append(action)
         # kick-start if idle
         if self.state in (State.IDLE, State.DONE):
             self._next_action()
+        return True
 
     @property
     def tile_pos(self) -> Tuple[int, int]:
@@ -343,6 +347,7 @@ class NPC:
         if action.action_type == ActionType.CHOP_WOOD:
             target = action.target or self._find_nearest(Tree)
             if target is None:
+                self.say("No trees nearby!", 120)
                 self.state = State.DONE
                 return
             action.target = target
@@ -352,6 +357,7 @@ class NPC:
         elif action.action_type == ActionType.MINE_ROCK:
             target = action.target or self._find_nearest(Rock)
             if target is None:
+                self.say("No rocks nearby!", 120)
                 self.state = State.DONE
                 return
             action.target = target
@@ -387,6 +393,7 @@ class NPC:
                     self._storage.get("wood") < BUILD_COST_WOOD
                     or self._storage.get("stone") < BUILD_COST_STONE
                 ):
+                    self.say("Not enough resources to build!", 120)
                     self.state = State.DONE
                     return
                 self._storage.spend("wood", BUILD_COST_WOOD)

@@ -61,7 +61,7 @@ def register_npcs(npcs: list[dict]) -> None:
     """Called by the game to sync the live NPC list.
 
     Args:
-        npcs: list of {"id": int, "name": str}
+        npcs: list of {"id": int, "name": str, "kind": str, "allowed_actions": list[str]}
     """
     _npc_roster.clear()
     for npc in npcs:
@@ -72,9 +72,11 @@ def _build_roster_table() -> str:
     """Format the roster as a readable table for the prompt."""
     if not _npc_roster:
         return "(no NPCs registered)"
-    lines = ["| ID | Name |", "|-----|------|"]
+    lines = ["| ID | Name | Type | Allowed actions |", "|-----|------|------|-----------------|"]
     for info in _npc_roster.values():
-        lines.append(f"| {info['id']} | {info['name']} |")
+        kind = info.get('kind', 'pawn')
+        actions = ', '.join(info.get('allowed_actions', []))
+        lines.append(f"| {info['id']} | {info['name']} | {kind} | {actions} |")
     return "\n".join(lines)
 
 
@@ -125,6 +127,10 @@ Your job:
 • A single command can produce **multiple actions** targeting different (or the same) NPCs.
 • If the NPC name is misspelled, abbreviated, or mispronounced, do your best to match it.
 • If you truly cannot determine the NPC, pick the first idle NPC from the roster.
+• **Each NPC has a type (pawn, archer) with specific allowed actions listed in the roster.**
+• **If the player asks an NPC to perform an action NOT in that NPC's allowed actions, \
+you MUST still include it in the response but the voice_line should be an in-character \
+refusal explaining they cannot do that (e.g. an archer asked to chop wood should refuse).**
 • The voice line MUST reflect the NPC's unique personality.
 • Keep voice lines short, punchy, and fun.
 • ``n`` must equal the number of items in ``actions``.

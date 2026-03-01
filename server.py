@@ -189,7 +189,11 @@ class GameEngine:
     def _sync_npc_roster(self):
         if not _HAS_LLM:
             return
-        register_npcs([{"id": n.id, "name": n.name} for n in self.npcs])
+        register_npcs([
+            {"id": n.id, "name": n.name, "kind": n.kind,
+             "allowed_actions": [a.value for a in n.allowed_actions]}
+            for n in self.npcs
+        ])
 
     def _add_log(self, msg: str):
         self.log_messages.append(msg)
@@ -281,16 +285,18 @@ class GameEngine:
                 continue
 
             action_type = _ACTION_MAP.get(order.action)
+            accepted = False
             if action_type:
                 if action_type in (ActionType.BUILD, ActionType.PLANT_WHEAT):
-                    npc.enqueue(Action(action_type, target=npc.tile_pos))
+                    accepted = npc.enqueue(Action(action_type, target=npc.tile_pos))
                 else:
-                    npc.enqueue(Action(action_type))
+                    accepted = npc.enqueue(Action(action_type))
 
-            npc.say(order.voice_line, duration_frames=360)
-            if spoken_count < TTS_MAX_SPEAKERS:
-                self.tts.speak(order.voice_line, order.npc_name)
-                spoken_count += 1
+            if accepted:
+                npc.say(order.voice_line, duration_frames=360)
+                if spoken_count < TTS_MAX_SPEAKERS:
+                    self.tts.speak(order.voice_line, order.npc_name)
+                    spoken_count += 1
             self._add_log(f'{order.npc_name}: "{order.voice_line}"')
 
     def _find_npc(self, npc_id: int) -> Optional[NPC]:
@@ -515,6 +521,7 @@ def post_action():
         return jsonify({"error": "npcId required"}), 400
     engine.enqueue_action(npc_id, action, target)
     return jsonify({"ok": True})
+
 
 
 @app.route("/api/select", methods=["POST"])

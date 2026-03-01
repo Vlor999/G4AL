@@ -138,7 +138,7 @@ const SPRITE_CONFIG = {
         files_or_dir: "static/assets/Units/Blue Units/Pawn/Pawn_Interact Hammer.png"
     },
     pawn_interact_knife: {
-        frames: 6, type: 'animated', speed: 'fast',
+        frames: 4, type: 'animated', speed: 'fast',
         files_or_dir: "static/assets/Units/Blue Units/Pawn/Pawn_Interact Knife.png"
     },
 

@@ -178,6 +178,11 @@ window.G4AL = window.G4AL || {};
             loadImg("sheep_move",  "Terrain/Resources/Meat/Sheep/Sheep_Move.png"),
             loadImg("sheep_grass", "Terrain/Resources/Meat/Sheep/Sheep_Grass.png"),
 
+            // Le Chat – 27 individual frames
+            ...Array.from({ length: 27 }, (_, i) =>
+                loadImg("lechat_" + i, "lechat/frame_" + String(i).padStart(3, "0") + ".png")
+            ),
+
             // Particle FX
             loadImg("dust1",  "Particle FX/Dust_01.png"),
             loadImg("dust2",  "Particle FX/Dust_02.png"),

@@ -3,7 +3,8 @@
 Creature (abstract-ish base)
 ├── Pawn     – playable units (NPC class in npc.py, gets `kind='pawn'`)
 └── Fauna    – autonomous non-playable creatures
-    └── Sheep – grazes, wanders, idles on its own
+    ├── Sheep – grazes, wanders, idles on its own
+    └── Cat   – sits in one spot, animated decoration
 """
 
 from __future__ import annotations
@@ -236,6 +237,35 @@ class Sheep(Fauna):
 
 
 # ═══════════════════════════════════════════════════════════════════════════
+#  Cat – sits in one place, purely decorative animated fauna
+# ═══════════════════════════════════════════════════════════════════════════
+
+
+class Cat(Fauna):
+    """A cat that sits in one spot and loops its idle animation."""
+
+    kind = "cat"
+
+    def __init__(
+        self,
+        x: float,
+        y: float,
+        game_map: "GameMap",
+        resources: List["Resource"],
+    ):
+        super().__init__(x, y, game_map, resources, name="Le Chat")
+        self.speed = 0.0
+        self.health = 50
+        self.max_health = 50
+        self.state = FaunaState.IDLE
+        self._idle_duration = 999_999  # never leaves idle
+
+    def update(self):
+        """Cat does nothing — purely animated on the frontend."""
+        pass
+
+
+# ═══════════════════════════════════════════════════════════════════════════
 #  Spawning helper
 # ═══════════════════════════════════════════════════════════════════════════
 
@@ -245,7 +275,7 @@ def spawn_fauna(
     resources: List["Resource"],
     sheep_count: int = 5,
 ) -> List[Fauna]:
-    """Place sheep randomly on walkable grass tiles."""
+    """Place sheep randomly on walkable grass tiles + one cat in a corner."""
     from game.map import TileType
 
     fauna: List[Fauna] = []
@@ -269,5 +299,19 @@ def spawn_fauna(
             occupied.add(pos)
             wx, wy = game_map.tile_center(*pos)
             fauna.append(Sheep(wx, wy, game_map, resources))
+
+    # Place one cat in a corner of the map
+    corners = [
+        (2, 2),
+        (game_map.cols - 3, 2),
+        (2, game_map.rows - 3),
+        (game_map.cols - 3, game_map.rows - 3),
+    ]
+    for col, row in corners:
+        if game_map.is_walkable(col, row) and (col, row) not in occupied:
+            occupied.add((col, row))
+            wx, wy = game_map.tile_center(col, row)
+            fauna.append(Cat(wx, wy, game_map, resources))
+            break
 
     return fauna

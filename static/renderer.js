@@ -568,9 +568,14 @@
 
     // ── Draw Fauna (autonomous creatures like sheep) ──────────────────
 
+    const LECHAT_FRAMES = 27;
+    const LECHAT_ANIM_INTERVAL = 6;  // game frames per animation frame
+
     function getFaunaSpriteInfo(f) {
         const spr = G.sprites;
         const st = f.state;
+
+        if (f.kind === "cat") return null;  // cat uses individual frames
 
         if (st === "GRAZING") {
             return {
@@ -595,6 +600,11 @@
     }
 
     function drawFauna(ctx, f, sx, sy) {
+        if (f.kind === "cat") {
+            drawCat(ctx, f, sx, sy);
+            return;
+        }
+
         const spr = G.sprites;
         const SIZE = 48;
         const HALF = SIZE / 2;
@@ -628,6 +638,39 @@
         if (f.health < f.maxHealth) {
             drawBar(ctx, sx, sy - SIZE + 2, 24, 3, f.health / f.maxHealth, "#4caf50");
         }
+    }
+
+    // ── Draw Cat (individual-frame animation) ───────────────────────────
+
+    function drawCat(ctx, f, sx, sy) {
+        const spr = G.sprites;
+        const SIZE = 80;
+        const HALF = SIZE / 2;
+
+        // Shadow
+        if (spr.shadow) {
+            ctx.globalAlpha = 0.2;
+            ctx.drawImage(spr.shadow, 0, 0, 192, 192, sx - HALF * 0.5, sy - 2, SIZE * 0.5, SIZE * 0.2);
+            ctx.globalAlpha = 1;
+        }
+
+        // Pick the right frame from the 27 individual images
+        const fi = Math.floor(G.gameFrame / LECHAT_ANIM_INTERVAL) % LECHAT_FRAMES;
+        const frameImg = spr["lechat_" + fi];
+        if (frameImg) {
+            ctx.drawImage(frameImg, sx - HALF, sy - SIZE + 16, SIZE, SIZE);
+        } else {
+            // Fallback
+            ctx.fillStyle = "#555";
+            ctx.beginPath(); ctx.ellipse(sx, sy - 8, 12, 8, 0, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = "#444";
+            ctx.beginPath(); ctx.arc(sx + 8, sy - 14, 5, 0, Math.PI * 2); ctx.fill();
+        }
+
+        // Name label
+        ctx.font = "bold 10px Consolas"; ctx.textAlign = "center";
+        ctx.fillStyle = "rgba(0,0,0,0.6)"; ctx.fillText(f.name, sx + 1, sy - SIZE + 10);
+        ctx.fillStyle = "#fff"; ctx.fillText(f.name, sx, sy - SIZE + 9);
     }
 
     // ── Drawing helpers ─────────────────────────────────────────────────

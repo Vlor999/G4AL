@@ -50,8 +50,6 @@ MISTRAL_API_KEY="your-mistral-api-key"
 ELEVENLABS_API_KEY="your-elevenlabs-api-key"   # optional
 ```
 
-`.env.example` also sets a `PYTHONPATH` line pointing at a local directory. Remove it or change it to your own path.
-
 ## Run
 
 ```bash

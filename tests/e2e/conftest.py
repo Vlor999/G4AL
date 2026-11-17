@@ -9,7 +9,7 @@ os.environ.setdefault("SDL_AUDIODRIVER", "dummy")
 
 from flask.testing import FlaskClient
 
-import server
+from server import app as server
 from tests.fakes import RecordingSpeaker, ScriptedOrderInterpreter
 
 

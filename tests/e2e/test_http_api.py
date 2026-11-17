@@ -5,7 +5,7 @@ from typing import Any
 import pytest
 from flask.testing import FlaskClient
 
-import server
+from server import app as server
 
 
 def read_state(client: FlaskClient) -> dict[str, Any]:

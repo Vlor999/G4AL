@@ -5,7 +5,7 @@ Run:  python main.py   →  Web UI (Flask + HTML/CSS/JS Canvas)
 
 
 def main() -> None:
-    from server import main as serve
+    from server.app import main as serve
 
     serve()
 

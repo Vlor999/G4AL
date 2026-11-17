@@ -12,7 +12,6 @@ import os
 import threading
 import time
 from collections.abc import Mapping, Sequence
-from pathlib import Path
 from typing import Any
 
 import pygame
@@ -35,9 +34,10 @@ from game.orders import NpcOrder, apply_orders
 from game.ports import OrderInterpretationError, OrderInterpreter, VoiceLineSpeaker
 from game.settings import FPS, TILE_SIZE
 from game.spawning import spawn_world
+from server.constants import PROJECT_ROOT
 
 # Must run before TTSEngine() below: it reads its API key from the environment.
-load_dotenv(Path(__file__).resolve().parent / ".env")
+load_dotenv(PROJECT_ROOT / ".env")
 
 # ── Pygame audio only (for TTS playback — no display needed) ─────────────
 os.environ["SDL_VIDEODRIVER"] = "dummy"
@@ -378,7 +378,7 @@ _interpreter = VoxtralOrderInterpreter()
 _speaker = TTSEngine()
 engine = GameEngine(interpreter=_interpreter, speaker=_speaker)
 _interpreter.register_roster(engine.npcs)
-app = Flask(__name__, static_folder="static")
+app = Flask(__name__, root_path=str(PROJECT_ROOT), static_folder="static")
 CORS(app)
 socketio = SocketIO(app, cors_allowed_origins="*", async_mode="threading")
 

@@ -1,15 +1,10 @@
-"""NPC (bot) with Finite-State-Machine, action queue, pathfinding & stats."""
+"""Pawn: the playable NPC that harvests, builds, farms and eats on order."""
 
 from __future__ import annotations
 
-import math
-from collections import deque
-from typing import TYPE_CHECKING
-
 from game.actions import PAWN_ACTIONS, Action, ActionType, State
 from game.entities import Resource, Rock, Structure, Tree, WheatField
-from game.npc_names import pick_npc_name
-from game.pathfinding import find_path
+from game.npc_base import NPCBase
 from game.settings import (
     BUILD_COST_STONE,
     BUILD_COST_WOOD,
@@ -18,176 +13,20 @@ from game.settings import (
     NPC_COLLECT_UNIT_TIME,
     NPC_EAT_RESTORE,
     NPC_EAT_TIME,
-    NPC_HUNGER_DAMAGE,
-    NPC_HUNGER_DRAIN,
-    NPC_HUNGER_MAX,
-    NPC_MAX_HEALTH,
-    NPC_SPEED,
     WHEAT_PLANT_TIME,
 )
-
-if TYPE_CHECKING:
-    from game.map import GameMap
-    from game.storage import ResourceStorage
 
 # ═══════════════════════════════════════════════════════════════════════════
 #  NPC
 # ═══════════════════════════════════════════════════════════════════════════
 
 
-class NPC:
+class NPC(NPCBase):
     """Playable pawn – receives voice/click commands and has an action queue."""
 
     kind: str = "pawn"
     controllable: bool = True
     allowed_actions: list[ActionType] = PAWN_ACTIONS
-    _next_id = 1
-
-    def __init__(
-        self,
-        x: float,
-        y: float,
-        game_map: GameMap,
-        resources: list[Resource],
-        storage: ResourceStorage,
-        all_npcs: list[NPC] | None = None,
-        name: str | None = None,
-        hut: Structure | None = None,
-    ):
-        self.id = NPC._next_id
-        NPC._next_id += 1
-        self.name = name or pick_npc_name()
-
-        # position in world pixels
-        self.x = x
-        self.y = y
-
-        # refs
-        self._map = game_map
-        self._resources = resources
-        self._storage = storage
-        self._all_npcs: list[NPC] = all_npcs if all_npcs is not None else []
-        self._wait_counter = 0  # frames spent waiting for a blocked tile
-        self._repath_attempts = 0  # consecutive re-paths without progress
-        self._hut: Structure | None = hut  # storage hut (deposit point)
-
-        # stats
-        self.health: float = NPC_MAX_HEALTH
-        self.max_health = NPC_MAX_HEALTH
-        self.speed = NPC_SPEED
-        self.hunger: float = NPC_HUNGER_MAX
-        self.max_hunger = NPC_HUNGER_MAX
-
-        # FSM
-        self.state = State.IDLE
-        self.action_queue: deque[Action] = deque()
-        self._current_action: Action | None = None
-        self._path: list[tuple[int, int]] = []
-        self._path_index = 0
-        self._perform_timer = 0
-        self._perform_duration = 0
-
-        # carrying / return-to-hut state
-        self.is_carrying: bool = False
-        self.carrying: dict[str, int] = {}
-        self._last_harvest_action: ActionType | None = None
-        self._last_harvest_target: Resource | None = None
-
-        # selection
-        self.selected = False
-
-        # speech bubble
-        self._speech_text: str = ""
-        self._speech_timer: int = 0  # frames remaining
-
-        # visual
-        self._radius = 14
-
-    # ── public interface ─────────────────────────────────────────────────
-
-    def say(self, text: str, duration_frames: int = 300) -> None:
-        """Show a speech bubble above this NPC for *duration_frames* frames."""
-        self._speech_text = text
-        self._speech_timer = duration_frames
-
-    def enqueue(self, action: Action) -> bool:
-        """Add an action to this NPC's queue (validates allowed actions).
-
-        Returns True if the action was accepted, False if rejected.
-        """
-        if action.action_type not in self.allowed_actions:
-            self.say("I can't do that!", 180)
-            return False
-        self.action_queue.append(action)
-        # kick-start if idle
-        if self.state in (State.IDLE, State.DONE):
-            self._next_action()
-        return True
-
-    def give_up_waiting_deposit(self) -> bool:
-        """Drop the carried load and go idle if waiting for storage space.
-
-        Returns False, changing nothing, when the NPC is not waiting to deposit.
-        """
-        if self.state != State.WAITING_DEPOSIT:
-            return False
-        self.is_carrying = False
-        self.carrying = {}
-        self._last_harvest_action = None
-        self._last_harvest_target = None
-        self._current_action = None
-        self.state = State.IDLE
-        return True
-
-    @property
-    def tile_pos(self) -> tuple[int, int]:
-        return self._map.world_to_tile(self.x, self.y)
-
-    @property
-    def queue_size(self) -> int:
-        return len(self.action_queue) + (1 if self._current_action else 0)
-
-    # ── FSM update ───────────────────────────────────────────────────────
-
-    def update(self) -> None:
-        """Called every frame."""
-        # speech bubble countdown
-        if self._speech_timer > 0:
-            self._speech_timer -= 1
-
-        # hunger drain
-        self.hunger = max(0.0, self.hunger - NPC_HUNGER_DRAIN)
-        if self.hunger <= 0:
-            self.health = max(0, self.health - NPC_HUNGER_DAMAGE)
-
-        if self.state == State.IDLE:
-            if self.action_queue:
-                self._next_action()
-
-        elif self.state == State.MOVING:
-            self._follow_path()
-
-        elif self.state == State.PERFORMING:
-            self._perform()
-
-        elif self.state == State.RETURNING:
-            self._follow_path()  # reuses the standard path follower
-
-        elif self.state == State.WAITING_DEPOSIT:
-            # Stand at the hut waiting for the player to free up storage
-            if not self._storage.is_full:
-                self._deposit_at_hut()
-
-        elif self.state == State.DONE:
-            # finished current action, release reservation and try next
-            self._release_reservation()
-            self._current_action = None
-            if self.action_queue:
-                self._next_action()
-            else:
-                self.state = State.IDLE
-
-    # ── internal FSM helpers ─────────────────────────────────────────────
 
     def _next_action(self) -> None:
         # Must deposit carried resource before starting any new action
@@ -322,40 +161,6 @@ class NPC:
         action.target = target
         self._plan_move_to(target.col, target.row)
 
-    def _plan_move_to(self, col: int, row: int) -> None:
-        start = self.tile_pos
-        blocked = self._occupied_by_structures()
-        path = find_path(self._map, start, (col, row), blocked=blocked)
-        if not path:
-            self.state = State.DONE
-            return
-        self._path = path
-        self._path_index = 0
-        self.state = State.MOVING
-
-    def _follow_path(self) -> None:
-        if self._path_index >= len(self._path):
-            # arrived – deposit if carrying, otherwise normal arrival
-            if self.state == State.RETURNING:
-                self._deposit_at_hut()
-            else:
-                self._on_arrival()
-            return
-
-        target_col, target_row = self._path[self._path_index]
-
-        tx, ty = self._map.tile_center(target_col, target_row)
-        dx, dy = tx - self.x, ty - self.y
-        dist = math.hypot(dx, dy)
-
-        if dist < self.speed:
-            self.x, self.y = tx, ty
-            self._path_index += 1
-            self._repath_attempts = 0  # made real progress
-        else:
-            self.x += dx / dist * self.speed
-            self.y += dy / dist * self.speed
-
     def _on_arrival(self) -> None:
         """Arrived at target tile → begin performing or finish."""
         if self._current_action is None:
@@ -457,97 +262,6 @@ class NPC:
                 self._storage.register_house()
             self.state = State.DONE
 
-    # ── carry / return-to-hut helpers ────────────────────────────────────
-
-    def _start_return_to_hut(self) -> None:
-        """Path to the storage hut to deposit carried resources."""
-        if self._hut is None:
-            # No hut registered – deposit immediately (fallback)
-            self._deposit_at_hut()
-            return
-        adj = self._adjacent_to_structure(self._hut)
-        if adj is None:
-            self._deposit_at_hut()
-            return
-        start = self.tile_pos
-        blocked = self._occupied_by_structures()
-        path = find_path(self._map, start, adj, blocked=blocked)
-        if not path:
-            self._deposit_at_hut()
-            return
-        self._path = path
-        self._path_index = 0
-        self.state = State.RETURNING
-
-    def _deposit_at_hut(self) -> None:
-        """Deposit carried resources into global storage and auto-loop."""
-        for res_type, amount in self.carrying.items():
-            self._storage.add(res_type, amount)
-        self.is_carrying = False
-        self.carrying = {}
-
-        # Release current reservation (the resource we were harvesting)
-        self._release_reservation()
-
-        # If the player queued a new action, honour it
-        if self.action_queue:
-            self._last_harvest_action = None
-            self._last_harvest_target = None
-            self._current_action = None
-            self._next_action()
-            return
-
-        # If storage is full, wait at the hut for the player to discard
-        if self._storage.is_full:
-            self.say("Storage full!", 180)
-            self.state = State.WAITING_DEPOSIT
-            return
-
-        # Auto-loop: go back to the same (or a new) resource
-        if self._last_harvest_action:
-            action_type = self._last_harvest_action
-            target = self._last_harvest_target
-            if target and not target.depleted:
-                # Re-reserve and head back
-                self._current_action = Action(action_type, target=target)
-                target.reserved_by = self.id
-                self._plan_move_to(target.col, target.row)
-            else:
-                # Resource depleted – go idle, wait for new orders
-                self._last_harvest_action = None
-                self._last_harvest_target = None
-                self._current_action = None
-                self.state = State.IDLE
-        else:
-            self._current_action = None
-            self.state = State.IDLE
-
-    # ── queries ──────────────────────────────────────────────────────────
-
-    def _release_reservation(self) -> None:
-        """Release the resource reservation held by this NPC, if any."""
-        if self._current_action and isinstance(self._current_action.target, Resource):
-            target = self._current_action.target
-            if target.reserved_by == self.id:
-                target.reserved_by = None
-
-    def _occupied_by_npcs(self) -> set[tuple[int, int]]:
-        """Return set of tiles currently occupied by *other* NPCs."""
-        return {n.tile_pos for n in self._all_npcs if n.id != self.id}
-
-    def _occupied_by_structures(self) -> set[tuple[int, int]]:
-        """Return set of tiles occupied by non-depleted multi-tile structures."""
-        tiles: set[tuple[int, int]] = set()
-        for r in self._resources:
-            if r.depleted:
-                continue
-            if isinstance(r, Structure):
-                for t in r.occupied_tiles:
-                    tiles.add(t)
-            else:
-                tiles.add((r.col, r.row))
-        return tiles
-
     def _entity_at_tile(self, col: int, row: int) -> Resource | None:
         """Return the first non-depleted entity sitting on (col, row), or None.
         Supports multi-tile structures."""
@@ -628,49 +342,6 @@ class NPC:
                     return (nc, nr)
                 queue.append((nc, nr))
         return None
-
-    def _adjacent_to_structure(self, struct: Structure) -> tuple[int, int] | None:
-        """Return the nearest walkable tile *cardinally* adjacent to the
-        structure footprint (sharing an edge, not diagonal-only), closest
-        to the NPC's current position."""
-        occupied = set(struct.occupied_tiles)
-        candidates: set[tuple[int, int]] = set()
-        # For each occupied tile, check its 4 cardinal neighbours
-        for oc, orow in occupied:
-            for dc, dr in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
-                nc, nr = oc + dc, orow + dr
-                if (nc, nr) in occupied:
-                    continue
-                if not self._map.is_walkable(nc, nr):
-                    continue
-                candidates.add((nc, nr))
-        if not candidates:
-            return None
-        mc, mr = self.tile_pos
-        return min(candidates, key=lambda p: abs(p[0] - mc) + abs(p[1] - mr))
-
-    def _push_npc_off_tile(self, tile: tuple[int, int]) -> bool:
-        """If another NPC is standing on *tile*, nudge them to an adjacent
-        free walkable tile.  Returns True if the tile is now clear."""
-        blocker: NPC | None = None
-        for n in self._all_npcs:
-            if n.id != self.id and n.tile_pos == tile:
-                blocker = n
-                break
-        if blocker is None:
-            return True  # already clear
-
-        # find an adjacent walkable tile that isn't occupied by yet another NPC
-        occupied = self._occupied_by_npcs()
-        for dc, dr in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
-            nc, nr = tile[0] + dc, tile[1] + dr
-            if self._map.is_walkable(nc, nr) and (nc, nr) not in occupied:
-                # teleport the blocker to the adjacent tile center
-                bx, by = self._map.tile_center(nc, nr)
-                blocker.x, blocker.y = bx, by
-                blocker.say("Excuse me!", 60)
-                return True
-        return False  # no room to push
 
     def _find_nearest(self, kind: type[Resource]) -> Resource | None:
         best: Resource | None = None

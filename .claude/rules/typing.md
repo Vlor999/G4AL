@@ -2,12 +2,13 @@
 paths:
   - "game/**/*.py"
   - "api/**/*.py"
+  - "server/**/*.py"
   - "*.py"
 ---
 
 # Precise typing
 
-`mypy --strict` runs on `game/`, `api/`, `server.py` and `main.py`. Every new
+`mypy --strict` runs on `game/`, `api/`, `server/` and `main.py`. Every new
 function is fully annotated; a `# type: ignore` names its error code and is only
 allowed on an untyped third-party API.
 

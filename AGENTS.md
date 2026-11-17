@@ -12,8 +12,8 @@ HTML5 Canvas client every 3rd tick (~20 Hz).
 |---|---|
 | `game/` | Domain: pure simulation (map, NPCs and action queue, fauna, resources, storage, pathfinding, tuning in `settings.py`). No I/O. |
 | `api/` | Adapters: Mistral Voxtral (`interpreter.py`), ElevenLabs + pygame mixer (`tts.py`), structured logs (`logger.py`), NPC personalities (`roster.py`). |
-| `server.py` | Entry point: Flask routes, Socket.IO, `GameEngine` and its game loop thread. |
-| `main.py` | Starts the server (`server.py` loads `.env`). |
+| `server/` | Entry point: `app.py` (`create_app`, `main`: loads `.env`, builds the adapters), `engine.py` (`GameEngine` and its game loop thread), `routes.py` (Flask routes, Socket.IO), `serialization.py` (client JSON). |
+| `main.py` | Starts the server (`server.app.main`). |
 | `static/` | Browser client: classic scripts sharing globals, loaded in order by `index.html`, no build step (`game.js` entry, `renderer.js`, `input.js`, `ptt.js`, `ui.js`, `sprites.js`). |
 | `tests/` | Pytest suite. |
 | `docs/` | [Architecture](docs/architecture.md), [client/server contract](docs/api.md), [decisions](docs/adr/). |

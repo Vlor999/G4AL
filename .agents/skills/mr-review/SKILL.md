@@ -26,11 +26,11 @@ Reviews a GitHub pull request and produces findings prioritized by importance an
 
 - Read `AGENTS.md`, every file under `.claude/rules/`, `docs/architecture.md`, `docs/api.md` (client/server contract), `docs/adr/`, and any other documentation or configuration the change touches.
 - Apply `.claude/rules/architecture.md` to any Python or JavaScript the PR adds or changes. Check each point below on the modules the PR adds or changes:
-  - **Import direction.** List the imports of each module and compare them with the layer table. `game/` imports nothing from `api/`, `server.py`, Flask, Socket.IO, Mistral, ElevenLabs or pygame. An import under `TYPE_CHECKING` counts.
+  - **Import direction.** List the imports of each module and compare them with the layer table. `game/` imports nothing from `api/`, `server/`, Flask, Socket.IO, Mistral, ElevenLabs or pygame. An import under `TYPE_CHECKING` counts.
   - **Domain.** Search `game/` for what belongs to an adapter or the entry point: network, SDK, filesystem, environment, `print`, the clock, a JSON payload shape for the client, prompt text.
   - **Ports.** Every port is in `game/ports.py`. The port name is a game capability and each method a game action, not a vendor call. No vendor error crosses a port.
   - **Adapters (`api/`).** No game rule. Every vendor error is translated and logged. No secret in an error or a log line.
-  - **Entry point (`server.py`).** Routes parse the body once, answer 400 on bad input, call one engine method, and mutate game state only under the engine's lock. No blocking vendor call on the game loop thread or in a request handler.
+  - **Entry point (`server/`).** Routes parse the body once, answer 400 on bad input, call one engine method, and mutate game state only under the engine's lock. No blocking vendor call on the game loop thread or in a request handler.
   - **Client contract.** A route, event or payload change updates `static/` and `docs/api.md` in the same PR.
   - **LLM output.** New Mistral calls follow `.claude/rules/structured-llm-output.md`.
   - **Names, signatures, docstrings.** Full-word game names, one concept per name across server and client, at most two positional parameters on new functions, interface docstrings where the signature does not say it all, tuning numbers in `game/settings.py`.

@@ -1,6 +1,6 @@
 # Client/server contract
 
-The browser client in `static/` and `server.py` talk over HTTP and Socket.IO. A change
+The browser client in `static/` and the server (`server/routes.py`) talk over HTTP and Socket.IO. A change
 to a route, an event or a payload updates both sides in the same PR
 (`.claude/rules/server-style.md`). The server listens on `http://127.0.0.1:8000`.
 

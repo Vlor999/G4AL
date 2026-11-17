@@ -8,7 +8,8 @@ Browser (static/: Canvas renderer, input, push-to-talk)
    │        /api/discard, /api/dismiss_storage, /api/audio
    │  Socket.IO: state push every 3rd tick (~20 Hz)
    ▼
-server.py: Flask + Socket.IO, GameEngine (game loop thread, 60 FPS)
+server/: app.py (create_app, main), routes.py (Flask + Socket.IO),
+         engine.py (GameEngine, game loop thread, 60 FPS), serialization.py
    ├── game/        pure simulation: map, NPCs, fauna, resources, storage
    ├── api/interpreter.py  WAV → Mistral Voxtral → NPC orders (worker thread)
    ├── api/tts.py          voice line → ElevenLabs → pygame mixer (worker thread)
@@ -34,11 +35,21 @@ server.py: Flask + Socket.IO, GameEngine (game loop thread, 60 FPS)
 ## Layers
 
 See [`.claude/rules/architecture.md`](../.claude/rules/architecture.md). Today
-Initial spawning (`game/spawning.py`), order application (`game/orders.py`), storage
+initial spawning (`game/spawning.py`), order application (`game/orders.py`), storage
 discard and storage dismissal live in `game/`; each HTTP route calls one public
-`GameEngine` method. `server.py` builds the adapters and injects them into
-`GameEngine` through the ports of `game/ports.py`; `GameEngine` still builds the
-client JSON.
+`GameEngine` method.
+
+The entry point is the `server/` package:
+
+| Module | Role |
+|---|---|
+| `server/app.py` | `create_app(engine)` builds the Flask and Socket.IO apps around an engine; `main()` loads `.env`, starts the pygame mixer, builds the adapters, injects them into `GameEngine` through the ports of `game/ports.py`, starts the game loop thread and serves on port 8000 of `G4AL_HOST` (default `127.0.0.1`). |
+| `server/engine.py` | `GameEngine`: the game state behind one lock, the 60 FPS loop and the state push. |
+| `server/routes.py` | The HTTP routes (a blueprint that reads the engine from the app) and the Socket.IO `connect` event. |
+| `server/serialization.py` | The JSON the client reads, built from the game state. |
+
+Importing these modules starts no vendor client, game loop or audio device; the e2e
+tests build an engine with fake ports and serve it through `create_app`.
 
 ## Decisions
 
@@ -51,7 +62,6 @@ writes them.
 Tracked on GitHub; the rules in `.claude/rules/` describe the target, these items do
 not meet it yet.
 
-- `server.py` (~570 lines) exceeds the ~500-line budget (#5).
 - Routes do not validate their bodies, no upload size limit, CORS open to any origin
   (#2).
 - `api/interpreter.py` parses the LLM output from prose instead of constraining it with

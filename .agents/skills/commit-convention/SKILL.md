@@ -1,6 +1,6 @@
 ---
 name: commit-convention
-description: Format git commit messages to match this user's established house style (Conventional Commits, English, imperative, no trailing period). Use whenever you are about to run `git commit`, draft a commit message, or the user asks you to write/fix/rewrite a commit message — in any repo, regardless of what language that repo's own past commits happen to use.
+description: Format git commit messages for G4AL (Conventional Commits, English, imperative, no trailing period). Use whenever you are about to run `git commit`, draft a commit message, or rewrite one.
 ---
 
 # Commit message convention
@@ -9,35 +9,42 @@ description: Format git commit messages to match this user's established house s
 
 ```
 type(scope): imperative summary
+
+Optional body: why the change is needed, when the diff does not say it.
+
+Co-Authored-By: ... (when an agent wrote the commit)
 ```
-Follow conventional commits, but with a few tweaks to match this user's established house style:
 
-- **type**: one of `feat`, `fix`, `docs`, `refactor`, `perf`, `test`, `chore` — pick the one that
-  matches what actually changed, not the file type touched.
-- **scope**: optional, one lowercase word naming the area/module/feature (e.g. `notion`, `sales`,
-  `staffing`, `slack`). Omit it when the change is repo-wide or doesn't fit one area — plenty of
-  history commits skip it (`docs: ...`, `feat: add experiences to looker`).
-- **summary**: imperative mood ("add", "fix", "stop", "route" — not "added"/"fixes"), lowercase
-  start, no trailing period. Say what the commit does, not what bug ticket it closes.
+- **type**: `feat`, `fix`, `refactor`, `perf`, `test`, `docs`, `style`, `build`, `ci`,
+  `chore`. Pick the one that matches what changed, not the file type touched.
+- **scope**: optional, one lowercase word naming the area: `game`, `npc`, `map`,
+  `storage`, `server`, `api`, `interpreter`, `tts`, `static`, `deps`, `agents`, `ci`.
+  Omit it when the change is repo-wide.
+- **summary**: imperative mood ("add", "fix", "split"), lowercase start, no trailing
+  period, under ~72 characters. Say what the commit does.
 
-## Language
+## Body
 
-Always write commit messages in **English**, even where past commits are in French.
-That's a deliberate override of what the repo's own history shows, not an oversight.
+Add a body when the summary does not carry the why: a behaviour change hidden in a
+refactor or a typing pass, a non-obvious choice, a breaking change in the
+client/server contract (`docs/api.md`). A behaviour change always gets its own commit
+or a body line that names it.
+
+## Atomic commits
+
+One logical change per commit, in dependency order, each one passing `make check`.
+Formatting, refactors and behaviour changes go in separate commits.
 
 ## Things to skip
 
-- Don't append a PR number like `(#666)` — that's added automatically by the git host on
-  squash-merge, never typed by hand.
-- Don't add a body/footer unless the change genuinely needs explaining beyond the summary line
-  (a non-obvious why, a breaking change, a linked incident). Most commits in this history are a
-  single line.
+- No PR number like `(#12)`: the host adds it on squash merge.
+- No French, even in a French conversation.
 
 ## Examples
 
 ```
-fix(agent): coerce a model-supplied limit before it reaches a slice
-feat(slack): open the pilot to new users
-refactor(notion): split the provider into api / render / tool surface
-docs: clarify what the billed/staffed measures include
+fix(npc): return the enqueue result from Archer so archers answer orders
+refactor(server): move order application from GameEngine to game/
+feat(api): constrain Voxtral output with a JSON schema
+docs: document the ~20 Hz state push in the client contract
 ```

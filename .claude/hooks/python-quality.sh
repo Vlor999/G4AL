@@ -4,6 +4,11 @@
 # Non-mutating on purpose: rewriting the file under Claude would invalidate its read.
 set -u
 
+if ! command -v jq >/dev/null 2>&1; then
+  echo "python-quality hook skipped: jq is not installed (brew install jq / apt install jq)." >&2
+  exit 0
+fi
+
 payload=$(cat)
 file_path=$(printf '%s' "$payload" | jq -r '.tool_input.file_path // ""' 2>/dev/null)
 

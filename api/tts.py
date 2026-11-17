@@ -49,7 +49,7 @@ class TTSEngine:
             from elevenlabs import ElevenLabs
 
             self._client = ElevenLabs(api_key=_API_KEY)
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001 - client init failure disables TTS instead of crashing
             from loguru import logger as _log
 
             _log.error(f"Failed to init ElevenLabs client: {exc}")
@@ -81,7 +81,8 @@ class TTSEngine:
         """Background loop: generate TTS audio and play via pygame.mixer."""
         import pygame.mixer  # already initialised by Game.__init__
 
-        assert self._client is not None
+        if self._client is None:
+            return
         while self._running:
             try:
                 item = self._queue.get(timeout=0.5)
@@ -125,7 +126,7 @@ class TTSEngine:
                 while pygame.mixer.music.get_busy():
                     pygame.time.wait(50)
 
-            except Exception as exc:
+            except Exception as exc:  # noqa: BLE001 - worker thread must survive any API or playback error
                 pipeline_logger.tts_end(
                     npc_name=npc_name,
                     char_count=len(text),

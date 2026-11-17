@@ -9,23 +9,13 @@ if TYPE_CHECKING:
     from game.entities import Resource
 
 
-# ═══════════════════════════════════════════════════════════════════════════
-#  FSM States
-# ═══════════════════════════════════════════════════════════════════════════
-
-
 class State(Enum):
     IDLE = auto()
     MOVING = auto()
     PERFORMING = auto()
-    RETURNING = auto()  # carrying a resource back to the storage hut
-    WAITING_DEPOSIT = auto()  # at the hut, waiting for storage space
+    RETURNING = auto()
+    WAITING_DEPOSIT = auto()
     DONE = auto()
-
-
-# ═══════════════════════════════════════════════════════════════════════════
-#  Action descriptors (what goes in the queue)
-# ═══════════════════════════════════════════════════════════════════════════
 
 
 class ActionType(Enum):
@@ -39,8 +29,6 @@ class ActionType(Enum):
     SHOOT = "shoot"
     DEFEND = "defend"
 
-
-# ── Per-unit allowed actions ─────────────────────────────────────────────
 
 PAWN_ACTIONS = [
     ActionType.CHOP_WOOD,
@@ -69,4 +57,4 @@ class Action:
         target: Resource | tuple[int, int] | None = None,
     ):
         self.action_type = action_type
-        self.target = target  # Resource instance or (col, row) for MOVE_TO
+        self.target = target

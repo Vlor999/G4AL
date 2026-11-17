@@ -49,27 +49,23 @@ class NPCBase:
         NPCBase._next_id += 1
         self.name = name or pick_npc_name()
 
-        # position in world pixels
         self.x = x
         self.y = y
 
-        # refs
         self._map = game_map
         self._resources = resources
         self._storage = storage
         self._all_npcs: list[NPC] = all_npcs if all_npcs is not None else []
-        self._wait_counter = 0  # frames spent waiting for a blocked tile
-        self._repath_attempts = 0  # consecutive re-paths without progress
-        self._hut: Structure | None = hut  # storage hut (deposit point)
+        self._wait_counter = 0
+        self._repath_attempts = 0
+        self._hut: Structure | None = hut
 
-        # stats
         self.health: float = NPC_MAX_HEALTH
         self.max_health = NPC_MAX_HEALTH
         self.speed = NPC_SPEED
         self.hunger: float = NPC_HUNGER_MAX
         self.max_hunger = NPC_HUNGER_MAX
 
-        # FSM
         self.state = State.IDLE
         self.action_queue: deque[Action] = deque()
         self._current_action: Action | None = None
@@ -78,23 +74,17 @@ class NPCBase:
         self._perform_timer = 0
         self._perform_duration = 0
 
-        # carrying / return-to-hut state
         self.is_carrying: bool = False
         self.carrying: dict[str, int] = {}
         self._last_harvest_action: ActionType | None = None
         self._last_harvest_target: Resource | None = None
 
-        # selection
         self.selected = False
 
-        # speech bubble
         self._speech_text: str = ""
-        self._speech_timer: int = 0  # frames remaining
+        self._speech_timer: int = 0  # frames
 
-        # visual
         self._radius = 14
-
-    # ── public interface ─────────────────────────────────────────────────
 
     def say(self, text: str, duration_frames: int = 300) -> None:
         """Show a speech bubble above this NPC for *duration_frames* frames."""
@@ -110,7 +100,6 @@ class NPCBase:
             self.say("I can't do that!", 180)
             return False
         self.action_queue.append(action)
-        # kick-start if idle
         if self.state in (State.IDLE, State.DONE):
             self._next_action()
         return True
@@ -138,15 +127,11 @@ class NPCBase:
     def queue_size(self) -> int:
         return len(self.action_queue) + (1 if self._current_action else 0)
 
-    # ── FSM update ───────────────────────────────────────────────────────
-
     def update(self) -> None:
         """Called every frame."""
-        # speech bubble countdown
         if self._speech_timer > 0:
             self._speech_timer -= 1
 
-        # hunger drain
         self.hunger = max(0.0, self.hunger - NPC_HUNGER_DRAIN)
         if self.hunger <= 0:
             self.health = max(0, self.health - NPC_HUNGER_DAMAGE)
@@ -162,15 +147,13 @@ class NPCBase:
             self._perform()
 
         elif self.state == State.RETURNING:
-            self._follow_path()  # reuses the standard path follower
+            self._follow_path()
 
         elif self.state == State.WAITING_DEPOSIT:
-            # Stand at the hut waiting for the player to free up storage
             if not self._storage.is_full:
                 self._deposit_at_hut()
 
         elif self.state == State.DONE:
-            # finished current action, release reservation and try next
             self._release_reservation()
             self._current_action = None
             if self.action_queue:
@@ -178,15 +161,23 @@ class NPCBase:
             else:
                 self.state = State.IDLE
 
-    # ── internal FSM helpers ─────────────────────────────────────────────
-
     def _next_action(self) -> None:
+        """Start the next queued action, or head to the hut first when carrying a load.
+
+        An override sets ``state`` and, when it pops an action, stores it in
+        ``_current_action``.
+        """
         raise NotImplementedError
 
     def _on_arrival(self) -> None:
+        """Called when a path ends outside a hut trip. An override sets ``state``."""
         raise NotImplementedError
 
     def _perform(self) -> None:
+        """Called every frame in PERFORMING.
+
+        An override advances ``_perform_timer`` and sets ``state`` when the work ends.
+        """
         raise NotImplementedError
 
     def _plan_move_to(self, col: int, row: int) -> None:
@@ -202,7 +193,6 @@ class NPCBase:
 
     def _follow_path(self) -> None:
         if self._path_index >= len(self._path):
-            # arrived – deposit if carrying, otherwise normal arrival
             if self.state == State.RETURNING:
                 self._deposit_at_hut()
             else:
@@ -218,17 +208,14 @@ class NPCBase:
         if dist < self.speed:
             self.x, self.y = tx, ty
             self._path_index += 1
-            self._repath_attempts = 0  # made real progress
+            self._repath_attempts = 0
         else:
             self.x += dx / dist * self.speed
             self.y += dy / dist * self.speed
 
-    # ── carry / return-to-hut helpers ────────────────────────────────────
-
     def _start_return_to_hut(self) -> None:
         """Path to the storage hut to deposit carried resources."""
         if self._hut is None:
-            # No hut registered – deposit immediately (fallback)
             self._deposit_at_hut()
             return
         adj = self._adjacent_to_structure(self._hut)
@@ -252,10 +239,8 @@ class NPCBase:
         self.is_carrying = False
         self.carrying = {}
 
-        # Release current reservation (the resource we were harvesting)
         self._release_reservation()
 
-        # If the player queued a new action, honour it
         if self.action_queue:
             self._last_harvest_action = None
             self._last_harvest_target = None
@@ -263,23 +248,19 @@ class NPCBase:
             self._next_action()
             return
 
-        # If storage is full, wait at the hut for the player to discard
         if self._storage.is_full:
             self.say("Storage full!", 180)
             self.state = State.WAITING_DEPOSIT
             return
 
-        # Auto-loop: go back to the same (or a new) resource
         if self._last_harvest_action:
             action_type = self._last_harvest_action
             target = self._last_harvest_target
             if target and not target.depleted:
-                # Re-reserve and head back
                 self._current_action = Action(action_type, target=target)
                 target.reserved_by = self.id
                 self._plan_move_to(target.col, target.row)
             else:
-                # Resource depleted – go idle, wait for new orders
                 self._last_harvest_action = None
                 self._last_harvest_target = None
                 self._current_action = None
@@ -287,8 +268,6 @@ class NPCBase:
         else:
             self._current_action = None
             self.state = State.IDLE
-
-    # ── queries ──────────────────────────────────────────────────────────
 
     def _release_reservation(self) -> None:
         """Release the resource reservation held by this NPC, if any."""
@@ -320,7 +299,6 @@ class NPCBase:
         to the NPC's current position."""
         occupied = set(struct.occupied_tiles)
         candidates: set[tuple[int, int]] = set()
-        # For each occupied tile, check its 4 cardinal neighbours
         for oc, orow in occupied:
             for dc, dr in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
                 nc, nr = oc + dc, orow + dr
@@ -343,16 +321,14 @@ class NPCBase:
                 blocker = n
                 break
         if blocker is None:
-            return True  # already clear
+            return True
 
-        # find an adjacent walkable tile that isn't occupied by yet another NPC
         occupied = self._occupied_by_npcs()
         for dc, dr in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
             nc, nr = tile[0] + dc, tile[1] + dr
             if self._map.is_walkable(nc, nr) and (nc, nr) not in occupied:
-                # teleport the blocker to the adjacent tile center
                 bx, by = self._map.tile_center(nc, nr)
                 blocker.x, blocker.y = bx, by
                 blocker.say("Excuse me!", 60)
                 return True
-        return False  # no room to push
+        return False

@@ -11,7 +11,7 @@ import base64
 import os
 import threading
 import time
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import Any
 
@@ -25,6 +25,7 @@ from loguru import logger
 
 from api.logger import pipeline_logger
 from api.tts import TTSEngine
+from game.constants import STORED_RESOURCE_KINDS
 from game.entities import Rock, Structure, WheatField
 from game.map import GameMap
 from game.npc import NPC, Action, ActionType
@@ -204,6 +205,11 @@ class GameEngine:
             if outcome.is_spoken:
                 self.tts.speak(order.voice_line, order.npc_name)
             self._add_log(f'{order.npc_name}: "{order.voice_line}"')
+
+    def discard_resources(self, amounts: Mapping[str, int]) -> dict[str, int]:
+        """Discard from storage; returns what was actually removed per resource."""
+        with self._lock:
+            return self.storage.discard_resources(amounts)
 
     def _find_npc(self, npc_id: int) -> NPC | None:
         for n in self.npcs:
@@ -475,14 +481,12 @@ def post_discard() -> Response:
     Each field is optional; only listed resources are discarded.
     """
     data = request.get_json(force=True)
-    discarded = {}
-    with engine._lock:
-        for res_type in ("wood", "stone", "gold", "wheat"):
-            amount = data.get(res_type, 0)
-            if isinstance(amount, (int, float)) and amount > 0:
-                actual = engine.storage.discard(res_type, int(amount))
-                if actual > 0:
-                    discarded[res_type] = actual
+    amounts = {
+        resource: int(amount)
+        for resource in STORED_RESOURCE_KINDS
+        if isinstance(amount := data.get(resource, 0), (int, float)) and amount > 0
+    }
+    discarded = engine.discard_resources(amounts)
     return jsonify({"ok": True, "discarded": discarded})
 
 

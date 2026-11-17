@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from typing import TypedDict
 
+from game.constants import STORED_RESOURCE_KINDS
 from game.settings import HOUSE_CAPACITY_BONUS, STORAGE_BASE_CAPACITY
 
 
@@ -21,12 +23,7 @@ class ResourceStorage:
     """Singleton-like global inventory for the settlement."""
 
     def __init__(self) -> None:
-        self._stock: dict[str, int] = {
-            "wood": 0,
-            "stone": 0,
-            "gold": 0,
-            "wheat": 0,
-        }
+        self._stock: dict[str, int] = dict.fromkeys(STORED_RESOURCE_KINDS, 0)
         self._house_count: int = 0  # completed houses (excluding storage hut)
 
     # ── capacity ─────────────────────────────────────────────────────────
@@ -105,6 +102,16 @@ class ResourceStorage:
         actual = min(amount, current)
         self._stock[resource] -= actual
         return actual
+
+    def discard_resources(self, amounts: Mapping[str, int]) -> dict[str, int]:
+        """Discard several resources at once. Returns the amount actually removed per
+        resource, leaving out the ones nothing was removed from."""
+        discarded: dict[str, int] = {}
+        for resource, amount in amounts.items():
+            removed = self.discard(resource, amount)
+            if removed > 0:
+                discarded[resource] = removed
+        return discarded
 
     def __repr__(self) -> str:
         return f"Storage({self._stock}, cap={self.capacity})"

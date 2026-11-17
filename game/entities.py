@@ -23,7 +23,7 @@ class Resource:
 
     kind: str = "resource"
 
-    def __init__(self, col: int, row: int, hp: int, yields: dict[str, int]):
+    def __init__(self, col: int, row: int, hp: int, yields: dict[str, int]) -> None:
         self.col = col
         self.row = row
         self.hp = hp
@@ -79,14 +79,14 @@ class Resource:
 class Tree(Resource):
     kind = "tree"
 
-    def __init__(self, col: int, row: int):
+    def __init__(self, col: int, row: int) -> None:
         super().__init__(col, row, hp=TREE_WOOD_YIELD * 3, yields={"wood": TREE_WOOD_YIELD})
 
 
 class Rock(Resource):
     kind = "rock"
 
-    def __init__(self, col: int, row: int, has_gold: bool = False):
+    def __init__(self, col: int, row: int, has_gold: bool = False) -> None:
         yields = {"stone": ROCK_STONE_YIELD}
         if has_gold:
             yields["gold"] = ROCK_GOLD_YIELD
@@ -118,7 +118,7 @@ class Structure(Resource):
         row: int,
         build_progress: int = 0,
         building_type: str = "house1",
-    ):
+    ) -> None:
         super().__init__(col, row, hp=100, yields={})
         self.build_progress = build_progress  # 0..100
         self.built = False
@@ -131,13 +131,13 @@ class Structure(Resource):
     @property
     def occupied_tiles(self) -> list[tuple[int, int]]:
         """Return every (col, row) this structure covers."""
-        tiles = []
+        tiles: list[tuple[int, int]] = []
         for dc in range(self.grid_width):
             for dr in range(self.grid_height):
                 tiles.append((self.col + dc, self.row + dr))
         return tiles
 
-    def build_tick(self):
+    def build_tick(self) -> None:
         self.build_progress = min(100, self.build_progress + 1)
         if self.build_progress >= 100:
             self.built = True
@@ -148,7 +148,7 @@ class WheatField(Resource):
 
     kind = "wheat"
 
-    def __init__(self, col: int, row: int):
+    def __init__(self, col: int, row: int) -> None:
         # hp here is the harvest effort (how many harvest_tick calls to collect).
         # Growth is tracked separately by self.growth.
         super().__init__(col, row, hp=10, yields={"wheat": WHEAT_YIELD})
@@ -160,7 +160,7 @@ class WheatField(Resource):
     def growth_ratio(self) -> float:
         return min(1.0, self.growth / WHEAT_GROW_TIME)
 
-    def grow_tick(self):
+    def grow_tick(self) -> None:
         """Call every frame. The field grows passively."""
         if self.depleted or self.fully_grown:
             return
@@ -186,7 +186,7 @@ def spawn_resources(
     resources: list[Resource] = []
     occupied: set[tuple[int, int]] = set()
 
-    def _random_walkable():
+    def _random_walkable() -> tuple[int, int] | None:
         for _ in range(200):
             c = random.randint(1, game_map.cols - 2)
             r = random.randint(1, game_map.rows - 2)

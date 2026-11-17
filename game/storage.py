@@ -2,13 +2,25 @@
 
 from __future__ import annotations
 
+from typing import TypedDict
+
 from game.settings import HOUSE_CAPACITY_BONUS, STORAGE_BASE_CAPACITY
+
+
+class StorageSnapshot(TypedDict):
+    wood: int
+    stone: int
+    gold: int
+    wheat: int
+    capacity: int
+    total: int
+    houseCount: int
 
 
 class ResourceStorage:
     """Singleton-like global inventory for the settlement."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._stock: dict[str, int] = {
             "wood": 0,
             "stone": 0,
@@ -37,7 +49,7 @@ class ResourceStorage:
     def remaining_space(self) -> int:
         return max(0, self.capacity - self.total)
 
-    def register_house(self):
+    def register_house(self) -> None:
         """Call when a new house is completed to increase capacity."""
         self._house_count += 1
 
@@ -76,9 +88,12 @@ class ResourceStorage:
     def wheat(self) -> int:
         return self._stock["wheat"]
 
-    def snapshot(self) -> dict:
+    def snapshot(self) -> StorageSnapshot:
         return {
-            **self._stock,
+            "wood": self.wood,
+            "stone": self.stone,
+            "gold": self.gold,
+            "wheat": self.wheat,
             "capacity": self.capacity,
             "total": self.total,
             "houseCount": self._house_count,
@@ -91,5 +106,5 @@ class ResourceStorage:
         self._stock[resource] -= actual
         return actual
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return f"Storage({self._stock}, cap={self.capacity})"

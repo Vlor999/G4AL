@@ -22,7 +22,7 @@ WALKABLE = {TileType.GRASS, TileType.DIRT, TileType.SAND}
 class GameMap:
     """Grid of tiles + helper look-ups used by NPCs."""
 
-    def __init__(self, cols: int = MAP_COLS, rows: int = MAP_ROWS, seed: int | None = None):
+    def __init__(self, cols: int = MAP_COLS, rows: int = MAP_ROWS, seed: int | None = None) -> None:
         self.cols = cols
         self.rows = rows
         if seed is not None:
@@ -83,8 +83,8 @@ class GameMap:
         """BFS outward to find nearest walkable tile (used for placement fallback)."""
         from collections import deque
 
-        visited = set()
-        queue = deque()
+        visited: set[tuple[int, int]] = set()
+        queue: deque[tuple[int, int]] = deque()
         queue.append((col, row))
         visited.add((col, row))
         while queue:

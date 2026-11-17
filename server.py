@@ -11,18 +11,21 @@ import base64
 import os
 import threading
 import time
+from collections.abc import Sequence
 from pathlib import Path
+from typing import Any
 
 import pygame
 from dotenv import load_dotenv
-from flask import Flask, jsonify, request, send_from_directory
+from flask import Flask, Response, jsonify, request, send_from_directory
+from flask.typing import ResponseReturnValue
 from flask_cors import CORS
 from flask_socketio import SocketIO, emit
 from loguru import logger
 
 from api.logger import pipeline_logger
 from api.tts import TTSEngine
-from game.creatures import Fauna, WildArcher, spawn_fauna
+from game.creatures import Arrow, Fauna, WildArcher, spawn_fauna
 from game.entities import Resource, Rock, Structure, WheatField, spawn_resources
 from game.map import GameMap
 from game.npc import NPC, Action, ActionType, Archer
@@ -75,13 +78,13 @@ _ACTION_MAP = {
 class GameEngine:
     """Headless game engine – no rendering, just logic at ~60 FPS."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.game_map = GameMap(seed=42)
         self.storage = ResourceStorage()
         self.resources: list[Resource] = spawn_resources(self.game_map)
         self.npcs: list[NPC] = []
         self.fauna: list[Fauna] = []
-        self.arrows: list[dict] = []  # active arrow projectiles
+        self.arrows: list[Arrow] = []  # active arrow projectiles
         self.tts = TTSEngine()
         self.log_messages: list[str] = []
         self._lock = threading.Lock()
@@ -102,7 +105,7 @@ class GameEngine:
         self._spawn_fauna()
         self._sync_npc_roster()
 
-    def _spawn_initial_npcs(self, count: int):
+    def _spawn_initial_npcs(self, count: int) -> None:
         # Collect ALL occupied tiles (including multi-tile structures like the hut)
         entity_tiles = self._occupied_entity_tiles()
         self._spawn_pawns_near_center(count, entity_tiles)
@@ -119,7 +122,7 @@ class GameEngine:
                 entity_tiles.add((resource.col, resource.row))
         return entity_tiles
 
-    def _spawn_pawns_near_center(self, count: int, entity_tiles: set[tuple[int, int]]):
+    def _spawn_pawns_near_center(self, count: int, entity_tiles: set[tuple[int, int]]) -> None:
         cx, cy = self.game_map.cols // 2, self.game_map.rows // 2
         placed = 0
         for dc in range(-3, 4):
@@ -142,7 +145,7 @@ class GameEngine:
                     if placed >= count:
                         return
 
-    def _spawn_archers_near_hut(self, count: int, entity_tiles: set[tuple[int, int]]):
+    def _spawn_archers_near_hut(self, count: int, entity_tiles: set[tuple[int, int]]) -> None:
         hut_col, hut_row = STORAGE_HUT_COL, STORAGE_HUT_ROW
         archer_placed = 0
         for dist in range(1, 6):
@@ -170,7 +173,7 @@ class GameEngine:
                     if archer_placed >= count:
                         return
 
-    def _spawn_fauna(self):
+    def _spawn_fauna(self) -> None:
         """Spawn autonomous creatures (sheep, wild archers, etc.)."""
         self.fauna = spawn_fauna(
             self.game_map,
@@ -209,7 +212,7 @@ class GameEngine:
                 creature._all_npcs = self.npcs
                 creature._arrows = self.arrows
 
-    def _sync_npc_roster(self):
+    def _sync_npc_roster(self) -> None:
         if not _HAS_LLM:
             return
         register_npcs(
@@ -224,14 +227,14 @@ class GameEngine:
             ]
         )
 
-    def _add_log(self, msg: str):
+    def _add_log(self, msg: str) -> None:
         self.log_messages.append(msg)
         if len(self.log_messages) > 50:
             self.log_messages.pop(0)
 
     # ── tick ─────────────────────────────────────────────────────────────
 
-    def tick(self):
+    def tick(self) -> None:
         """One frame of game logic."""
         with self._lock:
             # Apply pending LLM response
@@ -267,7 +270,9 @@ class GameEngine:
 
     # ── commands ─────────────────────────────────────────────────────────
 
-    def enqueue_action(self, npc_id: int, action_str: str, target=None):
+    def enqueue_action(
+        self, npc_id: int, action_str: str, target: Sequence[int] | None = None
+    ) -> None:
         """Enqueue an action on an NPC by ID."""
         action_type = _ACTION_MAP.get(action_str)
         if not action_type:
@@ -277,25 +282,25 @@ class GameEngine:
             if not npc:
                 return
             if action_type in (ActionType.BUILD, ActionType.PLANT_WHEAT):
-                t = tuple(target) if target else npc.tile_pos
+                t = (target[0], target[1]) if target else npc.tile_pos
                 npc.enqueue(Action(action_type, target=t))
             elif action_type == ActionType.MOVE_TO:
                 if target:
-                    npc.enqueue(Action(action_type, target=tuple(target)))
+                    npc.enqueue(Action(action_type, target=(target[0], target[1])))
             else:
                 npc.enqueue(Action(action_type))
 
-    def select_npc(self, npc_id: int):
+    def select_npc(self, npc_id: int) -> None:
         with self._lock:
             for n in self.npcs:
                 n.selected = n.id == npc_id
 
-    def deselect_all(self):
+    def deselect_all(self) -> None:
         with self._lock:
             for n in self.npcs:
                 n.selected = False
 
-    def _apply_pending_response(self):
+    def _apply_pending_response(self) -> None:
         response = self._pending_response
         self._pending_response = None
         if response is None or not response.actions:
@@ -337,7 +342,7 @@ class GameEngine:
 
     # ── state snapshot ───────────────────────────────────────────────────
 
-    def get_state(self) -> dict:
+    def get_state(self) -> dict[str, Any]:
         """Return full game state as a JSON-serializable dict."""
         with self._lock:
             # Check if any NPC is waiting to deposit (storage full alert)
@@ -363,12 +368,12 @@ class GameEngine:
                 "log": list(self.log_messages[-20:]),
             }
 
-    def _serialize_resources(self) -> list[dict]:
+    def _serialize_resources(self) -> list[dict[str, Any]]:
         result = []
         for r in self.resources:
             if r.depleted:
                 continue
-            d = {
+            d: dict[str, Any] = {
                 "kind": r.kind,
                 "col": r.col,
                 "row": r.row,
@@ -389,7 +394,7 @@ class GameEngine:
             result.append(d)
         return result
 
-    def _serialize_npcs(self) -> list[dict]:
+    def _serialize_npcs(self) -> list[dict[str, Any]]:
         result = []
         for n in self.npcs:
             result.append(
@@ -420,7 +425,7 @@ class GameEngine:
             )
         return result
 
-    def _serialize_fauna(self) -> list[dict]:
+    def _serialize_fauna(self) -> list[dict[str, Any]]:
         result = []
         for f in self.fauna:
             result.append(
@@ -441,7 +446,7 @@ class GameEngine:
             )
         return result
 
-    def _serialize_arrows(self) -> list[dict]:
+    def _serialize_arrows(self) -> list[dict[str, Any]]:
         result = []
         for a in self.arrows:
             progress = a["frame"] / max(1, a["totalFrames"])
@@ -459,7 +464,7 @@ class GameEngine:
 
     # ── audio command ─────────────────────────────────────────────────
 
-    def send_audio_command(self, wav_bytes: bytes):
+    def send_audio_command(self, wav_bytes: bytes) -> None:
         """Process a voice command via Voxtral (runs in bg thread)."""
         if not _HAS_LLM:
             self._add_log("LLM not available")
@@ -467,7 +472,7 @@ class GameEngine:
         self._add_log("Listening...")
         threading.Thread(target=self._audio_worker, args=(wav_bytes,), daemon=True).start()
 
-    def _audio_worker(self, wav_bytes: bytes):
+    def _audio_worker(self, wav_bytes: bytes) -> None:
         result = interpret_audio_command(wav_bytes)
         with self._lock:
             self._pending_response = result
@@ -477,7 +482,7 @@ class GameEngine:
     _frame_count: int = 0
     _ws_push_interval: int = 3  # push state every N frames (~20 Hz at 60 FPS)
 
-    def run_loop(self, socketio_ref=None):
+    def run_loop(self, socketio_ref: SocketIO | None = None) -> None:
         """Run game tick loop at ~60 FPS in the current thread."""
         self._running = True
         self._frame_count = 0
@@ -499,7 +504,7 @@ class GameEngine:
             if sleep_time > 0:
                 time.sleep(sleep_time)
 
-    def stop(self):
+    def stop(self) -> None:
         self._running = False
         self.tts.close()
         pipeline_logger.close()
@@ -519,17 +524,17 @@ socketio = SocketIO(app, cors_allowed_origins="*", async_mode="threading")
 
 
 @app.route("/")
-def index():
+def index() -> Response:
     return send_from_directory("static", "index.html")
 
 
 @app.route("/static/<path:path>")
-def static_files(path):
+def static_files(path: str) -> Response:
     return send_from_directory("static", path)
 
 
 @app.route("/favicon.ico")
-def favicon():
+def favicon() -> Response:
     return send_from_directory("static", "favicon.svg")
 
 
@@ -537,13 +542,13 @@ def favicon():
 
 
 @app.route("/api/state")
-def get_state():
+def get_state() -> Response:
     """Return full game state as JSON (polled by frontend)."""
     return jsonify(engine.get_state())
 
 
 @app.route("/api/action", methods=["POST"])
-def post_action():
+def post_action() -> ResponseReturnValue:
     """Dispatch a direct action to an NPC.
 
     Body: { "npcId": 1, "action": "chop_wood", "target": [col, row]? }
@@ -559,7 +564,7 @@ def post_action():
 
 
 @app.route("/api/select", methods=["POST"])
-def post_select():
+def post_select() -> Response:
     """Select an NPC.  Body: { "npcId": 1 }"""
     data = request.get_json(force=True)
     npc_id = data.get("npcId")
@@ -571,7 +576,7 @@ def post_select():
 
 
 @app.route("/api/move", methods=["POST"])
-def post_move():
+def post_move() -> ResponseReturnValue:
     """Right-click move.  Body: { "npcId": 1, "col": 10, "row": 5 }"""
     data = request.get_json(force=True)
     npc_id = data.get("npcId")
@@ -584,7 +589,7 @@ def post_move():
 
 
 @app.route("/api/discard", methods=["POST"])
-def post_discard():
+def post_discard() -> Response:
     """Discard resources from storage to free up capacity.
 
     Body: { "wood": 5, "stone": 3, "gold": 0, "wheat": 2 }
@@ -603,7 +608,7 @@ def post_discard():
 
 
 @app.route("/api/dismiss_storage", methods=["POST"])
-def post_dismiss_storage():
+def post_dismiss_storage() -> Response:
     """Release all NPCs stuck in WAITING_DEPOSIT → IDLE."""
     from game.npc import State as NpcState
 
@@ -622,7 +627,7 @@ def post_dismiss_storage():
 
 
 @app.route("/api/audio", methods=["POST"])
-def post_audio():
+def post_audio() -> ResponseReturnValue:
     """Receive recorded audio from browser push-to-talk.
 
     Accepts either:
@@ -655,13 +660,13 @@ def post_audio():
 # ── Socket.IO events ─────────────────────────────────────────────────────
 
 
-@socketio.on("connect")
-def on_connect():
+@socketio.on("connect")  # type: ignore[untyped-decorator]
+def on_connect() -> None:
     """Send full state immediately on connect so client renders instantly."""
     emit("state", engine.get_state())
 
 
-def main():
+def main() -> None:
     # Start game loop in background (pass socketio so it can push state)
     game_thread = threading.Thread(target=engine.run_loop, args=(socketio,), daemon=True)
     game_thread.start()

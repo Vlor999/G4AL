@@ -5,7 +5,7 @@ from typing import Any
 import pytest
 from flask.testing import FlaskClient
 
-from server import app as server
+from server.engine import GameEngine
 
 
 def read_state(client: FlaskClient) -> dict[str, Any]:
@@ -37,7 +37,7 @@ def test_select_marks_the_npc_then_empty_body_deselects_all(client: FlaskClient)
     assert not any(npc["selected"] for npc in read_state(client)["npcs"])
 
 
-def test_move_enqueues_an_action_on_the_npc(client: FlaskClient) -> None:
+def test_move_enqueues_an_action_on_the_npc(client: FlaskClient, engine: GameEngine) -> None:
     npc = first_controllable_npc(client)
 
     response = client.post(
@@ -45,7 +45,7 @@ def test_move_enqueues_an_action_on_the_npc(client: FlaskClient) -> None:
     )
 
     assert response.get_json() == {"ok": True}
-    assert server.engine._find_npc(npc["id"]).queue_size == npc["queueSize"] + 1  # type: ignore[union-attr]
+    assert engine._find_npc(npc["id"]).queue_size == npc["queueSize"] + 1  # type: ignore[union-attr]
 
 
 @pytest.mark.parametrize(
@@ -66,8 +66,8 @@ def test_incomplete_request_is_refused(
     assert "error" in response.get_json()
 
 
-def test_discard_removes_only_what_storage_holds(client: FlaskClient) -> None:
-    server.engine.storage.add("wood", 5)
+def test_discard_removes_only_what_storage_holds(client: FlaskClient, engine: GameEngine) -> None:
+    engine.storage.add("wood", 5)
 
     response = client.post("/api/discard", json={"wood": 8, "stone": 2})
 

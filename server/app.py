@@ -27,14 +27,15 @@ from api.logger import pipeline_logger
 from api.tts import TTSEngine
 from game.actions import Action, ActionType
 from game.constants import STORED_RESOURCE_KINDS
-from game.entities import Rock, Structure, WheatField
+from game.entities import WheatField
 from game.map import GameMap
 from game.npc import NPC
 from game.orders import NpcOrder, apply_orders
 from game.ports import OrderInterpretationError, OrderInterpreter, VoiceLineSpeaker
-from game.settings import FPS, TILE_SIZE
+from game.settings import FPS
 from game.spawning import spawn_world
 from server.constants import PROJECT_ROOT
+from server.serialization import serialize_state
 
 # Must run before TTSEngine() below: it reads its API key from the environment.
 load_dotenv(PROJECT_ROOT / ".env")
@@ -190,122 +191,15 @@ class GameEngine:
     def get_state(self) -> dict[str, Any]:
         """Return full game state as a JSON-serializable dict."""
         with self._lock:
-            # Check if any NPC is waiting to deposit (storage full alert)
-            from game.actions import State as NpcState
-
-            storage_full_alert = any(n.state == NpcState.WAITING_DEPOSIT for n in self.npcs)
-            return {
-                "map": {
-                    "cols": self.game_map.cols,
-                    "rows": self.game_map.rows,
-                    "tileSize": TILE_SIZE,
-                    "tiles": [
-                        [int(self.game_map.tiles[r][c]) for c in range(self.game_map.cols)]
-                        for r in range(self.game_map.rows)
-                    ],
-                },
-                "resources": self._serialize_resources(),
-                "npcs": self._serialize_npcs(),
-                "fauna": self._serialize_fauna(),
-                "arrows": self._serialize_arrows(),
-                "storage": self.storage.snapshot(),
-                "storageFullAlert": storage_full_alert,
-                "log": list(self.log_messages[-20:]),
-            }
-
-    def _serialize_resources(self) -> list[dict[str, Any]]:
-        result = []
-        for r in self.resources:
-            if r.depleted:
-                continue
-            d: dict[str, Any] = {
-                "kind": r.kind,
-                "col": r.col,
-                "row": r.row,
-                "hp": r.hp,
-                "maxHp": r.max_hp,
-            }
-            if isinstance(r, Rock):
-                d["hasGold"] = r.has_gold
-            elif isinstance(r, Structure):
-                d["built"] = r.built
-                d["buildProgress"] = r.build_progress
-                d["buildingType"] = r.building_type
-                d["gridWidth"] = r.grid_width
-                d["gridHeight"] = r.grid_height
-            elif isinstance(r, WheatField):
-                d["fullyGrown"] = r.fully_grown
-                d["growthRatio"] = round(r.growth_ratio, 2)
-            result.append(d)
-        return result
-
-    def _serialize_npcs(self) -> list[dict[str, Any]]:
-        result = []
-        for n in self.npcs:
-            result.append(
-                {
-                    "id": n.id,
-                    "name": n.name,
-                    "kind": n.kind,
-                    "controllable": n.controllable,
-                    "allowedActions": [a.value for a in n.allowed_actions],
-                    "x": round(n.x, 1),
-                    "y": round(n.y, 1),
-                    "tileCol": n.tile_pos[0],
-                    "tileRow": n.tile_pos[1],
-                    "health": round(n.health, 1),
-                    "maxHealth": n.max_health,
-                    "hunger": round(n.hunger, 1),
-                    "maxHunger": n.max_hunger,
-                    "state": n.state.name,
-                    "actionType": n._current_action.action_type.value if n._current_action else "",
-                    "selected": n.selected,
-                    "speechText": n._speech_text if n._speech_timer > 0 else "",
-                    "isFiring": getattr(n, "_is_firing", False),
-                    "isDefending": getattr(n, "_defending", False),
-                    "queueSize": n.queue_size,
-                    "isCarrying": n.is_carrying,
-                    "carrying": dict(n.carrying),
-                }
+            return serialize_state(
+                game_map=self.game_map,
+                resources=self.resources,
+                npcs=self.npcs,
+                fauna=self.fauna,
+                arrows=self.arrows,
+                storage=self.storage,
+                log_messages=self.log_messages,
             )
-        return result
-
-    def _serialize_fauna(self) -> list[dict[str, Any]]:
-        result = []
-        for f in self.fauna:
-            result.append(
-                {
-                    "id": f.id,
-                    "name": f.name,
-                    "kind": f.kind,
-                    "controllable": False,
-                    "x": round(f.x, 1),
-                    "y": round(f.y, 1),
-                    "tileCol": f.tile_pos[0],
-                    "tileRow": f.tile_pos[1],
-                    "health": round(f.health, 1),
-                    "maxHealth": f.max_health,
-                    "state": f.state.name,
-                    "isFiring": getattr(f, "_is_firing", False),
-                }
-            )
-        return result
-
-    def _serialize_arrows(self) -> list[dict[str, Any]]:
-        result = []
-        for a in self.arrows:
-            progress = a["frame"] / max(1, a["totalFrames"])
-            result.append(
-                {
-                    "fromX": round(a["fromX"], 1),
-                    "fromY": round(a["fromY"], 1),
-                    "toX": round(a["toX"], 1),
-                    "toY": round(a["toY"], 1),
-                    "progress": round(progress, 3),
-                    "team": a.get("team", "blue"),
-                }
-            )
-        return result
 
     # ── audio command ─────────────────────────────────────────────────
 

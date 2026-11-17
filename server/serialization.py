@@ -1,0 +1,129 @@
+"""JSON the browser client reads (`docs/api.md`), built from the game state."""
+
+from __future__ import annotations
+
+from collections.abc import Sequence
+from typing import Any
+
+from game.actions import State as NpcState
+from game.creatures import Arrow, Fauna
+from game.entities import Resource, Rock, Structure, WheatField
+from game.map import GameMap
+from game.npc import NPC
+from game.settings import TILE_SIZE
+from game.storage import ResourceStorage
+
+
+def serialize_state(
+    *,
+    game_map: GameMap,
+    resources: Sequence[Resource],
+    npcs: Sequence[NPC],
+    fauna: Sequence[Fauna],
+    arrows: Sequence[Arrow],
+    storage: ResourceStorage,
+    log_messages: Sequence[str],
+) -> dict[str, Any]:
+    """Build the full state payload; the caller holds the engine lock."""
+    return {
+        "map": _serialize_map(game_map),
+        "resources": [
+            _serialize_resource(resource) for resource in resources if not resource.depleted
+        ],
+        "npcs": [_serialize_npc(npc) for npc in npcs],
+        "fauna": [_serialize_creature(creature) for creature in fauna],
+        "arrows": [_serialize_arrow(arrow) for arrow in arrows],
+        "storage": storage.snapshot(),
+        "storageFullAlert": any(npc.state == NpcState.WAITING_DEPOSIT for npc in npcs),
+        "log": list(log_messages[-20:]),
+    }
+
+
+def _serialize_map(game_map: GameMap) -> dict[str, Any]:
+    return {
+        "cols": game_map.cols,
+        "rows": game_map.rows,
+        "tileSize": TILE_SIZE,
+        "tiles": [
+            [int(game_map.tiles[row][col]) for col in range(game_map.cols)]
+            for row in range(game_map.rows)
+        ],
+    }
+
+
+def _serialize_resource(resource: Resource) -> dict[str, Any]:
+    payload: dict[str, Any] = {
+        "kind": resource.kind,
+        "col": resource.col,
+        "row": resource.row,
+        "hp": resource.hp,
+        "maxHp": resource.max_hp,
+    }
+    if isinstance(resource, Rock):
+        payload["hasGold"] = resource.has_gold
+    elif isinstance(resource, Structure):
+        payload["built"] = resource.built
+        payload["buildProgress"] = resource.build_progress
+        payload["buildingType"] = resource.building_type
+        payload["gridWidth"] = resource.grid_width
+        payload["gridHeight"] = resource.grid_height
+    elif isinstance(resource, WheatField):
+        payload["fullyGrown"] = resource.fully_grown
+        payload["growthRatio"] = round(resource.growth_ratio, 2)
+    return payload
+
+
+def _serialize_npc(npc: NPC) -> dict[str, Any]:
+    return {
+        "id": npc.id,
+        "name": npc.name,
+        "kind": npc.kind,
+        "controllable": npc.controllable,
+        "allowedActions": [action.value for action in npc.allowed_actions],
+        "x": round(npc.x, 1),
+        "y": round(npc.y, 1),
+        "tileCol": npc.tile_pos[0],
+        "tileRow": npc.tile_pos[1],
+        "health": round(npc.health, 1),
+        "maxHealth": npc.max_health,
+        "hunger": round(npc.hunger, 1),
+        "maxHunger": npc.max_hunger,
+        "state": npc.state.name,
+        "actionType": npc._current_action.action_type.value if npc._current_action else "",
+        "selected": npc.selected,
+        "speechText": npc._speech_text if npc._speech_timer > 0 else "",
+        "isFiring": getattr(npc, "_is_firing", False),
+        "isDefending": getattr(npc, "_defending", False),
+        "queueSize": npc.queue_size,
+        "isCarrying": npc.is_carrying,
+        "carrying": dict(npc.carrying),
+    }
+
+
+def _serialize_creature(creature: Fauna) -> dict[str, Any]:
+    return {
+        "id": creature.id,
+        "name": creature.name,
+        "kind": creature.kind,
+        "controllable": False,
+        "x": round(creature.x, 1),
+        "y": round(creature.y, 1),
+        "tileCol": creature.tile_pos[0],
+        "tileRow": creature.tile_pos[1],
+        "health": round(creature.health, 1),
+        "maxHealth": creature.max_health,
+        "state": creature.state.name,
+        "isFiring": getattr(creature, "_is_firing", False),
+    }
+
+
+def _serialize_arrow(arrow: Arrow) -> dict[str, Any]:
+    progress = arrow["frame"] / max(1, arrow["totalFrames"])
+    return {
+        "fromX": round(arrow["fromX"], 1),
+        "fromY": round(arrow["fromY"], 1),
+        "toX": round(arrow["toX"], 1),
+        "toY": round(arrow["toY"], 1),
+        "progress": round(progress, 3),
+        "team": arrow.get("team", "blue"),
+    }

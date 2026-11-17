@@ -13,25 +13,12 @@ import threading
 import time
 from pathlib import Path
 
-# ── dotenv ───────────────────────────────────────────────────────────────
-try:
-    from dotenv import load_dotenv
-
-    load_dotenv(Path(__file__).resolve().parent / ".env")
-except ImportError:
-    pass
-
+import pygame
+from dotenv import load_dotenv
 from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
 from flask_socketio import SocketIO, emit
 from loguru import logger
-
-# ── Pygame audio only (for TTS playback — no display needed) ─────────────
-os.environ["SDL_VIDEODRIVER"] = "dummy"
-import pygame
-
-pygame.init()
-pygame.mixer.init()  # mixer is used by api/tts.py for mp3 playback
 
 from api.logger import pipeline_logger
 from api.tts import TTSEngine
@@ -59,6 +46,14 @@ try:
     _HAS_LLM = True
 except ImportError:
     _HAS_LLM = False
+
+# Must run before GameEngine() below: TTSEngine reads its API key from the environment.
+load_dotenv(Path(__file__).resolve().parent / ".env")
+
+# ── Pygame audio only (for TTS playback — no display needed) ─────────────
+os.environ["SDL_VIDEODRIVER"] = "dummy"
+pygame.init()
+pygame.mixer.init()  # mixer is used by api/tts.py for mp3 playback
 
 # ═══════════════════════════════════════════════════════════════════════════
 #  Game Engine (runs in background thread)

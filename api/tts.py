@@ -12,14 +12,8 @@ import os
 import queue
 import threading
 
-from dotenv import load_dotenv
-
 from api.logger import pipeline_logger
 from api.roster import NPC_VOICE_MAP, ElevenLabsVoice
-
-load_dotenv()
-
-_API_KEY = os.getenv("ELEVENLABS_API_KEY", "")
 
 # Default fallback voice ID
 _DEFAULT_VOICE_ID = ElevenLabsVoice.RACHEL.value
@@ -39,7 +33,8 @@ class TTSEngine:
         self._client = None
         self._running = True
 
-        if not _API_KEY:
+        api_key = os.getenv("ELEVENLABS_API_KEY", "")
+        if not api_key:
             from loguru import logger as _log
 
             _log.warning("No ELEVENLABS_API_KEY – TTS disabled")
@@ -48,7 +43,7 @@ class TTSEngine:
         try:
             from elevenlabs import ElevenLabs
 
-            self._client = ElevenLabs(api_key=_API_KEY)
+            self._client = ElevenLabs(api_key=api_key)
         except Exception as exc:  # noqa: BLE001 - client init failure disables TTS instead of crashing
             from loguru import logger as _log
 

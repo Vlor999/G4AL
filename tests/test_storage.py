@@ -54,3 +54,14 @@ def test_snapshot_reports_stock_and_capacity() -> None:
         "total": 2,
         "houseCount": 1,
     }
+
+
+def test_discard_resources_reports_only_what_was_removed() -> None:
+    storage = ResourceStorage()
+    storage.add("wood", 5)
+    storage.add("gold", 1)
+
+    discarded = storage.discard_resources({"wood": 8, "stone": 2, "gold": 1})
+
+    assert discarded == {"wood": 5, "gold": 1}
+    assert storage.total == 0

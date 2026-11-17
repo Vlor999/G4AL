@@ -1,6 +1,6 @@
 import pytest
 
-from game.npc import find_path
+from game.pathfinding import find_path
 from tests.conftest import MapBuilder
 
 

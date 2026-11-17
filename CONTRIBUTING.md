@@ -23,6 +23,17 @@ Optional, for the `openwiki` MCP server declared in `.mcp.json`:
 5. Open a PR against `main` with the template. CI must be green before merge. Pull
    `main` in with a rebase, never a merge commit.
 
+## Security review
+
+The `Security review` workflow runs
+[claude-code-security-review](https://github.com/anthropics/claude-code-security-review)
+on every non-draft PR opened from this repository and comments the findings on the
+diff lines. It needs the `ANTHROPIC_API_KEY` repository secret (Settings → Secrets
+and variables → Actions). Project-specific checks live in
+[`.github/security-review/scan-instructions.txt`](.github/security-review/scan-instructions.txt).
+The action is not hardened against prompt injection, so it skips fork PRs; keep
+"Require approval for all external contributors" on for Actions.
+
 ## Coding standards in short
 
 - `game/` is pure: no Flask, Mistral, ElevenLabs, pygame, file or network access.

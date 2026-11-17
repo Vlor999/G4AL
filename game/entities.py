@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import random
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, ClassVar
 
 from game.settings import (
     ROCK_GOLD_YIELD,
@@ -100,7 +100,7 @@ class Structure(Resource):
     kind = "structure"
 
     # Default grid footprint per building type (tiles wide × deep)
-    GRID_SIZES: dict[str, tuple[int, int]] = {
+    GRID_SIZES: ClassVar[dict[str, tuple[int, int]]] = {
         "house1": (2, 2),
         "house2": (2, 2),
         "house3": (2, 2),

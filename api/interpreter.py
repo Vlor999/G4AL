@@ -22,7 +22,8 @@ from mistralai.models import MessagesTypedDict
 
 from api.logger import pipeline_logger
 from api.roster import get_soul
-from game.npc import NPC, ActionType
+from game.actions import ActionType
+from game.npc import NPC
 from game.orders import NpcOrder
 from game.ports import OrderInterpretationError
 

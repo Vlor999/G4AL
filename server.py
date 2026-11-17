@@ -26,10 +26,11 @@ from loguru import logger
 from api.interpreter import VoxtralOrderInterpreter
 from api.logger import pipeline_logger
 from api.tts import TTSEngine
+from game.actions import Action, ActionType
 from game.constants import STORED_RESOURCE_KINDS
 from game.entities import Rock, Structure, WheatField
 from game.map import GameMap
-from game.npc import NPC, Action, ActionType
+from game.npc import NPC
 from game.orders import NpcOrder, apply_orders
 from game.ports import OrderInterpretationError, OrderInterpreter, VoiceLineSpeaker
 from game.settings import FPS, TILE_SIZE
@@ -190,7 +191,7 @@ class GameEngine:
         """Return full game state as a JSON-serializable dict."""
         with self._lock:
             # Check if any NPC is waiting to deposit (storage full alert)
-            from game.npc import State as NpcState
+            from game.actions import State as NpcState
 
             storage_full_alert = any(n.state == NpcState.WAITING_DEPOSIT for n in self.npcs)
             return {

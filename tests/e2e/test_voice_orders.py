@@ -1,6 +1,6 @@
 """Drive the voice order hand-off of GameEngine: interpreter answer in, NPC actions, log and voice lines out."""
 
-from game.npc import ActionType
+from game.actions import ActionType
 from game.orders import NpcOrder
 from game.ports import OrderInterpretationError
 from server import GameEngine

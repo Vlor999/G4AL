@@ -22,16 +22,20 @@ server.py: Flask + Socket.IO, GameEngine (game loop thread, 60 FPS)
 2. `GameEngine.send_audio_command` hands the bytes to a worker thread, which calls
    `api.interpreter.interpret_audio_command`: one multimodal Voxtral call with the
    system prompt and the NPC roster.
-3. The answer is parsed into a `CommandResponse` (one `NPCOrder` per NPC). The game
-   loop picks it up on its next tick (`_apply_pending_response`) and enqueues the
-   actions on each NPC.
-4. Each NPC's reply goes to `api.tts`, which plays it in the background.
+3. The answer is parsed into a `CommandResponse` (one `NPCOrder` per NPC). On its next
+   tick the game loop converts it into `game.orders.NpcOrder` values and calls
+   `game.orders.apply_orders`, which enqueues the actions and returns one
+   `OrderOutcome` per order (accepted, spoken).
+4. `GameEngine` logs each reply and sends the spoken ones to `api.tts`, which plays
+   them in the background.
 
 ## Layers
 
 See [`.claude/rules/architecture.md`](../.claude/rules/architecture.md). Today
-`GameEngine` in `server.py` still holds some game decisions (spawning, response
-application, serialization). They move to `game/` as PRs touch them.
+Initial spawning (`game/spawning.py`), order application (`game/orders.py`), storage
+discard and storage dismissal live in `game/`; each HTTP route calls one public
+`GameEngine` method. `GameEngine` still builds the client JSON and calls the
+adapters directly, until the ports land (#12).
 
 ## Decisions
 
@@ -44,9 +48,9 @@ writes them.
 Tracked on GitHub; the rules in `.claude/rules/` describe the target, these items do
 not meet it yet.
 
-- Game rules and technical code are mixed: `GameEngine` in `server.py` holds game
-  decisions and routes mutate NPCs under `engine._lock`. `game/npc.py` (~1150 lines)
-  and `server.py` (~690 lines) exceed the ~500-line budget (#5).
+- `GameEngine` calls `api.interpreter` and `api.tts` directly instead of through
+  ports. `game/npc.py` (~1170 lines) and `server.py` (~570 lines) exceed the
+  ~500-line budget (#5).
 - Routes do not validate their bodies, no upload size limit, CORS open to any origin
   (#2).
 - `api/interpreter.py` parses the LLM output from prose instead of constraining it with

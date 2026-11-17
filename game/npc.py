@@ -3,13 +3,12 @@
 from __future__ import annotations
 
 import math
-import random
 from collections import deque
 from typing import TYPE_CHECKING
 
 from game.actions import ARCHER_ACTIONS, PAWN_ACTIONS, Action, ActionType, State
 from game.entities import Resource, Rock, Structure, Tree, WheatField
-from game.npc_names import NPC_NAMES
+from game.npc_names import pick_archer_name, pick_npc_name
 from game.pathfinding import find_path
 from game.settings import (
     ARCHER_ARROW_DAMAGE,
@@ -42,20 +41,6 @@ if TYPE_CHECKING:
 #  NPC
 # ═══════════════════════════════════════════════════════════════════════════
 
-# ── Name pool for NPCs ──────────────────────────────────────────────────
-_used_names: list[str] = []
-
-
-def _pick_name() -> str:
-    """Pick a random unique name from the pool, recycling if exhausted."""
-    available = [n for n in NPC_NAMES if n not in _used_names]
-    if not available:
-        _used_names.clear()
-        available = list(NPC_NAMES)
-    name = random.choice(available)
-    _used_names.append(name)
-    return name
-
 
 class NPC:
     """Playable pawn – receives voice/click commands and has an action queue."""
@@ -78,7 +63,7 @@ class NPC:
     ):
         self.id = NPC._next_id
         NPC._next_id += 1
-        self.name = name or _pick_name()
+        self.name = name or pick_npc_name()
 
         # position in world pixels
         self.x = x
@@ -724,19 +709,6 @@ class NPC:
 #  Archer – playable ranged unit
 # ═══════════════════════════════════════════════════════════════════════════
 
-_ARCHER_NAMES = ["Robin", "Artemis", "Hawke", "Fletcher", "Ygritte", "Legolas"]
-_used_archer_names: list[str] = []
-
-
-def _pick_archer_name() -> str:
-    available = [n for n in _ARCHER_NAMES if n not in _used_archer_names]
-    if not available:
-        _used_archer_names.clear()
-        available = list(_ARCHER_NAMES)
-    name = random.choice(available)
-    _used_archer_names.append(name)
-    return name
-
 
 class Archer(NPC):
     """Playable archer – ranged unit with shoot action."""
@@ -763,7 +735,7 @@ class Archer(NPC):
             resources,
             storage,
             all_npcs=all_npcs,
-            name=name or _pick_archer_name(),
+            name=name or pick_archer_name(),
         )
         self.speed = NPC_SPEED * 1.1  # archers are slightly faster
         self.max_health = 70

@@ -97,7 +97,9 @@ touch never blocks.
 
 ## Frontend (`static/`)
 
-- Plain ES modules, no build step. A module owns one concern (`renderer.js` draws,
+- Classic scripts, no build step, no `import`/`export`: `index.html` loads them in
+  order and they share globals. Adding `import` to one breaks the page. A script owns
+  one concern (`game.js` connects and runs the client loop, `renderer.js` draws,
   `input.js` reads input, `ptt.js` records, `ui.js` builds panels, `sprites.js` loads
   assets).
 - The game state comes from the server; the client keeps only view state (camera,

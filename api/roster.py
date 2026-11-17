@@ -14,7 +14,6 @@ from __future__ import annotations
 from dataclasses import dataclass
 from enum import Enum
 
-
 # ═══════════════════════════════════════════════════════════════════════════
 #  ElevenLabs voice library
 # ═══════════════════════════════════════════════════════════════════════════
@@ -51,7 +50,6 @@ class NPCName(Enum):
     MARIE = "Marie"
     SAM = "Sam"
     LISA = "Lisa"
-
 
 
 @dataclass(frozen=True)
@@ -119,8 +117,6 @@ NPC_PROFILES: tuple[NPCProfile, ...] = (
         ),
         voice=ElevenLabsVoice.DOMI,
     ),
-        
-    
 )
 
 

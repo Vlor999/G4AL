@@ -3,15 +3,15 @@
 from __future__ import annotations
 
 import random
-from typing import List, Tuple, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 from game.settings import (
+    ROCK_GOLD_YIELD,
+    ROCK_STONE_YIELD,
     TILE_SIZE,
     TREE_WOOD_YIELD,
-    ROCK_STONE_YIELD,
-    ROCK_GOLD_YIELD,
-    WHEAT_YIELD,
     WHEAT_GROW_TIME,
+    WHEAT_YIELD,
 )
 
 if TYPE_CHECKING:
@@ -37,13 +37,13 @@ class Resource:
         self._total_units: int = sum(yields.values())
 
     @property
-    def world_pos(self) -> Tuple[float, float]:
+    def world_pos(self) -> tuple[float, float]:
         return (
             self.col * TILE_SIZE + TILE_SIZE // 2,
             self.row * TILE_SIZE + TILE_SIZE // 2,
         )
 
-    def harvest_tick(self) -> Optional[dict[str, int]]:
+    def harvest_tick(self) -> dict[str, int] | None:
         """Call once per action-frame. Returns yield dict when fully depleted."""
         if self.depleted:
             return None
@@ -53,7 +53,7 @@ class Resource:
             return dict(self.yields)
         return None
 
-    def collect_one_unit(self) -> Optional[Tuple[str, int]]:
+    def collect_one_unit(self) -> tuple[str, int] | None:
         """Collect a single unit from this resource.
 
         Returns ``(resource_type, 1)`` or *None* if nothing remains.
@@ -80,9 +80,7 @@ class Tree(Resource):
     kind = "tree"
 
     def __init__(self, col: int, row: int):
-        super().__init__(
-            col, row, hp=TREE_WOOD_YIELD * 3, yields={"wood": TREE_WOOD_YIELD}
-        )
+        super().__init__(col, row, hp=TREE_WOOD_YIELD * 3, yields={"wood": TREE_WOOD_YIELD})
 
 
 class Rock(Resource):
@@ -102,16 +100,16 @@ class Structure(Resource):
     kind = "structure"
 
     # Default grid footprint per building type (tiles wide × deep)
-    GRID_SIZES: dict[str, Tuple[int, int]] = {
-        "house1":       (2, 2),
-        "house2":       (2, 2),
-        "house3":       (2, 2),
-        "castle":       (5, 3),
-        "barracks":     (3, 3),
-        "archery":      (3, 3),
-        "tower":        (2, 2),
-        "monastery":    (3, 3),
-        "storage_hut":  (2, 2),
+    GRID_SIZES: dict[str, tuple[int, int]] = {
+        "house1": (2, 2),
+        "house2": (2, 2),
+        "house3": (2, 2),
+        "castle": (5, 3),
+        "barracks": (3, 3),
+        "archery": (3, 3),
+        "tower": (2, 2),
+        "monastery": (3, 3),
+        "storage_hut": (2, 2),
     }
 
     def __init__(
@@ -131,7 +129,7 @@ class Structure(Resource):
         self._size = 40
 
     @property
-    def occupied_tiles(self) -> List[Tuple[int, int]]:
+    def occupied_tiles(self) -> list[tuple[int, int]]:
         """Return every (col, row) this structure covers."""
         tiles = []
         for dc in range(self.grid_width):
@@ -170,7 +168,7 @@ class WheatField(Resource):
         if self.growth >= WHEAT_GROW_TIME:
             self.fully_grown = True
 
-    def harvest_tick(self) -> Optional[dict[str, int]]:
+    def harvest_tick(self) -> dict[str, int] | None:
         """Can only harvest when fully grown."""
         if not self.fully_grown or self.depleted:
             return None
@@ -182,11 +180,11 @@ class WheatField(Resource):
 
 
 def spawn_resources(
-    game_map: "GameMap", tree_count: int = 40, rock_count: int = 15
-) -> List[Resource]:
+    game_map: GameMap, tree_count: int = 40, rock_count: int = 15
+) -> list[Resource]:
     """Place trees and rocks randomly on walkable grass tiles."""
-    resources: List[Resource] = []
-    occupied: set[Tuple[int, int]] = set()
+    resources: list[Resource] = []
+    occupied: set[tuple[int, int]] = set()
 
     def _random_walkable():
         for _ in range(200):

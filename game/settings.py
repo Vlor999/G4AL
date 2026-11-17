@@ -57,28 +57,28 @@ WHEAT_GROW_TIME = 300  # frames to grow (5 s at 60 fps)
 WHEAT_PLANT_TIME = 60  # frames to plant
 
 # ── Per-unit resource collection ──────────────────────────────────────────
-NPC_COLLECT_UNIT_TIME = 90   # frames to harvest 1 unit of any resource (1.5 s)
+NPC_COLLECT_UNIT_TIME = 90  # frames to harvest 1 unit of any resource (1.5 s)
 
 # ── Archer ───────────────────────────────────────────────────────────────
-ARCHER_SHOOT_TIME = 96       # frames for full shoot cycle (aim + fire)
-ARCHER_FIRE_ANIM_TIME = 24   # frames of the actual shoot animation (end of cycle)
-ARCHER_RANGE = 1             # tiles – max distance to shoot an enemy (melee-range)
-ARCHER_ARROW_DAMAGE = 12     # HP per arrow hit
-ARCHER_ARROW_FLIGHT = 24     # frames for an arrow to reach the target
+ARCHER_SHOOT_TIME = 96  # frames for full shoot cycle (aim + fire)
+ARCHER_FIRE_ANIM_TIME = 24  # frames of the actual shoot animation (end of cycle)
+ARCHER_RANGE = 1  # tiles – max distance to shoot an enemy (melee-range)
+ARCHER_ARROW_DAMAGE = 12  # HP per arrow hit
+ARCHER_ARROW_FLIGHT = 24  # frames for an arrow to reach the target
 ARCHER_DEFEND_SCAN_RADIUS = 6  # tiles – how far a defending archer detects enemies
 
 # ── Wild Archer (enemy AI) ───────────────────────────────────────────────
-WILD_ARCHER_RANGE = 1        # tiles – attack range for wild archers
-WILD_ARCHER_DAMAGE = 8       # HP per arrow hit on our units
+WILD_ARCHER_RANGE = 1  # tiles – attack range for wild archers
+WILD_ARCHER_DAMAGE = 8  # HP per arrow hit on our units
 WILD_ARCHER_SHOOT_TIME = 80  # frames between shots (~1.3 s)
 
 # ── Storage Hut (deposit point for carried resources) ────────────────────
-STORAGE_HUT_COL = MAP_COLS // 2 - 1   # tile column of the hut origin
-STORAGE_HUT_ROW = MAP_ROWS // 2       # tile row    of the hut origin
+STORAGE_HUT_COL = MAP_COLS // 2 - 1  # tile column of the hut origin
+STORAGE_HUT_ROW = MAP_ROWS // 2  # tile row    of the hut origin
 
 # ── Storage capacity ─────────────────────────────────────────────────────
-STORAGE_BASE_CAPACITY  = 50   # max total resource units in the initial hut
-HOUSE_CAPACITY_BONUS   = 20   # extra capacity per completed house
+STORAGE_BASE_CAPACITY = 50  # max total resource units in the initial hut
+HOUSE_CAPACITY_BONUS = 20  # extra capacity per completed house
 
 # ── Building ─────────────────────────────────────────────────────────────
 BUILD_COST_WOOD = 5

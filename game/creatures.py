@@ -2,7 +2,7 @@
 
 Creature (abstract-ish base)
 ├── Pawn     – playable units (NPC class in npc.py, gets `kind='pawn'`)
-├── Archer   – playable ranged units (Archer class in npc.py, `kind='archer'`)
+├── Archer   – playable ranged units (Archer class in archer.py, `kind='archer'`)
 └── Fauna    – autonomous non-playable creatures
     ├── Sheep      – grazes, wanders, idles on its own
     ├── Cat        – sits in one spot, animated decoration

@@ -4,10 +4,11 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
+from game.archer import Archer
 from game.creatures import Arrow, Fauna, WildArcher, spawn_fauna
 from game.entities import Resource, Structure, spawn_resources
 from game.map import GameMap
-from game.npc import NPC, Archer
+from game.npc import NPC
 from game.settings import (
     ARCHER_SPAWN_MAX_DISTANCE,
     INITIAL_ARCHER_COUNT,

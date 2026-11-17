@@ -1,8 +1,9 @@
 import pytest
 
 from game.actions import Action, ActionType, State
+from game.archer import Archer
 from game.entities import Resource, Tree
-from game.npc import NPC, Archer
+from game.npc import NPC
 from game.settings import EAT_WHEAT_COST, NPC_EAT_RESTORE, NPC_EAT_TIME
 from game.storage import ResourceStorage
 from tests.conftest import MapBuilder

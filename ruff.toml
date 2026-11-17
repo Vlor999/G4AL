@@ -1,0 +1,31 @@
+line-length = 100
+target-version = "py311"
+extend-exclude = ["static", "logs"]
+
+[lint]
+select = [
+    "E", "W",   # pycodestyle
+    "F",        # pyflakes
+    "I",        # isort
+    "B",        # bugbear
+    "UP",       # pyupgrade
+    "SIM",      # simplify
+    "C4",       # comprehensions
+    "PIE",      # misc lints
+    "RUF",      # ruff-specific
+    "S",        # bandit (security)
+    "BLE",      # blind except
+    "N",        # pep8 naming
+    "C90",      # mccabe complexity
+]
+ignore = [
+    "E501",     # line length is enforced by the formatter
+    "S311",     # random is used for game logic, not cryptography
+    "RUF001", "RUF002", "RUF003",  # en dashes and emojis in game text are intentional
+]
+
+[lint.mccabe]
+max-complexity = 12
+
+[lint.per-file-ignores]
+"tests/**/*.py" = ["S101"]

@@ -25,18 +25,11 @@ from loguru import logger
 
 from api.logger import pipeline_logger
 from api.tts import TTSEngine
-from game.creatures import Arrow, Fauna, WildArcher, spawn_fauna
-from game.entities import Resource, Rock, Structure, WheatField, spawn_resources
+from game.entities import Rock, Structure, WheatField
 from game.map import GameMap
-from game.npc import NPC, Action, ActionType, Archer
-from game.settings import (
-    FPS,
-    STORAGE_HUT_COL,
-    STORAGE_HUT_ROW,
-    TILE_SIZE,
-    TTS_MAX_SPEAKERS,
-)
-from game.storage import ResourceStorage
+from game.npc import NPC, Action, ActionType
+from game.settings import FPS, TILE_SIZE, TTS_MAX_SPEAKERS
+from game.spawning import spawn_world
 
 # Lazy-import LLM
 try:
@@ -80,137 +73,19 @@ class GameEngine:
 
     def __init__(self) -> None:
         self.game_map = GameMap(seed=42)
-        self.storage = ResourceStorage()
-        self.resources: list[Resource] = spawn_resources(self.game_map)
-        self.npcs: list[NPC] = []
-        self.fauna: list[Fauna] = []
-        self.arrows: list[Arrow] = []  # active arrow projectiles
+        world = spawn_world(self.game_map)
+        self.storage = world.storage
+        self.resources = world.resources
+        self.storage_hut = world.storage_hut
+        self.npcs = world.npcs
+        self.fauna = world.fauna
+        self.arrows = world.arrows
         self.tts = TTSEngine()
         self.log_messages: list[str] = []
         self._lock = threading.Lock()
         self._running = False
         self._pending_response: CommandResponse | None = None
-
-        # Place the Storage Hut at the centre of the map
-        self.storage_hut = Structure(
-            STORAGE_HUT_COL,
-            STORAGE_HUT_ROW,
-            build_progress=100,
-            building_type="storage_hut",
-        )
-        self.storage_hut.built = True
-        self.resources.append(self.storage_hut)
-
-        self._spawn_initial_npcs(3)
-        self._spawn_fauna()
         self._sync_npc_roster()
-
-    def _spawn_initial_npcs(self, count: int) -> None:
-        # Collect ALL occupied tiles (including multi-tile structures like the hut)
-        entity_tiles = self._occupied_entity_tiles()
-        self._spawn_pawns_near_center(count, entity_tiles)
-        # Spawn 2 playable archers close to the storage hut
-        self._spawn_archers_near_hut(2, entity_tiles)
-
-    def _occupied_entity_tiles(self) -> set[tuple[int, int]]:
-        entity_tiles: set[tuple[int, int]] = set()
-        for resource in self.resources:
-            if isinstance(resource, Structure):
-                for tile in resource.occupied_tiles:
-                    entity_tiles.add(tile)
-            else:
-                entity_tiles.add((resource.col, resource.row))
-        return entity_tiles
-
-    def _spawn_pawns_near_center(self, count: int, entity_tiles: set[tuple[int, int]]) -> None:
-        cx, cy = self.game_map.cols // 2, self.game_map.rows // 2
-        placed = 0
-        for dc in range(-3, 4):
-            for dr in range(-3, 4):
-                c, r = cx + dc, cy + dr
-                if self.game_map.is_walkable(c, r) and (c, r) not in entity_tiles:
-                    wx, wy = self.game_map.tile_center(c, r)
-                    npc = NPC(
-                        wx,
-                        wy,
-                        self.game_map,
-                        self.resources,
-                        self.storage,
-                        all_npcs=self.npcs,
-                        hut=self.storage_hut,
-                    )
-                    self.npcs.append(npc)
-                    entity_tiles.add((c, r))
-                    placed += 1
-                    if placed >= count:
-                        return
-
-    def _spawn_archers_near_hut(self, count: int, entity_tiles: set[tuple[int, int]]) -> None:
-        hut_col, hut_row = STORAGE_HUT_COL, STORAGE_HUT_ROW
-        archer_placed = 0
-        for dist in range(1, 6):
-            for dc in range(-dist, dist + 1):
-                for dr in range(-dist, dist + 1):
-                    if abs(dc) != dist and abs(dr) != dist:
-                        continue
-                    c, r = hut_col + dc, hut_row + dr
-                    if not self.game_map.is_walkable(c, r):
-                        continue
-                    if (c, r) in entity_tiles:
-                        continue
-                    wx, wy = self.game_map.tile_center(c, r)
-                    archer = Archer(
-                        wx,
-                        wy,
-                        self.game_map,
-                        self.resources,
-                        self.storage,
-                        all_npcs=self.npcs,
-                    )
-                    self.npcs.append(archer)
-                    entity_tiles.add((c, r))
-                    archer_placed += 1
-                    if archer_placed >= count:
-                        return
-
-    def _spawn_fauna(self) -> None:
-        """Spawn autonomous creatures (sheep, wild archers, etc.)."""
-        self.fauna = spawn_fauna(
-            self.game_map,
-            self.resources,
-            sheep_count=6,
-            wild_archer_count=0,
-        )
-
-        # Spawn 3 enemy wild archers in the bottom-right corner
-        br_col = self.game_map.cols - 3
-        br_row = self.game_map.rows - 3
-        occupied = {(r.col, r.row) for r in self.resources}
-        br_placed = 0
-        for dc in range(-3, 4):
-            for dr in range(-3, 4):
-                c, r = br_col + dc, br_row + dr
-                if self.game_map.is_walkable(c, r) and (c, r) not in occupied:
-                    wx, wy = self.game_map.tile_center(c, r)
-                    wa = WildArcher(wx, wy, self.game_map, self.resources)
-                    self.fauna.append(wa)
-                    occupied.add((c, r))
-                    br_placed += 1
-                    if br_placed >= 3:
-                        break
-            if br_placed >= 3:
-                break
-
-        # Give archers references to fauna list and shared arrows
-        for npc in self.npcs:
-            if isinstance(npc, Archer):
-                npc._all_fauna = self.fauna
-                npc._arrows = self.arrows
-        # Give wild archers references to NPC list and shared arrows
-        for creature in self.fauna:
-            if isinstance(creature, WildArcher):
-                creature._all_npcs = self.npcs
-                creature._arrows = self.arrows
 
     def _sync_npc_roster(self) -> None:
         if not _HAS_LLM:

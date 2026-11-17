@@ -19,18 +19,6 @@ from game.settings import FPS
 from game.spawning import spawn_world
 from server.serialization import serialize_state
 
-_ACTION_MAP = {
-    "chop_wood": ActionType.CHOP_WOOD,
-    "mine_rock": ActionType.MINE_ROCK,
-    "build": ActionType.BUILD,
-    "move_to": ActionType.MOVE_TO,
-    "eat": ActionType.EAT,
-    "plant_wheat": ActionType.PLANT_WHEAT,
-    "collect_wheat": ActionType.collect_wheat,
-    "shoot": ActionType.SHOOT,
-    "defend": ActionType.DEFEND,
-}
-
 
 class GameEngine:
     """Game state and its 60 FPS loop; every public method is safe to call from any thread.
@@ -94,8 +82,9 @@ class GameEngine:
         self, npc_id: int, action_str: str, target: Sequence[int] | None = None
     ) -> None:
         """Enqueue an action on an NPC; an unknown action or NPC is ignored."""
-        action_type = _ACTION_MAP.get(action_str)
-        if not action_type:
+        try:
+            action_type = ActionType(action_str)
+        except ValueError:
             return
         with self._lock:
             npc = self._find_npc(npc_id)

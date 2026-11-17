@@ -486,6 +486,7 @@ class GameEngine:
         """Run game tick loop at ~60 FPS in the current thread."""
         self._running = True
         self._frame_count = 0
+        is_push_failing = False
         target_dt = 1.0 / FPS
         while self._running:
             t0 = time.perf_counter()
@@ -497,7 +498,14 @@ class GameEngine:
                 try:
                     socketio_ref.emit("state", self.get_state(), namespace="/")
                 except Exception as exc:  # noqa: BLE001 - a failed push must not stop the game loop
-                    logger.bind(event="state_push").warning(f"State push failed: {exc}")
+                    # Logged once per failure streak: pushes run ~20 times a second.
+                    if not is_push_failing:
+                        logger.bind(event="state_push").warning(f"State push failed: {exc}")
+                    is_push_failing = True
+                else:
+                    if is_push_failing:
+                        logger.bind(event="state_push").info("State push recovered")
+                    is_push_failing = False
 
             elapsed = time.perf_counter() - t0
             sleep_time = target_dt - elapsed

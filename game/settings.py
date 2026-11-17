@@ -76,6 +76,16 @@ WILD_ARCHER_SHOOT_TIME = 80  # frames between shots (~1.3 s)
 STORAGE_HUT_COL = MAP_COLS // 2 - 1  # tile column of the hut origin
 STORAGE_HUT_ROW = MAP_ROWS // 2  # tile row    of the hut origin
 
+# ── Initial spawn ────────────────────────────────────────────────────────
+INITIAL_PAWN_COUNT = 3
+PAWN_SPAWN_RADIUS = 3  # tiles around the map centre searched for pawn spots
+INITIAL_ARCHER_COUNT = 2
+ARCHER_SPAWN_MAX_DISTANCE = 5  # tiles: outermost ring around the hut searched for archers
+INITIAL_SHEEP_COUNT = 6
+INITIAL_WILD_ARCHER_COUNT = 3
+WILD_ARCHER_CORNER_MARGIN = 3  # tiles between the map edge and the wild archer camp centre
+WILD_ARCHER_SPAWN_RADIUS = 3  # tiles around the camp centre searched for wild archers
+
 # ── Storage capacity ─────────────────────────────────────────────────────
 STORAGE_BASE_CAPACITY = 50  # max total resource units in the initial hut
 HOUSE_CAPACITY_BONUS = 20  # extra capacity per completed house

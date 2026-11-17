@@ -1,0 +1,158 @@
+"""Initial population of a new game: resources, storage hut, NPCs and fauna."""
+
+from __future__ import annotations
+
+from dataclasses import dataclass, field
+
+from game.creatures import Arrow, Fauna, WildArcher, spawn_fauna
+from game.entities import Resource, Structure, spawn_resources
+from game.map import GameMap
+from game.npc import NPC, Archer
+from game.settings import (
+    ARCHER_SPAWN_MAX_DISTANCE,
+    INITIAL_ARCHER_COUNT,
+    INITIAL_PAWN_COUNT,
+    INITIAL_SHEEP_COUNT,
+    INITIAL_WILD_ARCHER_COUNT,
+    PAWN_SPAWN_RADIUS,
+    STORAGE_HUT_COL,
+    STORAGE_HUT_ROW,
+    WILD_ARCHER_CORNER_MARGIN,
+    WILD_ARCHER_SPAWN_RADIUS,
+)
+from game.storage import ResourceStorage
+
+
+@dataclass
+class SpawnedWorld:
+    """The settlement at frame zero.
+
+    ``resources`` includes ``storage_hut``. The lists are shared by reference with the
+    NPCs and creatures that read them: mutate them in place to keep those links.
+    """
+
+    storage: ResourceStorage
+    resources: list[Resource]
+    storage_hut: Structure
+    npcs: list[NPC] = field(default_factory=list)
+    fauna: list[Fauna] = field(default_factory=list)
+    arrows: list[Arrow] = field(default_factory=list)
+
+
+def spawn_world(game_map: GameMap) -> SpawnedWorld:
+    """Populate ``game_map``: random resources, the built storage hut, pawns around the
+    map centre, archers around the hut, sheep, a cat and a wild archer camp in the
+    bottom-right corner."""
+    resources = spawn_resources(game_map)
+    storage_hut = Structure(
+        STORAGE_HUT_COL, STORAGE_HUT_ROW, build_progress=100, building_type="storage_hut"
+    )
+    storage_hut.built = True
+    resources.append(storage_hut)
+    world = SpawnedWorld(ResourceStorage(), resources, storage_hut)
+
+    entity_tiles = _occupied_entity_tiles(resources)
+    _spawn_pawns_near_center(world, game_map, entity_tiles=entity_tiles)
+    _spawn_archers_near_hut(world, game_map, entity_tiles=entity_tiles)
+    world.fauna = spawn_fauna(
+        game_map, resources, sheep_count=INITIAL_SHEEP_COUNT, wild_archer_count=0
+    )
+    _spawn_wild_archers_in_corner(world, game_map)
+    _link_combatants(world)
+    return world
+
+
+def _occupied_entity_tiles(resources: list[Resource]) -> set[tuple[int, int]]:
+    entity_tiles: set[tuple[int, int]] = set()
+    for resource in resources:
+        if isinstance(resource, Structure):
+            entity_tiles.update(resource.occupied_tiles)
+        else:
+            entity_tiles.add((resource.col, resource.row))
+    return entity_tiles
+
+
+def _spawn_pawns_near_center(
+    world: SpawnedWorld, game_map: GameMap, *, entity_tiles: set[tuple[int, int]]
+) -> None:
+    center_col, center_row = game_map.cols // 2, game_map.rows // 2
+    placed = 0
+    for dc in range(-PAWN_SPAWN_RADIUS, PAWN_SPAWN_RADIUS + 1):
+        for dr in range(-PAWN_SPAWN_RADIUS, PAWN_SPAWN_RADIUS + 1):
+            col, row = center_col + dc, center_row + dr
+            if not game_map.is_walkable(col, row) or (col, row) in entity_tiles:
+                continue
+            x, y = game_map.tile_center(col, row)
+            world.npcs.append(
+                NPC(
+                    x,
+                    y,
+                    game_map,
+                    world.resources,
+                    world.storage,
+                    all_npcs=world.npcs,
+                    hut=world.storage_hut,
+                )
+            )
+            entity_tiles.add((col, row))
+            placed += 1
+            if placed >= INITIAL_PAWN_COUNT:
+                return
+
+
+def _spawn_archers_near_hut(
+    world: SpawnedWorld, game_map: GameMap, *, entity_tiles: set[tuple[int, int]]
+) -> None:
+    placed = 0
+    for col, row in _rings_around(STORAGE_HUT_COL, STORAGE_HUT_ROW):
+        if not game_map.is_walkable(col, row) or (col, row) in entity_tiles:
+            continue
+        x, y = game_map.tile_center(col, row)
+        world.npcs.append(
+            Archer(x, y, game_map, world.resources, world.storage, all_npcs=world.npcs)
+        )
+        entity_tiles.add((col, row))
+        placed += 1
+        if placed >= INITIAL_ARCHER_COUNT:
+            return
+
+
+def _rings_around(center_col: int, center_row: int) -> list[tuple[int, int]]:
+    """Tiles on square rings at distance 1 to ``ARCHER_SPAWN_MAX_DISTANCE``, nearest first."""
+    tiles: list[tuple[int, int]] = []
+    for distance in range(1, ARCHER_SPAWN_MAX_DISTANCE + 1):
+        for dc in range(-distance, distance + 1):
+            for dr in range(-distance, distance + 1):
+                if abs(dc) == distance or abs(dr) == distance:
+                    tiles.append((center_col + dc, center_row + dr))
+    return tiles
+
+
+def _spawn_wild_archers_in_corner(world: SpawnedWorld, game_map: GameMap) -> None:
+    camp_col = game_map.cols - WILD_ARCHER_CORNER_MARGIN
+    camp_row = game_map.rows - WILD_ARCHER_CORNER_MARGIN
+    # Only resource origins are avoided here, not every tile of a structure.
+    occupied = {(resource.col, resource.row) for resource in world.resources}
+    placed = 0
+    for dc in range(-WILD_ARCHER_SPAWN_RADIUS, WILD_ARCHER_SPAWN_RADIUS + 1):
+        for dr in range(-WILD_ARCHER_SPAWN_RADIUS, WILD_ARCHER_SPAWN_RADIUS + 1):
+            col, row = camp_col + dc, camp_row + dr
+            if not game_map.is_walkable(col, row) or (col, row) in occupied:
+                continue
+            x, y = game_map.tile_center(col, row)
+            world.fauna.append(WildArcher(x, y, game_map, world.resources))
+            occupied.add((col, row))
+            placed += 1
+            if placed >= INITIAL_WILD_ARCHER_COUNT:
+                return
+
+
+def _link_combatants(world: SpawnedWorld) -> None:
+    for npc in world.npcs:
+        if isinstance(npc, Archer):
+            npc._all_fauna = world.fauna
+            npc._arrows = world.arrows
+    for creature in world.fauna:
+        if isinstance(creature, WildArcher):
+            creature._all_npcs = world.npcs
+            creature._arrows = world.arrows

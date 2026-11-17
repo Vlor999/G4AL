@@ -283,6 +283,21 @@ class NPC:
             self._next_action()
         return True
 
+    def give_up_waiting_deposit(self) -> bool:
+        """Drop the carried load and go idle if waiting for storage space.
+
+        Returns False, changing nothing, when the NPC is not waiting to deposit.
+        """
+        if self.state != State.WAITING_DEPOSIT:
+            return False
+        self.is_carrying = False
+        self.carrying = {}
+        self._last_harvest_action = None
+        self._last_harvest_target = None
+        self._current_action = None
+        self.state = State.IDLE
+        return True
+
     @property
     def tile_pos(self) -> tuple[int, int]:
         return self._map.world_to_tile(self.x, self.y)

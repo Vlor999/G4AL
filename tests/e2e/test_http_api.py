@@ -48,6 +48,19 @@ def test_move_enqueues_an_action_on_the_npc(client: FlaskClient, engine: GameEng
     assert engine._find_npc(npc["id"]).queue_size == npc["queueSize"] + 1  # type: ignore[union-attr]
 
 
+@pytest.mark.parametrize("action", ["dance", ["chop_wood"], {"name": "chop_wood"}])
+def test_action_outside_the_action_names_is_ignored(
+    client: FlaskClient, engine: GameEngine, action: object
+) -> None:
+    npc = first_controllable_npc(client)
+
+    response = client.post("/api/action", json={"npcId": npc["id"], "action": action})
+
+    assert response.status_code == 200
+    assert response.get_json() == {"ok": True}
+    assert engine._find_npc(npc["id"]).queue_size == npc["queueSize"]  # type: ignore[union-attr]
+
+
 @pytest.mark.parametrize(
     ("route", "body"),
     [

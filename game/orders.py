@@ -5,7 +5,8 @@ from __future__ import annotations
 from collections.abc import Sequence
 from dataclasses import dataclass
 
-from game.npc import NPC, Action, ActionType
+from game.actions import Action, ActionType
+from game.npc import NPC
 from game.settings import ORDER_SPEECH_DURATION_FRAMES, TTS_MAX_SPEAKERS
 
 

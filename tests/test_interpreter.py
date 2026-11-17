@@ -13,7 +13,7 @@ from api.interpreter import (
     VoxtralOrderInterpreter,
     _parse_response,
 )
-from game.npc import ActionType
+from game.actions import ActionType
 from game.orders import NpcOrder
 from game.ports import OrderInterpretationError
 

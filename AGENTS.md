@@ -3,8 +3,8 @@
 Voice-controlled top-down 2D survival game. The player holds a key and speaks an
 order; Mistral Voxtral turns the audio into structured NPC orders; NPCs carry them out
 (chop wood, mine rock, build, farm, defend) and answer with an ElevenLabs voice line.
-A Flask + Socket.IO server runs the simulation and pushes the state to an HTML5 Canvas
-client at ~60 FPS.
+A Flask + Socket.IO server runs the simulation at 60 FPS and pushes the state to an
+HTML5 Canvas client every 3rd tick (~20 Hz).
 
 ## Layout
 
@@ -13,8 +13,8 @@ client at ~60 FPS.
 | `game/` | Domain: pure simulation (map, NPCs and action queue, fauna, resources, storage, pathfinding, tuning in `settings.py`). No I/O. |
 | `api/` | Adapters: Mistral Voxtral (`interpreter.py`), ElevenLabs + pygame mixer (`tts.py`), structured logs (`logger.py`), NPC personalities (`roster.py`). |
 | `server.py` | Entry point: Flask routes, Socket.IO, `GameEngine` and its game loop thread. |
-| `main.py` | Loads `.env` and starts the server. |
-| `static/` | Browser client: ES modules, no build step (`renderer.js`, `input.js`, `ptt.js`, `ui.js`, `sprites.js`). |
+| `main.py` | Starts the server (`server.py` loads `.env`). |
+| `static/` | Browser client: classic scripts sharing globals, loaded in order by `index.html`, no build step (`game.js` entry, `renderer.js`, `input.js`, `ptt.js`, `ui.js`, `sprites.js`). |
 | `tests/` | Pytest suite. |
 | `docs/` | [Architecture](docs/architecture.md), [client/server contract](docs/api.md), [decisions](docs/adr/). |
 

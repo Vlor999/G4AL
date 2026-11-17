@@ -39,7 +39,7 @@ You need:
 ```bash
 git clone https://github.com/Vlor999/G4AL.git
 cd G4AL
-make install        # same as: uv sync
+make install        # uv sync + pre-commit hooks
 cp .env.example .env
 ```
 
@@ -53,7 +53,7 @@ ELEVENLABS_API_KEY="your-elevenlabs-api-key"   # optional
 ## Run
 
 ```bash
-uv run python main.py
+make run            # same as: uv run python main.py
 ```
 
 Open http://127.0.0.1:8000 in your browser. The server listens on port 8000 on `127.0.0.1`; set `G4AL_HOST=0.0.0.0` to listen on all interfaces.
@@ -76,18 +76,16 @@ Example voice commands:
 ## Project structure
 
 ```
-main.py             entry point, loads .env and starts the server
-server.py           Flask + Socket.IO backend and game loop
-Makefile            install, format-check, format-fix, lint-fix, type-check
+main.py             entry point, starts the server
+server.py           loads .env, Flask + Socket.IO backend and game loop
+Makefile            install, run, check (format, lint, types, dead code, tests) and fix targets
 pyproject.toml      dependencies
 .env.example        environment variable template
 
 api/
   interpreter.py    Voxtral audio -> structured NPC orders
-  voice.py          microphone recorder (PyAudio)
   tts.py            ElevenLabs text-to-speech
   roster.py         NPC profiles (name, personality, voice)
-  characters.py     character descriptions
   logger.py         pipeline logging, written to logs/
 
 game/
@@ -106,7 +104,12 @@ static/
   ptt.js            browser push-to-talk recording
   ui.js             HUD and overlays
   assets/           sprite sheets and tilesets
+
+tests/              pytest suite; tests/e2e drives the HTTP routes
+docs/               architecture, client/server contract, decisions
 ```
+
+Contributors and coding agents start with [AGENTS.md](AGENTS.md) and [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Credits
 

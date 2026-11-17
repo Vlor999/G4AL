@@ -8,12 +8,18 @@ to a route, an event or a payload updates both sides in the same PR
 
 | Event | Direction | Payload |
 |---|---|---|
-| `state` | server → client | full game state (same shape as `GET /api/state`), pushed every tick and once on `connect` |
+| `state` | server → client | full game state (same shape as `GET /api/state`), pushed every 3rd tick (~20 Hz) and once on `connect` |
 
 ## HTTP
 
-All POST bodies are JSON unless stated. Every route answers `{"ok": true, ...}` on
-success and `{"error": "<reason>"}` with status 400 on a bad request.
+All POST bodies are JSON unless stated. POST routes answer `{"ok": true, ...}` on
+success. Validation today is partial (#2):
+
+- `/api/action` and `/api/move` answer 400 `{"error": ...}` when a required field is
+  missing, `/api/audio` when no audio is sent.
+- An unknown `action` or `npcId` is ignored and still answers 200.
+- A body that is not a JSON object, a non-integer `col`/`row` or a `target` with fewer
+  than two values raises a 500.
 
 | Route | Body | Effect |
 |---|---|---|

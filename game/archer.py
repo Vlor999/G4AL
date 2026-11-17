@@ -55,16 +55,14 @@ class Archer(NPC):
             all_npcs=all_npcs,
             name=name or pick_archer_name(),
         )
-        self.speed = NPC_SPEED * 1.1  # archers are slightly faster
+        self.speed = NPC_SPEED * 1.1
         self.max_health = 70
         self.health = 70
         self._all_fauna: list[Fauna] = all_fauna if all_fauna is not None else []
         self._shoot_target: Fauna | None = None
-        self._arrows: list[Arrow] = []  # shared arrow projectile list (set by server)
-        self._is_firing: bool = False  # True during brief fire animation phase
-        self._defending: bool = False  # True while in defend mode
-
-    # ── helpers ──────────────────────────────────────────────────────────
+        self._arrows: list[Arrow] = []
+        self._is_firing: bool = False
+        self._defending: bool = False
 
     def _find_nearest_enemy(self, max_range: int = 0) -> Fauna | None:
         """Find the nearest living WildArcher in the fauna list.
@@ -94,8 +92,6 @@ class Archer(NPC):
     def _pixel_distance(self, enemy: Fauna) -> float:
         return math.hypot(enemy.x - self.x, enemy.y - self.y)
 
-    # ── FSM overrides ────────────────────────────────────────────────────
-
     def enqueue(self, action: Action) -> bool:
         """Override: cancel defend mode when a new action is enqueued."""
         self._defending = False
@@ -106,12 +102,11 @@ class Archer(NPC):
     def update(self) -> None:
         """Override: while defending and idle, keep scanning for enemies."""
         super().update()
-        # If defending and idle (no enemies found last scan), rescan periodically
         if self._defending and self.state == State.IDLE and not self.action_queue:
             self._defend_scan()
 
     def _next_action(self) -> None:
-        """Archer-specific action dispatch (only MOVE_TO, SHOOT, EAT)."""
+        """Start a queued MOVE_TO, SHOOT, EAT or DEFEND; any other action ends DONE."""
         if self.is_carrying:
             self._start_return_to_hut()
             return
@@ -129,7 +124,6 @@ class Archer(NPC):
                 self.state = State.DONE
 
         elif action.action_type == ActionType.SHOOT:
-            # Find the nearest enemy
             enemy = self._find_nearest_enemy()
             if enemy is None:
                 self.say("No enemies!", 90)
@@ -138,10 +132,8 @@ class Archer(NPC):
             self._shoot_target = enemy
             dist = self._enemy_tile_distance(enemy)
             if dist <= ARCHER_RANGE:
-                # Already in range → start shooting
                 self._start_shoot_perform()
             else:
-                # Walk toward the enemy, stopping within range
                 self._walk_toward_enemy(enemy)
 
         elif action.action_type == ActionType.EAT:
@@ -157,7 +149,6 @@ class Archer(NPC):
         elif action.action_type == ActionType.DEFEND:
             self._defending = True
             self.say("Defending!", 90)
-            # Immediately try to engage an enemy in scan radius
             self._defend_scan()
 
         else:
@@ -167,7 +158,6 @@ class Archer(NPC):
         """Pathfind to a tile within ARCHER_RANGE of the enemy."""
         ec, er = enemy.tile_pos
         mc, mr = self.tile_pos
-        # Find the closest walkable tile within range of the enemy
         best_tile: tuple[int, int] | None = None
         best_cost = float("inf")
         for dc in range(-ARCHER_RANGE, ARCHER_RANGE + 1):
@@ -191,7 +181,6 @@ class Archer(NPC):
         """Scan for enemies within defend radius and engage if found."""
         enemy = self._find_nearest_enemy(max_range=ARCHER_DEFEND_SCAN_RADIUS)
         if enemy is None:
-            # No enemy nearby – stay idle, will rescan each frame via update()
             self.state = State.IDLE
             return
         self._shoot_target = enemy
@@ -202,7 +191,6 @@ class Archer(NPC):
             self._walk_toward_enemy(enemy)
 
     def _start_shoot_perform(self) -> None:
-        """Begin the shoot animation cycle."""
         self._perform_timer = 0
         self._perform_duration = ARCHER_SHOOT_TIME
         self._is_firing = False
@@ -224,12 +212,10 @@ class Archer(NPC):
                 else:
                     self.state = State.DONE
                 return
-            # Check if we're in range now
             dist = self._enemy_tile_distance(enemy)
             if dist <= ARCHER_RANGE:
                 self._start_shoot_perform()
             else:
-                # Still too far, try again
                 self._walk_toward_enemy(enemy)
             return
 
@@ -237,14 +223,11 @@ class Archer(NPC):
             self.state = State.DONE
             return
 
-        # Fallback
         self.state = State.DONE
 
     def _perform(self) -> None:
-        """Archer-specific perform logic."""
         self._perform_timer += 1
 
-        # ── EAT ──
         if (
             self._current_action
             and self._current_action.action_type == ActionType.EAT
@@ -255,19 +238,16 @@ class Archer(NPC):
             self.state = State.DONE
             return
 
-        # ── SHOOT / DEFEND (combat) ──
         if self._current_action and self._current_action.action_type in (
             ActionType.SHOOT,
             ActionType.DEFEND,
         ):
             enemy = self._shoot_target
-            # Target died or gone
             if enemy is None or enemy.health <= 0:
                 self.say("Target down!", 60)
                 self._shoot_target = None
                 self._is_firing = False
                 if self._defending:
-                    # Rescan for another enemy
                     self._defend_scan()
                 else:
                     self.state = State.DONE
@@ -275,10 +255,8 @@ class Archer(NPC):
 
             fire_start = self._perform_duration - ARCHER_FIRE_ANIM_TIME
 
-            # Transition from aim → fire phase
             if not self._is_firing and self._perform_timer >= fire_start:
                 self._is_firing = True
-                # Fire arrow + deal damage at start of fire anim
                 enemy.health -= ARCHER_ARROW_DAMAGE
                 self.say("Fire!", 60)
                 if self._arrows is not None:
@@ -294,7 +272,6 @@ class Archer(NPC):
                         }
                     )
 
-            # End of full cycle → reset for next shot or finish
             if self._perform_timer >= self._perform_duration:
                 self._is_firing = False
 
@@ -307,7 +284,6 @@ class Archer(NPC):
                         self.state = State.DONE
                     return
 
-                # Enemy still alive → check range and reshoot
                 dist = self._enemy_tile_distance(enemy)
                 if dist <= ARCHER_RANGE:
                     self._perform_timer = 0
@@ -315,6 +291,5 @@ class Archer(NPC):
                     self._walk_toward_enemy(enemy)
             return
 
-        # Generic fallback
         if self._perform_timer >= self._perform_duration:
             self.state = State.DONE

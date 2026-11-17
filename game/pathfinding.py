@@ -28,7 +28,6 @@ def find_path(
     import heapq
 
     if not game_map.is_walkable(goal[0], goal[1]):
-        # try to get an adjacent walkable tile to the goal
         for dc, dr in [
             (-1, 0),
             (1, 0),
@@ -54,7 +53,6 @@ def find_path(
     while open_set:
         _, current = heapq.heappop(open_set)
         if current == goal:
-            # reconstruct
             path = [current]
             while current in came_from:
                 current = came_from[current]
@@ -66,7 +64,6 @@ def find_path(
             neighbor = (current[0] + dc, current[1] + dr)
             if not game_map.is_walkable(neighbor[0], neighbor[1]):
                 continue
-            # skip tiles occupied by other NPCs (but allow the goal)
             if blocked and neighbor in blocked and neighbor != goal:
                 continue
             tentative = g_score[current] + 1

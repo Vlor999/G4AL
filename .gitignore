@@ -36,3 +36,18 @@ Thumbs.db
 
 # logs
 logs/
+# Tooling
+.venv/
+.coverage
+coverage.xml
+htmlcov/
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+
+# Claude Code (local only)
+.claude/settings.local.json
+.claude/worktrees/
+
+# mr-review output (never committed)
+*_TO_*_review.md

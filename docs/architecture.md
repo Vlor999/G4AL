@@ -51,8 +51,7 @@ writes them.
 Tracked on GitHub; the rules in `.claude/rules/` describe the target, these items do
 not meet it yet.
 
-- `game/npc.py` (~1170 lines) and `server.py` (~570 lines) exceed the
-  ~500-line budget (#5).
+- `server.py` (~570 lines) exceeds the ~500-line budget (#5).
 - Routes do not validate their bodies, no upload size limit, CORS open to any origin
   (#2).
 - `api/interpreter.py` parses the LLM output from prose instead of constraining it with

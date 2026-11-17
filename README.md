@@ -90,8 +90,12 @@ api/
 
 game/
   map.py            procedural tile map
-  npc.py            NPC and archer logic, actions, pathfinding
-  npc_names.py      canonical NPC names
+  actions.py        NPC actions and action-machine states
+  npc_base.py       shared NPC core: stats, queue, movement, hut trips
+  npc.py            pawn action planning
+  archer.py         archer combat
+  pathfinding.py    A* on the tile grid
+  npc_names.py      canonical NPC names and name picking
   ports.py          protocols the domain needs from the outside world
   entities.py       trees, rocks, structures, wheat fields
   creatures.py      sheep and wild archers

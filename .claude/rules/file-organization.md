@@ -25,9 +25,8 @@ Concerns that always live in their own module:
 ## Length budget
 
 Aim for files under ~500 lines. Past that, point at a clear reason (an exhaustive test
-suite, a data table). `game/npc.py` (~1100 lines) and `static/renderer.js` (~950
-lines) are over budget: a PR that adds to them extracts first (for example
-pathfinding out of `npc.py`, one draw module per entity kind out of `renderer.js`).
+suite, a data table). `static/renderer.js` (~950 lines) is over budget: a PR that adds
+to it extracts first (for example one draw module per entity kind).
 
 ## Strategy split for alternative behaviours
 

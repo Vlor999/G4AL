@@ -5,6 +5,6 @@ Kept for backward compatibility — the canonical source of truth is now
 here still works.
 """
 
-from api.roster import CHARACTER_SOULS, get_soul  # noqa: F401
+from api.roster import CHARACTER_SOULS, get_soul
 
 __all__ = ["CHARACTER_SOULS", "get_soul"]

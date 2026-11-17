@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from game.settings import STORAGE_BASE_CAPACITY, HOUSE_CAPACITY_BONUS
+from game.settings import HOUSE_CAPACITY_BONUS, STORAGE_BASE_CAPACITY
 
 
 class ResourceStorage:
@@ -12,7 +12,7 @@ class ResourceStorage:
         self._stock: dict[str, int] = {
             "wood": 0,
             "stone": 0,
-            "gold":  0,
+            "gold": 0,
             "wheat": 0,
         }
         self._house_count: int = 0  # completed houses (excluding storage hut)

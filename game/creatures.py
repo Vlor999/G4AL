@@ -14,20 +14,19 @@ from __future__ import annotations
 import math
 import random
 from enum import Enum, auto
-from typing import List, Tuple, Optional, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 from game.settings import (
-    TILE_SIZE,
-    ARCHER_FIRE_ANIM_TIME,
-    WILD_ARCHER_RANGE,
-    WILD_ARCHER_DAMAGE,
-    WILD_ARCHER_SHOOT_TIME,
     ARCHER_ARROW_FLIGHT,
+    ARCHER_FIRE_ANIM_TIME,
+    WILD_ARCHER_DAMAGE,
+    WILD_ARCHER_RANGE,
+    WILD_ARCHER_SHOOT_TIME,
 )
 
 if TYPE_CHECKING:
-    from game.map import GameMap
     from game.entities import Resource
+    from game.map import GameMap
 
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -65,8 +64,8 @@ class Fauna:
         self,
         x: float,
         y: float,
-        game_map: "GameMap",
-        resources: List["Resource"],
+        game_map: GameMap,
+        resources: list[Resource],
         name: str = "Fauna",
     ):
         self.id = _next_fauna_id()
@@ -83,14 +82,14 @@ class Fauna:
 
         # state
         self.state = FaunaState.IDLE
-        self._path: List[Tuple[int, int]] = []
+        self._path: list[tuple[int, int]] = []
         self._path_index = 0
         self._timer = 0  # generic tick counter
         self._idle_duration = 0
         self._graze_duration = 0
 
     @property
-    def tile_pos(self) -> Tuple[int, int]:
+    def tile_pos(self) -> tuple[int, int]:
         return self._map.world_to_tile(self.x, self.y)
 
     def update(self):
@@ -173,7 +172,7 @@ class Fauna:
 
     def _random_nearby_walkable(
         self, col: int, row: int, radius: int = 5
-    ) -> Optional[Tuple[int, int]]:
+    ) -> tuple[int, int] | None:
         """Pick a random walkable tile within *radius* of (col, row)."""
         candidates = []
         for dc in range(-radius, radius + 1):
@@ -185,9 +184,7 @@ class Fauna:
             return None
         return random.choice(candidates)
 
-    def _simple_path(
-        self, start: Tuple[int, int], goal: Tuple[int, int]
-    ) -> List[Tuple[int, int]]:
+    def _simple_path(self, start: tuple[int, int], goal: tuple[int, int]) -> list[tuple[int, int]]:
         """Lightweight A* for fauna (no NPC collision avoidance)."""
         import heapq
 
@@ -196,8 +193,8 @@ class Fauna:
 
         open_set: list = []
         heapq.heappush(open_set, (0.0, start))
-        came_from: dict[Tuple[int, int], Tuple[int, int]] = {}
-        g_score: dict[Tuple[int, int], float] = {start: 0.0}
+        came_from: dict[tuple[int, int], tuple[int, int]] = {}
+        g_score: dict[tuple[int, int], float] = {start: 0.0}
 
         while open_set:
             _, current = heapq.heappop(open_set)
@@ -236,8 +233,8 @@ class Sheep(Fauna):
         self,
         x: float,
         y: float,
-        game_map: "GameMap",
-        resources: List["Resource"],
+        game_map: GameMap,
+        resources: list[Resource],
     ):
         super().__init__(x, y, game_map, resources, name="Sheep")
         self.speed = 0.8  # slower than pawns
@@ -260,8 +257,8 @@ class Cat(Fauna):
         self,
         x: float,
         y: float,
-        game_map: "GameMap",
-        resources: List["Resource"],
+        game_map: GameMap,
+        resources: list[Resource],
     ):
         super().__init__(x, y, game_map, resources, name="Le Chat")
         self.speed = 0.0
@@ -272,7 +269,6 @@ class Cat(Fauna):
 
     def update(self):
         """Cat does nothing — purely animated on the frontend."""
-        pass
 
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -280,7 +276,12 @@ class Cat(Fauna):
 # ═══════════════════════════════════════════════════════════════════════════
 
 _WILD_ARCHER_NAMES = [
-    "Bandit", "Outlaw", "Rogue", "Poacher", "Marauder", "Raider",
+    "Bandit",
+    "Outlaw",
+    "Rogue",
+    "Poacher",
+    "Marauder",
+    "Raider",
 ]
 _used_wild_archer_names: list[str] = []
 
@@ -304,8 +305,8 @@ class WildArcher(Fauna):
         self,
         x: float,
         y: float,
-        game_map: "GameMap",
-        resources: List["Resource"],
+        game_map: GameMap,
+        resources: list[Resource],
     ):
         super().__init__(x, y, game_map, resources, name=_pick_wild_name())
         self.speed = 1.5
@@ -313,8 +314,8 @@ class WildArcher(Fauna):
         self.max_health = 50
         self._shoot_duration = 0
         self._attack_target = None  # NPC we are shooting at
-        self._all_npcs: list = []   # set by server after spawn
-        self._arrows: list = []     # shared arrow projectile list
+        self._all_npcs: list = []  # set by server after spawn
+        self._arrows: list = []  # shared arrow projectile list
         self._is_firing: bool = False  # True during brief fire anim
         self._start_idle()
 
@@ -459,15 +460,17 @@ class WildArcher(Fauna):
             # Deal damage + spawn arrow
             target.health = max(0, target.health - WILD_ARCHER_DAMAGE)
             if self._arrows is not None:
-                self._arrows.append({
-                    "fromX": self.x,
-                    "fromY": self.y - 20,
-                    "toX": target.x,
-                    "toY": target.y - 10,
-                    "frame": 0,
-                    "totalFrames": ARCHER_ARROW_FLIGHT,
-                    "team": "red",
-                })
+                self._arrows.append(
+                    {
+                        "fromX": self.x,
+                        "fromY": self.y - 20,
+                        "toX": target.x,
+                        "toY": target.y - 10,
+                        "frame": 0,
+                        "totalFrames": ARCHER_ARROW_FLIGHT,
+                        "team": "red",
+                    }
+                )
 
         # End of full cycle
         if self._timer >= self._shoot_duration:
@@ -485,16 +488,16 @@ class WildArcher(Fauna):
 
 
 def spawn_fauna(
-    game_map: "GameMap",
-    resources: List["Resource"],
+    game_map: GameMap,
+    resources: list[Resource],
     sheep_count: int = 5,
     wild_archer_count: int = 3,
-) -> List[Fauna]:
+) -> list[Fauna]:
     """Place sheep, wild archers on walkable tiles + one cat in a corner."""
     from game.map import TileType
 
-    fauna: List[Fauna] = []
-    occupied: set[Tuple[int, int]] = {(r.col, r.row) for r in resources}
+    fauna: list[Fauna] = []
+    occupied: set[tuple[int, int]] = {(r.col, r.row) for r in resources}
 
     def _random_grass():
         for _ in range(200):

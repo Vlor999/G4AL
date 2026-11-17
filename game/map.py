@@ -4,9 +4,8 @@ from __future__ import annotations
 
 import random
 from enum import IntEnum
-from typing import List, Tuple, Optional
 
-from game.settings import TILE_SIZE, MAP_COLS, MAP_ROWS
+from game.settings import MAP_COLS, MAP_ROWS, TILE_SIZE
 
 
 class TileType(IntEnum):
@@ -23,17 +22,15 @@ WALKABLE = {TileType.GRASS, TileType.DIRT, TileType.SAND}
 class GameMap:
     """Grid of tiles + helper look-ups used by NPCs."""
 
-    def __init__(
-        self, cols: int = MAP_COLS, rows: int = MAP_ROWS, seed: int | None = None
-    ):
+    def __init__(self, cols: int = MAP_COLS, rows: int = MAP_ROWS, seed: int | None = None):
         self.cols = cols
         self.rows = rows
         if seed is not None:
             random.seed(seed)
-        self.tiles: List[List[TileType]] = self._generate()
+        self.tiles: list[list[TileType]] = self._generate()
 
     # ── generation ───────────────────────────────────────────────────────
-    def _generate(self) -> List[List[TileType]]:
+    def _generate(self) -> list[list[TileType]]:
         """Simple procedural generation: mostly grass with ponds & dirt patches."""
         grid = [[TileType.GRASS for _ in range(self.cols)] for _ in range(self.rows)]
 
@@ -66,17 +63,17 @@ class GameMap:
             return self.tiles[row][col] in WALKABLE
         return False
 
-    def tile_center(self, col: int, row: int) -> Tuple[float, float]:
+    def tile_center(self, col: int, row: int) -> tuple[float, float]:
         """Return the world-pixel center of a tile."""
         return col * TILE_SIZE + TILE_SIZE // 2, row * TILE_SIZE + TILE_SIZE // 2
 
-    def world_to_tile(self, x: float, y: float) -> Tuple[int, int]:
+    def world_to_tile(self, x: float, y: float) -> tuple[int, int]:
         """Convert world pixel coords → (col, row)."""
         return int(x // TILE_SIZE), int(y // TILE_SIZE)
 
     def find_nearest_walkable(
         self, col: int, row: int, max_radius: int = 10
-    ) -> Optional[Tuple[int, int]]:
+    ) -> tuple[int, int] | None:
         """BFS outward to find nearest walkable tile (used for placement fallback)."""
         from collections import deque
 
@@ -90,11 +87,7 @@ class GameMap:
                 return (c, r)
             for dc, dr in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
                 nc, nr = c + dc, r + dr
-                if (
-                    (nc, nr) not in visited
-                    and 0 <= nc < self.cols
-                    and 0 <= nr < self.rows
-                ):
+                if (nc, nr) not in visited and 0 <= nc < self.cols and 0 <= nr < self.rows:
                     if abs(nc - col) <= max_radius and abs(nr - row) <= max_radius:
                         visited.add((nc, nr))
                         queue.append((nc, nr))

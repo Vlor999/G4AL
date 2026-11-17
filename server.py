@@ -9,14 +9,14 @@ from __future__ import annotations
 
 import base64
 import os
-import time
 import threading
+import time
 from pathlib import Path
-from typing import List, Optional
 
 # ── dotenv ───────────────────────────────────────────────────────────────
 try:
     from dotenv import load_dotenv
+
     load_dotenv(Path(__file__).resolve().parent / ".env")
 except ImportError:
     pass
@@ -28,29 +28,33 @@ from flask_socketio import SocketIO, emit
 # ── Pygame audio only (for TTS playback — no display needed) ─────────────
 os.environ["SDL_VIDEODRIVER"] = "dummy"
 import pygame
+
 pygame.init()
 pygame.mixer.init()  # mixer is used by api/tts.py for mp3 playback
 
-from game.settings import (
-    TILE_SIZE, FPS,
-    TTS_MAX_SPEAKERS,
-    STORAGE_HUT_COL, STORAGE_HUT_ROW,
-)
-from game.map import GameMap
-from game.entities import Resource, spawn_resources, Rock, Structure, WheatField
-from game.storage import ResourceStorage
-from game.npc import NPC, Action, ActionType, Archer
-from game.creatures import Fauna, Sheep, WildArcher, spawn_fauna
 from api.logger import pipeline_logger
 from api.tts import TTSEngine
+from game.creatures import Fauna, WildArcher, spawn_fauna
+from game.entities import Resource, Rock, Structure, WheatField, spawn_resources
+from game.map import GameMap
+from game.npc import NPC, Action, ActionType, Archer
+from game.settings import (
+    FPS,
+    STORAGE_HUT_COL,
+    STORAGE_HUT_ROW,
+    TILE_SIZE,
+    TTS_MAX_SPEAKERS,
+)
+from game.storage import ResourceStorage
 
 # Lazy-import LLM
 try:
     from api.interpreter import (
+        CommandResponse,
         interpret_audio_command,
         register_npcs,
-        CommandResponse,
     )
+
     _HAS_LLM = True
 except ImportError:
     _HAS_LLM = False
@@ -78,19 +82,20 @@ class GameEngine:
     def __init__(self):
         self.game_map = GameMap(seed=42)
         self.storage = ResourceStorage()
-        self.resources: List[Resource] = spawn_resources(self.game_map)
-        self.npcs: List[NPC] = []
-        self.fauna: List[Fauna] = []
+        self.resources: list[Resource] = spawn_resources(self.game_map)
+        self.npcs: list[NPC] = []
+        self.fauna: list[Fauna] = []
         self.arrows: list[dict] = []  # active arrow projectiles
         self.tts = TTSEngine()
         self.log_messages: list[str] = []
         self._lock = threading.Lock()
         self._running = False
-        self._pending_response: Optional[CommandResponse] = None
+        self._pending_response: CommandResponse | None = None
 
         # Place the Storage Hut at the centre of the map
         self.storage_hut = Structure(
-            STORAGE_HUT_COL, STORAGE_HUT_ROW,
+            STORAGE_HUT_COL,
+            STORAGE_HUT_ROW,
             build_progress=100,
             building_type="storage_hut",
         )
@@ -118,8 +123,12 @@ class GameEngine:
                 if self.game_map.is_walkable(c, r) and (c, r) not in entity_tiles:
                     wx, wy = self.game_map.tile_center(c, r)
                     npc = NPC(
-                        wx, wy, self.game_map, self.resources,
-                        self.storage, all_npcs=self.npcs,
+                        wx,
+                        wy,
+                        self.game_map,
+                        self.resources,
+                        self.storage,
+                        all_npcs=self.npcs,
                         hut=self.storage_hut,
                     )
                     self.npcs.append(npc)
@@ -145,8 +154,12 @@ class GameEngine:
                         continue
                     wx, wy = self.game_map.tile_center(c, r)
                     archer = Archer(
-                        wx, wy, self.game_map, self.resources,
-                        self.storage, all_npcs=self.npcs,
+                        wx,
+                        wy,
+                        self.game_map,
+                        self.resources,
+                        self.storage,
+                        all_npcs=self.npcs,
                     )
                     self.npcs.append(archer)
                     entity_tiles.add((c, r))
@@ -161,8 +174,10 @@ class GameEngine:
     def _spawn_fauna(self):
         """Spawn autonomous creatures (sheep, wild archers, etc.)."""
         self.fauna = spawn_fauna(
-            self.game_map, self.resources,
-            sheep_count=6, wild_archer_count=0,
+            self.game_map,
+            self.resources,
+            sheep_count=6,
+            wild_archer_count=0,
         )
 
         # Spawn 3 enemy wild archers in the bottom-right corner
@@ -198,11 +213,17 @@ class GameEngine:
     def _sync_npc_roster(self):
         if not _HAS_LLM:
             return
-        register_npcs([
-            {"id": n.id, "name": n.name, "kind": n.kind,
-             "allowed_actions": [a.value for a in n.allowed_actions]}
-            for n in self.npcs
-        ])
+        register_npcs(
+            [
+                {
+                    "id": n.id,
+                    "name": n.name,
+                    "kind": n.kind,
+                    "allowed_actions": [a.value for a in n.allowed_actions],
+                }
+                for n in self.npcs
+            ]
+        )
 
     def _add_log(self, msg: str):
         self.log_messages.append(msg)
@@ -268,7 +289,7 @@ class GameEngine:
     def select_npc(self, npc_id: int):
         with self._lock:
             for n in self.npcs:
-                n.selected = (n.id == npc_id)
+                n.selected = n.id == npc_id
 
     def deselect_all(self):
         with self._lock:
@@ -283,6 +304,7 @@ class GameEngine:
             return
 
         from dataclasses import asdict
+
         pipeline_logger.pipeline_summary(voice_text="", order=asdict(response))
 
         spoken_count = 0
@@ -308,7 +330,7 @@ class GameEngine:
                     spoken_count += 1
             self._add_log(f'{order.npc_name}: "{order.voice_line}"')
 
-    def _find_npc(self, npc_id: int) -> Optional[NPC]:
+    def _find_npc(self, npc_id: int) -> NPC | None:
         for n in self.npcs:
             if n.id == npc_id:
                 return n
@@ -321,9 +343,8 @@ class GameEngine:
         with self._lock:
             # Check if any NPC is waiting to deposit (storage full alert)
             from game.npc import State as NpcState
-            storage_full_alert = any(
-                n.state == NpcState.WAITING_DEPOSIT for n in self.npcs
-            )
+
+            storage_full_alert = any(n.state == NpcState.WAITING_DEPOSIT for n in self.npcs)
             return {
                 "map": {
                     "cols": self.game_map.cols,
@@ -372,63 +393,69 @@ class GameEngine:
     def _serialize_npcs(self) -> list[dict]:
         result = []
         for n in self.npcs:
-            result.append({
-                "id": n.id,
-                "name": n.name,
-                "kind": n.kind,
-                "controllable": n.controllable,
-                "allowedActions": [a.value for a in n.allowed_actions],
-                "x": round(n.x, 1),
-                "y": round(n.y, 1),
-                "tileCol": n.tile_pos[0],
-                "tileRow": n.tile_pos[1],
-                "health": round(n.health, 1),
-                "maxHealth": n.max_health,
-                "hunger": round(n.hunger, 1),
-                "maxHunger": n.max_hunger,
-                "state": n.state.name,
-                "actionType": n._current_action.action_type.value if n._current_action else "",
-                "selected": n.selected,
-                "speechText": n._speech_text if n._speech_timer > 0 else "",
-                "isFiring": getattr(n, '_is_firing', False),
-                "isDefending": getattr(n, '_defending', False),
-                "queueSize": n.queue_size,
-                "isCarrying": n.is_carrying,
-                "carrying": dict(n.carrying),
-            })
+            result.append(
+                {
+                    "id": n.id,
+                    "name": n.name,
+                    "kind": n.kind,
+                    "controllable": n.controllable,
+                    "allowedActions": [a.value for a in n.allowed_actions],
+                    "x": round(n.x, 1),
+                    "y": round(n.y, 1),
+                    "tileCol": n.tile_pos[0],
+                    "tileRow": n.tile_pos[1],
+                    "health": round(n.health, 1),
+                    "maxHealth": n.max_health,
+                    "hunger": round(n.hunger, 1),
+                    "maxHunger": n.max_hunger,
+                    "state": n.state.name,
+                    "actionType": n._current_action.action_type.value if n._current_action else "",
+                    "selected": n.selected,
+                    "speechText": n._speech_text if n._speech_timer > 0 else "",
+                    "isFiring": getattr(n, "_is_firing", False),
+                    "isDefending": getattr(n, "_defending", False),
+                    "queueSize": n.queue_size,
+                    "isCarrying": n.is_carrying,
+                    "carrying": dict(n.carrying),
+                }
+            )
         return result
 
     def _serialize_fauna(self) -> list[dict]:
         result = []
         for f in self.fauna:
-            result.append({
-                "id": f.id,
-                "name": f.name,
-                "kind": f.kind,
-                "controllable": False,
-                "x": round(f.x, 1),
-                "y": round(f.y, 1),
-                "tileCol": f.tile_pos[0],
-                "tileRow": f.tile_pos[1],
-                "health": round(f.health, 1),
-                "maxHealth": f.max_health,
-                "state": f.state.name,
-                "isFiring": getattr(f, '_is_firing', False),
-            })
+            result.append(
+                {
+                    "id": f.id,
+                    "name": f.name,
+                    "kind": f.kind,
+                    "controllable": False,
+                    "x": round(f.x, 1),
+                    "y": round(f.y, 1),
+                    "tileCol": f.tile_pos[0],
+                    "tileRow": f.tile_pos[1],
+                    "health": round(f.health, 1),
+                    "maxHealth": f.max_health,
+                    "state": f.state.name,
+                    "isFiring": getattr(f, "_is_firing", False),
+                }
+            )
         return result
 
     def _serialize_arrows(self) -> list[dict]:
         result = []
         for a in self.arrows:
             progress = a["frame"] / max(1, a["totalFrames"])
-            result.append({
-                "fromX": round(a["fromX"], 1),
-                "fromY": round(a["fromY"], 1),
-                "toX": round(a["toX"], 1),
-                "toY": round(a["toY"], 1),
-                "progress": round(progress, 3),
-                "team": a.get("team", "blue"),
-            })
+            result.append(
+                {
+                    "fromX": round(a["fromX"], 1),
+                    "fromY": round(a["fromY"], 1),
+                    "toX": round(a["toX"], 1),
+                    "toY": round(a["toY"], 1),
+                    "progress": round(progress, 3),
+                    "team": a.get("team", "blue"),
+                }
+            )
         return result
 
     # ── audio command ─────────────────────────────────────────────────
@@ -439,9 +466,7 @@ class GameEngine:
             self._add_log("LLM not available")
             return
         self._add_log("Listening...")
-        threading.Thread(
-            target=self._audio_worker, args=(wav_bytes,), daemon=True
-        ).start()
+        threading.Thread(target=self._audio_worker, args=(wav_bytes,), daemon=True).start()
 
     def _audio_worker(self, wav_bytes: bytes):
         result = interpret_audio_command(wav_bytes)
@@ -493,6 +518,7 @@ socketio = SocketIO(app, cors_allowed_origins="*", async_mode="threading")
 
 # ── Static files ─────────────────────────────────────────────────────────
 
+
 @app.route("/")
 def index():
     return send_from_directory("static", "index.html")
@@ -509,6 +535,7 @@ def favicon():
 
 
 # ── API endpoints ────────────────────────────────────────────────────────
+
 
 @app.route("/api/state")
 def get_state():
@@ -530,7 +557,6 @@ def post_action():
         return jsonify({"error": "npcId required"}), 400
     engine.enqueue_action(npc_id, action, target)
     return jsonify({"ok": True})
-
 
 
 @app.route("/api/select", methods=["POST"])
@@ -581,6 +607,7 @@ def post_discard():
 def post_dismiss_storage():
     """Release all NPCs stuck in WAITING_DEPOSIT → IDLE."""
     from game.npc import State as NpcState
+
     released = 0
     with engine._lock:
         for npc in engine.npcs:
@@ -628,6 +655,7 @@ def post_audio():
 
 # ── Socket.IO events ─────────────────────────────────────────────────────
 
+
 @socketio.on("connect")
 def on_connect():
     """Send full state immediately on connect so client renders instantly."""
@@ -636,16 +664,19 @@ def on_connect():
 
 def main():
     # Start game loop in background (pass socketio so it can push state)
-    game_thread = threading.Thread(
-        target=engine.run_loop, args=(socketio,), daemon=True
-    )
+    game_thread = threading.Thread(target=engine.run_loop, args=(socketio,), daemon=True)
     game_thread.start()
 
     print("\n  G4AL Web UI → http://127.0.0.1:8000\n")
     try:
-        socketio.run(app, host="0.0.0.0", port=8000,
-                     debug=False, use_reloader=False,
-                     allow_unsafe_werkzeug=True)
+        socketio.run(
+            app,
+            host="0.0.0.0",
+            port=8000,
+            debug=False,
+            use_reloader=False,
+            allow_unsafe_werkzeug=True,
+        )
     except KeyboardInterrupt:
         pass
     finally:

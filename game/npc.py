@@ -6,35 +6,30 @@ import math
 import random
 from collections import deque
 from enum import Enum, auto
-from typing import List, Tuple, Optional
 
+from api.roster import NPC_NAMES
+from game.entities import Resource, Rock, Structure, Tree, WheatField
 from game.settings import (
-    NPC_HUNGER_MAX,
-    NPC_HUNGER_DRAIN,
-    NPC_HUNGER_DAMAGE,
-    NPC_EAT_TIME,
-    NPC_EAT_RESTORE,
-    EAT_WHEAT_COST,
-    NPC_SPEED,
-    NPC_MAX_HEALTH,
-    NPC_CHOP_TIME,
-    NPC_MINE_TIME,
-    NPC_BUILD_TIME,
-    BUILD_COST_WOOD,
-    BUILD_COST_STONE,
-    WHEAT_PLANT_TIME,
-    NPC_COLLECT_UNIT_TIME,
-    ARCHER_SHOOT_TIME,
+    ARCHER_ARROW_DAMAGE,
+    ARCHER_ARROW_FLIGHT,
     ARCHER_DEFEND_SCAN_RADIUS,
     ARCHER_FIRE_ANIM_TIME,
     ARCHER_RANGE,
-    ARCHER_ARROW_DAMAGE,
-    ARCHER_ARROW_FLIGHT,
-    TILE_SIZE,
+    ARCHER_SHOOT_TIME,
+    BUILD_COST_STONE,
+    BUILD_COST_WOOD,
+    EAT_WHEAT_COST,
+    NPC_BUILD_TIME,
+    NPC_COLLECT_UNIT_TIME,
+    NPC_EAT_RESTORE,
+    NPC_EAT_TIME,
+    NPC_HUNGER_DAMAGE,
+    NPC_HUNGER_DRAIN,
+    NPC_HUNGER_MAX,
+    NPC_MAX_HEALTH,
+    NPC_SPEED,
+    WHEAT_PLANT_TIME,
 )
-from game.entities import Resource, Tree, Rock, Structure, WheatField
-from api.roster import NPC_NAMES
-
 
 # ═══════════════════════════════════════════════════════════════════════════
 #  FSM States
@@ -45,7 +40,7 @@ class State(Enum):
     IDLE = auto()
     MOVING = auto()
     PERFORMING = auto()
-    RETURNING = auto()        # carrying a resource back to the storage hut
+    RETURNING = auto()  # carrying a resource back to the storage hut
     WAITING_DEPOSIT = auto()  # at the hut, waiting for storage space
     DONE = auto()
 
@@ -93,7 +88,7 @@ class Action:
     def __init__(
         self,
         action_type: ActionType,
-        target: Optional[Resource | Tuple[int, int]] = None,
+        target: Resource | tuple[int, int] | None = None,
     ):
         self.action_type = action_type
         self.target = target  # Resource instance or (col, row) for MOVE_TO
@@ -104,14 +99,16 @@ class Action:
 # ═══════════════════════════════════════════════════════════════════════════
 
 
-def _heuristic(a: Tuple[int, int], b: Tuple[int, int]) -> float:
+def _heuristic(a: tuple[int, int], b: tuple[int, int]) -> float:
     return abs(a[0] - b[0]) + abs(a[1] - b[1])
 
 
 def find_path(
-    game_map: "GameMap", start: Tuple[int, int], goal: Tuple[int, int],
-    blocked: set[Tuple[int, int]] | None = None,
-) -> List[Tuple[int, int]]:
+    game_map: GameMap,
+    start: tuple[int, int],
+    goal: tuple[int, int],
+    blocked: set[tuple[int, int]] | None = None,
+) -> list[tuple[int, int]]:
     """A* on the tile grid. Returns list of (col, row) from start to goal (inclusive).
 
     *blocked* is an optional set of (col, row) tiles treated as impassable
@@ -142,8 +139,8 @@ def find_path(
 
     open_set: list = []
     heapq.heappush(open_set, (0.0, start))
-    came_from: dict[Tuple[int, int], Tuple[int, int]] = {}
-    g_score: dict[Tuple[int, int], float] = {start: 0.0}
+    came_from: dict[tuple[int, int], tuple[int, int]] = {}
+    g_score: dict[tuple[int, int], float] = {start: 0.0}
 
     while open_set:
         _, current = heapq.heappop(open_set)
@@ -196,19 +193,19 @@ class NPC:
 
     kind: str = "pawn"
     controllable: bool = True
-    allowed_actions: List[ActionType] = PAWN_ACTIONS
+    allowed_actions: list[ActionType] = PAWN_ACTIONS
     _next_id = 1
 
     def __init__(
         self,
         x: float,
         y: float,
-        game_map: "GameMap",
-        resources: List[Resource],
-        storage: "ResourceStorage",
-        all_npcs: Optional[List["NPC"]] = None,
-        name: Optional[str] = None,
-        hut: Optional[Structure] = None,
+        game_map: GameMap,
+        resources: list[Resource],
+        storage: ResourceStorage,
+        all_npcs: list[NPC] | None = None,
+        name: str | None = None,
+        hut: Structure | None = None,
     ):
         self.id = NPC._next_id
         NPC._next_id += 1
@@ -222,10 +219,10 @@ class NPC:
         self._map = game_map
         self._resources = resources
         self._storage = storage
-        self._all_npcs: List["NPC"] = all_npcs if all_npcs is not None else []
+        self._all_npcs: list[NPC] = all_npcs if all_npcs is not None else []
         self._wait_counter = 0  # frames spent waiting for a blocked tile
         self._repath_attempts = 0  # consecutive re-paths without progress
-        self._hut: Optional[Structure] = hut  # storage hut (deposit point)
+        self._hut: Structure | None = hut  # storage hut (deposit point)
 
         # stats
         self.health = NPC_MAX_HEALTH
@@ -237,8 +234,8 @@ class NPC:
         # FSM
         self.state = State.IDLE
         self.action_queue: deque[Action] = deque()
-        self._current_action: Optional[Action] = None
-        self._path: List[Tuple[int, int]] = []
+        self._current_action: Action | None = None
+        self._path: list[tuple[int, int]] = []
         self._path_index = 0
         self._perform_timer = 0
         self._perform_duration = 0
@@ -246,8 +243,8 @@ class NPC:
         # carrying / return-to-hut state
         self.is_carrying: bool = False
         self.carrying: dict[str, int] = {}
-        self._last_harvest_action: Optional[ActionType] = None
-        self._last_harvest_target: Optional[Resource] = None
+        self._last_harvest_action: ActionType | None = None
+        self._last_harvest_target: Resource | None = None
 
         # selection
         self.selected = False
@@ -281,7 +278,7 @@ class NPC:
         return True
 
     @property
-    def tile_pos(self) -> Tuple[int, int]:
+    def tile_pos(self) -> tuple[int, int]:
         return self._map.world_to_tile(self.x, self.y)
 
     @property
@@ -312,7 +309,7 @@ class NPC:
             self._perform()
 
         elif self.state == State.RETURNING:
-            self._follow_path()          # reuses the standard path follower
+            self._follow_path()  # reuses the standard path follower
 
         elif self.state == State.WAITING_DEPOSIT:
             # Stand at the hut waiting for the player to free up storage
@@ -493,11 +490,7 @@ class NPC:
             return
 
         at = self._current_action.action_type
-        if at == ActionType.CHOP_WOOD:
-            self._perform_timer = 0
-            self._perform_duration = NPC_COLLECT_UNIT_TIME
-            self.state = State.PERFORMING
-        elif at == ActionType.MINE_ROCK:
+        if at == ActionType.CHOP_WOOD or at == ActionType.MINE_ROCK:
             self._perform_timer = 0
             self._perform_duration = NPC_COLLECT_UNIT_TIME
             self.state = State.PERFORMING
@@ -664,13 +657,13 @@ class NPC:
             if target.reserved_by == self.id:
                 target.reserved_by = None
 
-    def _occupied_by_npcs(self) -> set[Tuple[int, int]]:
+    def _occupied_by_npcs(self) -> set[tuple[int, int]]:
         """Return set of tiles currently occupied by *other* NPCs."""
         return {n.tile_pos for n in self._all_npcs if n.id != self.id}
 
-    def _occupied_by_structures(self) -> set[Tuple[int, int]]:
+    def _occupied_by_structures(self) -> set[tuple[int, int]]:
         """Return set of tiles occupied by non-depleted multi-tile structures."""
-        tiles: set[Tuple[int, int]] = set()
+        tiles: set[tuple[int, int]] = set()
         for r in self._resources:
             if r.depleted:
                 continue
@@ -681,7 +674,7 @@ class NPC:
                 tiles.add((r.col, r.row))
         return tiles
 
-    def _entity_at_tile(self, col: int, row: int) -> Optional[Resource]:
+    def _entity_at_tile(self, col: int, row: int) -> Resource | None:
         """Return the first non-depleted entity sitting on (col, row), or None.
         Supports multi-tile structures."""
         for r in self._resources:
@@ -699,18 +692,15 @@ class NPC:
 
     def _find_nearby_free_tile(
         self, col: int, row: int, max_radius: int = 5
-    ) -> Optional[Tuple[int, int]]:
+    ) -> tuple[int, int] | None:
         """BFS outward from (col, row) to find the nearest tile that is
         walkable AND has no non-depleted entity on it."""
         from collections import deque as _deque
 
-        visited: set[Tuple[int, int]] = set()
-        queue: _deque[Tuple[int, int]] = _deque()
+        visited: set[tuple[int, int]] = set()
+        queue: _deque[tuple[int, int]] = _deque()
         # Check the origin first
-        if (
-            self._map.is_walkable(col, row)
-            and self._entity_at_tile(col, row) is None
-        ):
+        if self._map.is_walkable(col, row) and self._entity_at_tile(col, row) is None:
             return (col, row)
         visited.add((col, row))
         queue.append((col, row))
@@ -723,17 +713,14 @@ class NPC:
                 if abs(nc - col) > max_radius or abs(nr - row) > max_radius:
                     continue
                 visited.add((nc, nr))
-                if (
-                    self._map.is_walkable(nc, nr)
-                    and self._entity_at_tile(nc, nr) is None
-                ):
+                if self._map.is_walkable(nc, nr) and self._entity_at_tile(nc, nr) is None:
                     return (nc, nr)
                 queue.append((nc, nr))
         return None
 
     def _find_free_area(
         self, col: int, row: int, gw: int, gh: int, max_radius: int = 8
-    ) -> Optional[Tuple[int, int]]:
+    ) -> tuple[int, int] | None:
         """BFS to find the nearest origin (c, r) where a gw×gh block of
         tiles is entirely walkable and free of entities."""
         from collections import deque as _deque
@@ -748,8 +735,8 @@ class NPC:
                         return False
             return True
 
-        visited: set[Tuple[int, int]] = set()
-        queue: _deque[Tuple[int, int]] = _deque()
+        visited: set[tuple[int, int]] = set()
+        queue: _deque[tuple[int, int]] = _deque()
         if _area_free(col, row):
             return (col, row)
         visited.add((col, row))
@@ -768,12 +755,12 @@ class NPC:
                 queue.append((nc, nr))
         return None
 
-    def _adjacent_to_structure(self, struct: Structure) -> Optional[Tuple[int, int]]:
+    def _adjacent_to_structure(self, struct: Structure) -> tuple[int, int] | None:
         """Return the nearest walkable tile *cardinally* adjacent to the
         structure footprint (sharing an edge, not diagonal-only), closest
         to the NPC's current position."""
         occupied = set(struct.occupied_tiles)
-        candidates: set[Tuple[int, int]] = set()
+        candidates: set[tuple[int, int]] = set()
         # For each occupied tile, check its 4 cardinal neighbours
         for oc, orow in occupied:
             for dc, dr in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
@@ -788,10 +775,10 @@ class NPC:
         mc, mr = self.tile_pos
         return min(candidates, key=lambda p: abs(p[0] - mc) + abs(p[1] - mr))
 
-    def _push_npc_off_tile(self, tile: Tuple[int, int]) -> bool:
+    def _push_npc_off_tile(self, tile: tuple[int, int]) -> bool:
         """If another NPC is standing on *tile*, nudge them to an adjacent
         free walkable tile.  Returns True if the tile is now clear."""
-        blocker: Optional[NPC] = None
+        blocker: NPC | None = None
         for n in self._all_npcs:
             if n.id != self.id and n.tile_pos == tile:
                 blocker = n
@@ -811,8 +798,8 @@ class NPC:
                 return True
         return False  # no room to push
 
-    def _find_nearest(self, kind: type) -> Optional[Resource]:
-        best: Optional[Resource] = None
+    def _find_nearest(self, kind: type) -> Resource | None:
+        best: Resource | None = None
         best_dist = float("inf")
         for r in self._resources:
             if isinstance(r, kind) and not r.depleted:
@@ -825,8 +812,8 @@ class NPC:
                     best = r
         return best
 
-    def _find_nearest_ready_wheat(self) -> Optional[WheatField]:
-        best: Optional[WheatField] = None
+    def _find_nearest_ready_wheat(self) -> WheatField | None:
+        best: WheatField | None = None
         best_dist = float("inf")
         for r in self._resources:
             if isinstance(r, WheatField) and r.fully_grown and not r.depleted:
@@ -860,21 +847,25 @@ class Archer(NPC):
 
     kind: str = "archer"
     controllable: bool = True
-    allowed_actions: List[ActionType] = ARCHER_ACTIONS
+    allowed_actions: list[ActionType] = ARCHER_ACTIONS
 
     def __init__(
         self,
         x: float,
         y: float,
-        game_map: "GameMap",
-        resources: List[Resource],
-        storage: "ResourceStorage",
-        all_npcs: Optional[List["NPC"]] = None,
-        name: Optional[str] = None,
-        all_fauna: Optional[list] = None,
+        game_map: GameMap,
+        resources: list[Resource],
+        storage: ResourceStorage,
+        all_npcs: list[NPC] | None = None,
+        name: str | None = None,
+        all_fauna: list | None = None,
     ):
         super().__init__(
-            x, y, game_map, resources, storage,
+            x,
+            y,
+            game_map,
+            resources,
+            storage,
             all_npcs=all_npcs,
             name=name or _pick_archer_name(),
         )
@@ -883,7 +874,7 @@ class Archer(NPC):
         self.health = 70
         self._all_fauna: list = all_fauna if all_fauna is not None else []
         self._shoot_target = None  # the Fauna we're attacking
-        self._arrows: list = []    # shared arrow projectile list (set by server)
+        self._arrows: list = []  # shared arrow projectile list (set by server)
         self._is_firing: bool = False  # True during brief fire animation phase
         self._defending: bool = False  # True while in defend mode
 
@@ -1079,9 +1070,9 @@ class Archer(NPC):
             return
 
         # ── SHOOT / DEFEND (combat) ──
-        if (
-            self._current_action
-            and self._current_action.action_type in (ActionType.SHOOT, ActionType.DEFEND)
+        if self._current_action and self._current_action.action_type in (
+            ActionType.SHOOT,
+            ActionType.DEFEND,
         ):
             enemy = self._shoot_target
             # Target died or gone
@@ -1105,15 +1096,17 @@ class Archer(NPC):
                 enemy.health -= ARCHER_ARROW_DAMAGE
                 self.say("Fire!", 60)
                 if self._arrows is not None:
-                    self._arrows.append({
-                        "fromX": self.x,
-                        "fromY": self.y - 20,
-                        "toX": enemy.x,
-                        "toY": enemy.y - 10,
-                        "frame": 0,
-                        "totalFrames": ARCHER_ARROW_FLIGHT,
-                        "team": "blue",
-                    })
+                    self._arrows.append(
+                        {
+                            "fromX": self.x,
+                            "fromY": self.y - 20,
+                            "toX": enemy.x,
+                            "toY": enemy.y - 10,
+                            "frame": 0,
+                            "totalFrames": ARCHER_ARROW_FLIGHT,
+                            "team": "blue",
+                        }
+                    )
 
             # End of full cycle → reset for next shot or finish
             if self._perform_timer >= self._perform_duration:

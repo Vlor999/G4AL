@@ -14,14 +14,12 @@ from __future__ import annotations
 import base64
 import json
 import os
-from dataclasses import dataclass, asdict
-from typing import Optional
+from dataclasses import asdict, dataclass
 
 from mistralai import Mistral
 
-from api.roster import get_soul
 from api.logger import pipeline_logger
-
+from api.roster import get_soul
 
 # ═══════════════════════════════════════════════════════════════════════════
 #  Data types
@@ -46,7 +44,17 @@ class CommandResponse:
     actions: list[NPCOrder]  # individual orders
 
 
-VALID_ACTIONS = ["chop_wood", "mine_rock", "build", "move_to", "eat", "plant_wheat", "collect_wheat", "shoot", "defend"]
+VALID_ACTIONS = [
+    "chop_wood",
+    "mine_rock",
+    "build",
+    "move_to",
+    "eat",
+    "plant_wheat",
+    "collect_wheat",
+    "shoot",
+    "defend",
+]
 
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -74,8 +82,8 @@ def _build_roster_table() -> str:
         return "(no NPCs registered)"
     lines = ["| ID | Name | Type | Allowed actions |", "|-----|------|------|-----------------|"]
     for info in _npc_roster.values():
-        kind = info.get('kind', 'pawn')
-        actions = ', '.join(info.get('allowed_actions', []))
+        kind = info.get("kind", "pawn")
+        actions = ", ".join(info.get("allowed_actions", []))
         lines.append(f"| {info['id']} | {info['name']} | {kind} | {actions} |")
     return "\n".join(lines)
 
@@ -93,9 +101,7 @@ def _get_client() -> Mistral:
     if _client is None:
         api_key = os.environ.get("MISTRAL_API_KEY", "")
         if not api_key:
-            raise RuntimeError(
-                "MISTRAL_API_KEY not set. Add it to your .env or environment."
-            )
+            raise RuntimeError("MISTRAL_API_KEY not set. Add it to your .env or environment.")
         _client = Mistral(api_key=api_key)
     return _client
 
@@ -229,7 +235,7 @@ def _parse_response(raw_json: str) -> CommandResponse:
 # ═══════════════════════════════════════════════════════════════════════════
 
 
-def interpret_audio_command(wav_bytes: bytes) -> Optional[CommandResponse]:
+def interpret_audio_command(wav_bytes: bytes) -> CommandResponse | None:
     """Send recorded audio directly to Voxtral and return a structured CommandResponse.
 
     This merges transcription + interpretation into one API round-trip.

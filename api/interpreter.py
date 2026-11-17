@@ -1,10 +1,9 @@
 """Mistral LLM integration – interprets natural-language commands and returns
 structured NPC orders with in-character voice lines.
 
-Supports two input modes:
-  • **Audio** – ``interpret_audio_command(wav_bytes)`` sends audio + system
-    prompt to ``voxtral-small-latest`` in a single multimodal call (no
-    intermediate transcription step).
+``VoxtralOrderInterpreter`` implements the ``OrderInterpreter`` port: it sends the
+audio and the system prompt to ``voxtral-small-latest`` in a single multimodal call
+(no intermediate transcription step).
 
 Uses the Mistral API with JSON-mode to guarantee a parseable response.
 """
@@ -14,6 +13,7 @@ from __future__ import annotations
 import base64
 import json
 import os
+from collections.abc import Mapping, Sequence
 from dataclasses import asdict, dataclass
 from typing import TypedDict
 
@@ -22,10 +22,9 @@ from mistralai.models import MessagesTypedDict
 
 from api.logger import pipeline_logger
 from api.roster import get_soul
-
-# ═══════════════════════════════════════════════════════════════════════════
-#  Data types
-# ═══════════════════════════════════════════════════════════════════════════
+from game.npc import NPC, ActionType
+from game.orders import NpcOrder
+from game.ports import OrderInterpretationError
 
 
 @dataclass
@@ -58,10 +57,7 @@ VALID_ACTIONS = [
     "defend",
 ]
 
-
-# ═══════════════════════════════════════════════════════════════════════════
-#  NPC roster (set by the game at runtime)
-# ═══════════════════════════════════════════════════════════════════════════
+_ACTION_TYPE_BY_NAME = {action_type.value: action_type for action_type in ActionType}
 
 
 class RosterEntry(TypedDict):
@@ -71,54 +67,24 @@ class RosterEntry(TypedDict):
     allowed_actions: list[str]
 
 
-# Maps lowercased NPC name → roster entry
-_npc_roster: dict[str, RosterEntry] = {}
+# Keyed by lowercased NPC name.
+Roster = Mapping[str, RosterEntry]
 
 
-def register_npcs(npcs: list[RosterEntry]) -> None:
-    """Called by the game to sync the live NPC list.
-
-    Args:
-        npcs: list of {"id": int, "name": str, "kind": str, "allowed_actions": list[str]}
-    """
-    _npc_roster.clear()
-    for npc in npcs:
-        _npc_roster[npc["name"].lower()] = npc
-
-
-def _build_roster_table() -> str:
+def _build_roster_table(roster: Roster) -> str:
     """Format the roster as a readable table for the prompt."""
-    if not _npc_roster:
+    if not roster:
         return "(no NPCs registered)"
     lines = ["| ID | Name | Type | Allowed actions |", "|-----|------|------|-----------------|"]
-    for info in _npc_roster.values():
+    for info in roster.values():
         kind = info.get("kind", "pawn")
         actions = ", ".join(info.get("allowed_actions", []))
         lines.append(f"| {info['id']} | {info['name']} | {kind} | {actions} |")
     return "\n".join(lines)
 
 
-# ═══════════════════════════════════════════════════════════════════════════
-#  Mistral client
-# ═══════════════════════════════════════════════════════════════════════════
-
-_client: Mistral | None = None
 AUDIO_MODEL = "voxtral-small-latest"
 
-
-def _get_client() -> Mistral:
-    global _client
-    if _client is None:
-        api_key = os.environ.get("MISTRAL_API_KEY", "")
-        if not api_key:
-            raise RuntimeError("MISTRAL_API_KEY not set. Add it to your .env or environment.")
-        _client = Mistral(api_key=api_key)
-    return _client
-
-
-# ═══════════════════════════════════════════════════════════════════════════
-#  System prompt
-# ═══════════════════════════════════════════════════════════════════════════
 
 SYSTEM_PROMPT = """\
 You are the command interpreter for a 2D survival game. Players give natural-language \
@@ -168,21 +134,15 @@ refusal explaining they cannot do that (e.g. an archer asked to chop wood should
 """
 
 
-def _build_system_prompt() -> str:
-    roster = _build_roster_table()
+def _build_system_prompt(roster: Roster) -> str:
     personalities = "\n\n".join(
-        f"**{info['name']}**: {get_soul(info['name'])}" for info in _npc_roster.values()
+        f"**{info['name']}**: {get_soul(info['name'])}" for info in roster.values()
     )
     return SYSTEM_PROMPT.format(
         actions=", ".join(VALID_ACTIONS),
-        roster=roster,
+        roster=_build_roster_table(roster),
         personalities=personalities or "(no personalities loaded)",
     )
-
-
-# ═══════════════════════════════════════════════════════════════════════════
-#  Shared response parser
-# ═══════════════════════════════════════════════════════════════════════════
 
 
 def _strip_fences(raw: str) -> str:
@@ -196,7 +156,7 @@ def _strip_fences(raw: str) -> str:
     return text.strip()
 
 
-def _parse_response(raw_json: str) -> CommandResponse:
+def _parse_response(raw_json: str, roster: Roster) -> CommandResponse:
     """Parse and validate the JSON returned by the LLM into a CommandResponse."""
     cleaned = _strip_fences(raw_json)
     data = json.loads(cleaned)
@@ -219,12 +179,12 @@ def _parse_response(raw_json: str) -> CommandResponse:
         voice_line = item.get("voice_line", "...")
 
         # Cross-check against roster
-        roster_entry = _npc_roster.get(npc_name.lower())
+        roster_entry = roster.get(npc_name.lower())
         if roster_entry:
             npc_name = roster_entry["name"]
             npc_id = roster_entry["id"]
-        elif _npc_roster:
-            first = next(iter(_npc_roster.values()))
+        elif roster:
+            first = next(iter(roster.values()))
             npc_name = first["name"]
             npc_id = first["id"]
 
@@ -240,26 +200,74 @@ def _parse_response(raw_json: str) -> CommandResponse:
     return CommandResponse(n=len(orders), actions=orders)
 
 
-# ═══════════════════════════════════════════════════════════════════════════
-#  Public API — audio input  (single multimodal Voxtral call)
-# ═══════════════════════════════════════════════════════════════════════════
+class VoxtralOrderInterpreter:
+    """``OrderInterpreter`` backed by one multimodal Voxtral call per command.
 
-
-def interpret_audio_command(wav_bytes: bytes) -> CommandResponse | None:
-    """Send recorded audio directly to Voxtral and return a structured CommandResponse.
-
-    This merges transcription + interpretation into one API round-trip.
-    The Voxtral model natively understands audio and follows the system
-    prompt to output the JSON order.
-
-    Args:
-        wav_bytes: WAV-encoded audio bytes from the microphone.
-
-    Returns:
-        CommandResponse or None on failure.
+    The client is built from ``MISTRAL_API_KEY`` on the first command unless one is
+    given. The NPC roster the prompt lists comes from ``register_roster``.
     """
-    client = _get_client()
-    system = _build_system_prompt()
+
+    def __init__(self, client: Mistral | None = None) -> None:
+        self._client = client
+        self._roster: dict[str, RosterEntry] = {}
+
+    def register_roster(self, npcs: Sequence[NPC]) -> None:
+        """Make ``npcs`` the roster the prompt lists and the answers are matched against."""
+        self._roster = {
+            npc.name.lower(): {
+                "id": npc.id,
+                "name": npc.name,
+                "kind": npc.kind,
+                "allowed_actions": [action.value for action in npc.allowed_actions],
+            }
+            for npc in npcs
+        }
+
+    def interpret(self, audio: bytes) -> list[NpcOrder]:
+        """The orders Voxtral hears in ``audio``.
+
+        Raises ``OrderInterpretationError``, and nothing else, on a missing key, an API
+        or network failure, or an answer that does not parse. Its message names the
+        failure type only; the vendor's text goes to the pipeline log.
+        """
+        try:
+            return self._interpret(audio)
+        except OrderInterpretationError:
+            raise
+        except Exception as error:
+            message = f"Voxtral could not interpret the command ({type(error).__name__})"
+            raise OrderInterpretationError(message) from error
+
+    def _interpret(self, audio: bytes) -> list[NpcOrder]:
+        response = _interpret_audio_command(self._ensure_client(), audio, self._roster)
+        if response.actions:
+            pipeline_logger.pipeline_summary(voice_text="", order=asdict(response))
+        return [_to_npc_order(order) for order in response.actions]
+
+    def _ensure_client(self) -> Mistral:
+        if self._client is None:
+            api_key = os.environ.get("MISTRAL_API_KEY", "")
+            if not api_key:
+                raise OrderInterpretationError("MISTRAL_API_KEY is not set")
+            self._client = Mistral(api_key=api_key)
+        return self._client
+
+
+def _to_npc_order(order: NPCOrder) -> NpcOrder:
+    return NpcOrder(
+        npc_id=order.npc_id,
+        npc_name=order.npc_name,
+        action_type=_ACTION_TYPE_BY_NAME.get(order.action),
+        voice_line=order.voice_line,
+    )
+
+
+def _interpret_audio_command(client: Mistral, wav_bytes: bytes, roster: Roster) -> CommandResponse:
+    """Send recorded audio and the system prompt to Voxtral in one call and parse its answer.
+
+    A failed call or parse is logged with the vendor's text, then re-raised as is.
+    """
+    system = _build_system_prompt(roster)
     audio_b64 = base64.b64encode(wav_bytes).decode("utf-8")
 
     pipeline_logger.llm_start(input_text="(audio input)")
@@ -306,7 +314,7 @@ def interpret_audio_command(wav_bytes: bytes) -> CommandResponse | None:
                 raw = raw[:-3]
             raw = raw.strip()
 
-        result = _parse_response(raw)
+        result = _parse_response(raw, roster)
 
         usage = response.usage
         pipeline_logger.llm_end(
@@ -317,7 +325,7 @@ def interpret_audio_command(wav_bytes: bytes) -> CommandResponse | None:
         )
         return result
 
-    except Exception as e:  # noqa: BLE001 - API boundary: SDK, network and parse errors all yield None
+    except Exception as e:
         pipeline_logger.llm_end(order=None, error=str(e))
         print(f"[LLM AUDIO ERROR] {e}")
-        return None
+        raise

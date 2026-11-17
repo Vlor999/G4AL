@@ -76,7 +76,7 @@ Lance `make check` (format, lint, types, code mort, tests avec couverture), puis
 
 ```bash
 make check
-uv run --script ~/.claude/skills/ub-mode/scripts/quality.py --base origin/main --tests tests
+uv run --script ~/.claude/skills/ub-mode/scripts/quality.py --base origin/dev --tests tests
 ```
 
 Fais ensuite la vérification d'avant push de `.claude/rules/architecture.md` (§ Design before code) sur les modules ajoutés ou modifiés :

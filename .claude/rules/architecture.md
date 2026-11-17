@@ -86,7 +86,7 @@ with coverage. When `ub-mode` is installed, also run its CRAP and duplication ga
 the changed files:
 
 ```bash
-uv run --script ~/.claude/skills/ub-mode/scripts/quality.py --base origin/main --tests tests
+uv run --script ~/.claude/skills/ub-mode/scripts/quality.py --base origin/dev --tests tests
 ```
 
 - **CRAP < 10** for every function of a changed file.

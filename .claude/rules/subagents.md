@@ -14,8 +14,8 @@ description: "Protocol for launching implementation sub-agents on tickets: workt
   - Sonnet: bounded, mechanical task (docs, rename, repetitive migration).
   - Haiku: read-only search and exploration.
   - Fable: reserved for extreme-level fixes and planning. Ask the user first.
-- **Isolation**: one worktree per ticket from `origin/main`, under `.claude/worktrees/`
-  (`git worktree add .claude/worktrees/<slug> -b <branch> origin/main`, or the
+- **Isolation**: one worktree per ticket from `origin/dev`, under `.claude/worktrees/`
+  (`git worktree add .claude/worktrees/<slug> -b <branch> origin/dev`, or the
   `worktree` skill). Never two agents on the same files.
 - **Context in the prompt**: the ticket, `AGENTS.md`, the applicable
   `.claude/rules/` files, the known entry files. The agent guesses nothing.
@@ -29,7 +29,7 @@ description: "Protocol for launching implementation sub-agents on tickets: workt
 ## Output requirements
 
 1. `make check` is green before the push.
-2. PR: `gh pr create --base main`, title = conventional commit, body
+2. PR: `gh pr create --base dev`, title = conventional commit, body
    "Intention / Choices and points of attention". The body never asks a question.
 3. Decisions (a tuning value, a library, a deviation) go in `docs/` and in the PR body.
 4. What is left after the PR goes back to the orchestrator in the final report.

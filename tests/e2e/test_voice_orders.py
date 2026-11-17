@@ -1,48 +1,47 @@
 """Drive the voice order hand-off of GameEngine: interpreter answer in, NPC actions, log and voice lines out."""
 
-from typing import Any
+from game.npc import ActionType
+from game.orders import NpcOrder
+from game.ports import OrderInterpretationError
+from server import GameEngine
+from tests.fakes import RecordingSpeaker, ScriptedOrderInterpreter
 
-from flask.testing import FlaskClient
-
-import server
-from api.interpreter import CommandResponse, NPCOrder
-
-
-class RecordingSpeaker:
-    def __init__(self) -> None:
-        self.lines: list[tuple[str, str]] = []
-
-    def speak(self, text: str, npc_name: str = "") -> None:
-        self.lines.append((text, npc_name))
+_AUDIO = b"RIFF"
 
 
-def read_log(client: FlaskClient) -> list[str]:
-    state: dict[str, Any] = client.get("/api/state").get_json()
-    log: list[str] = state["log"]
-    return log
+def test_an_empty_answer_is_logged_as_not_understood() -> None:
+    engine = GameEngine(interpreter=ScriptedOrderInterpreter(), speaker=RecordingSpeaker())
+
+    engine.interpret_audio_command(_AUDIO)
+    engine.tick()
+
+    assert engine.log_messages[-1] == "No actions understood."
 
 
-def test_an_empty_answer_is_logged_as_not_understood(client: FlaskClient) -> None:
-    server.engine._pending_response = CommandResponse(n=0, actions=[])
+def test_a_failed_interpretation_leaves_the_game_unchanged() -> None:
+    interpreter = ScriptedOrderInterpreter(error=OrderInterpretationError("network down"))
+    engine = GameEngine(interpreter=interpreter, speaker=RecordingSpeaker())
 
-    server.engine.tick()
+    engine.interpret_audio_command(_AUDIO)
+    engine.tick()
 
-    assert read_log(client)[-1] == "No actions understood."
+    assert engine.log_messages == []
 
 
-def test_orders_are_logged_and_only_accepted_lines_are_spoken(client: FlaskClient) -> None:
+def test_orders_are_logged_and_only_accepted_lines_are_spoken() -> None:
     speaker = RecordingSpeaker()
-    server.engine.tts = speaker  # type: ignore[assignment]
-    pawn = next(npc for npc in server.engine.npcs if npc.kind == "pawn")
-    server.engine._pending_response = CommandResponse(
-        n=2,
-        actions=[
-            NPCOrder(npc_name=pawn.name, npc_id=pawn.id, action="dance", voice_line="Huh?"),
-            NPCOrder(npc_name=pawn.name, npc_id=pawn.id, action="eat", voice_line="Food!"),
-        ],
-    )
+    interpreter = ScriptedOrderInterpreter()
+    engine = GameEngine(interpreter=interpreter, speaker=speaker)
+    pawn = next(npc for npc in engine.npcs if npc.kind == "pawn")
+    interpreter.orders = [
+        NpcOrder(npc_id=pawn.id, npc_name=pawn.name, action_type=None, voice_line="Huh?"),
+        NpcOrder(
+            npc_id=pawn.id, npc_name=pawn.name, action_type=ActionType.EAT, voice_line="Food!"
+        ),
+    ]
 
-    server.engine.tick()
+    engine.interpret_audio_command(_AUDIO)
+    engine.tick()
 
-    assert read_log(client)[-2:] == [f'{pawn.name}: "Huh?"', f'{pawn.name}: "Food!"']
+    assert engine.log_messages[-2:] == [f'{pawn.name}: "Huh?"', f'{pawn.name}: "Food!"']
     assert speaker.lines == [("Food!", pawn.name)]

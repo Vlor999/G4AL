@@ -26,7 +26,11 @@ _MODEL_ID = "eleven_turbo_v2_5"
 
 
 class TTSEngine:
-    """Non-blocking TTS: call ``speak()`` and audio plays in the background."""
+    """``VoiceLineSpeaker`` backed by ElevenLabs and the pygame mixer.
+
+    ``speak`` returns at once and the line plays in the background. Without
+    ``ELEVENLABS_API_KEY`` every line is dropped silently.
+    """
 
     def __init__(self) -> None:
         self._queue: queue.Queue[tuple[str, str] | None] = queue.Queue()
@@ -55,11 +59,11 @@ class TTSEngine:
 
     # ── public API ───────────────────────────────────────────────────────
 
-    def speak(self, text: str, npc_name: str = "") -> None:
+    def speak(self, voice_line: str, npc_name: str) -> None:
         """Enqueue a voice line for background playback."""
-        if self._client is None or not text.strip():
+        if self._client is None or not voice_line.strip():
             return
-        self._queue.put((text, npc_name))
+        self._queue.put((voice_line, npc_name))
 
     def close(self) -> None:
         """Gracefully stop the worker thread."""

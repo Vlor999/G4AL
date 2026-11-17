@@ -23,6 +23,7 @@ from flask_cors import CORS
 from flask_socketio import SocketIO, emit
 from loguru import logger
 
+from api.interpreter import VoxtralOrderInterpreter
 from api.logger import pipeline_logger
 from api.tts import TTSEngine
 from game.constants import STORED_RESOURCE_KINDS
@@ -30,22 +31,11 @@ from game.entities import Rock, Structure, WheatField
 from game.map import GameMap
 from game.npc import NPC, Action, ActionType
 from game.orders import NpcOrder, apply_orders
+from game.ports import OrderInterpretationError, OrderInterpreter, VoiceLineSpeaker
 from game.settings import FPS, TILE_SIZE
 from game.spawning import spawn_world
 
-# Lazy-import LLM
-try:
-    from api.interpreter import (
-        CommandResponse,
-        interpret_audio_command,
-        register_npcs,
-    )
-
-    _HAS_LLM = True
-except ImportError:
-    _HAS_LLM = False
-
-# Must run before GameEngine() below: TTSEngine reads its API key from the environment.
+# Must run before TTSEngine() below: it reads its API key from the environment.
 load_dotenv(Path(__file__).resolve().parent / ".env")
 
 # ── Pygame audio only (for TTS playback — no display needed) ─────────────
@@ -70,22 +60,14 @@ _ACTION_MAP = {
 }
 
 
-def _to_npc_orders(response: CommandResponse) -> list[NpcOrder]:
-    return [
-        NpcOrder(
-            npc_id=order.npc_id,
-            npc_name=order.npc_name,
-            action_type=_ACTION_MAP.get(order.action),
-            voice_line=order.voice_line,
-        )
-        for order in response.actions
-    ]
-
-
 class GameEngine:
-    """Headless game engine – no rendering, just logic at ~60 FPS."""
+    """Headless game engine – no rendering, just logic at ~60 FPS.
 
-    def __init__(self) -> None:
+    Voice commands go through ``interpreter`` and the replies of the NPCs through
+    ``speaker``; the entry point builds both and owns their lifecycle.
+    """
+
+    def __init__(self, *, interpreter: OrderInterpreter, speaker: VoiceLineSpeaker) -> None:
         self.game_map = GameMap(seed=42)
         world = spawn_world(self.game_map)
         self.storage = world.storage
@@ -94,27 +76,12 @@ class GameEngine:
         self.npcs = world.npcs
         self.fauna = world.fauna
         self.arrows = world.arrows
-        self.tts = TTSEngine()
+        self._interpreter = interpreter
+        self._speaker = speaker
         self.log_messages: list[str] = []
         self._lock = threading.Lock()
         self._running = False
-        self._pending_response: CommandResponse | None = None
-        self._sync_npc_roster()
-
-    def _sync_npc_roster(self) -> None:
-        if not _HAS_LLM:
-            return
-        register_npcs(
-            [
-                {
-                    "id": n.id,
-                    "name": n.name,
-                    "kind": n.kind,
-                    "allowed_actions": [a.value for a in n.allowed_actions],
-                }
-                for n in self.npcs
-            ]
-        )
+        self._pending_orders: list[NpcOrder] | None = None
 
     def _add_log(self, msg: str) -> None:
         self.log_messages.append(msg)
@@ -126,9 +93,8 @@ class GameEngine:
     def tick(self) -> None:
         """One frame of game logic."""
         with self._lock:
-            # Apply pending LLM response
-            if self._pending_response is not None:
-                self._apply_pending_response()
+            if self._pending_orders is not None:
+                self._apply_pending_orders()
 
             for npc in self.npcs:
                 npc.update()
@@ -189,21 +155,17 @@ class GameEngine:
             for n in self.npcs:
                 n.selected = False
 
-    def _apply_pending_response(self) -> None:
-        response = self._pending_response
-        self._pending_response = None
-        if response is None or not response.actions:
+    def _apply_pending_orders(self) -> None:
+        orders = self._pending_orders
+        self._pending_orders = None
+        if not orders:
             self._add_log("No actions understood.")
             return
 
-        from dataclasses import asdict
-
-        pipeline_logger.pipeline_summary(voice_text="", order=asdict(response))
-
-        for outcome in apply_orders(self.npcs, _to_npc_orders(response)):
+        for outcome in apply_orders(self.npcs, orders):
             order = outcome.order
             if outcome.is_spoken:
-                self.tts.speak(order.voice_line, order.npc_name)
+                self._speaker.speak(order.voice_line, order.npc_name)
             self._add_log(f'{order.npc_name}: "{order.voice_line}"')
 
     def discard_resources(self, amounts: Mapping[str, int]) -> dict[str, int]:
@@ -347,17 +309,25 @@ class GameEngine:
     # ── audio command ─────────────────────────────────────────────────
 
     def send_audio_command(self, wav_bytes: bytes) -> None:
-        """Process a voice command via Voxtral (runs in bg thread)."""
-        if not _HAS_LLM:
-            self._add_log("LLM not available")
-            return
+        """Interpret a voice command in a worker thread; its orders apply on a later tick."""
         self._add_log("Listening...")
-        threading.Thread(target=self._audio_worker, args=(wav_bytes,), daemon=True).start()
+        threading.Thread(
+            target=self.interpret_audio_command, args=(wav_bytes,), daemon=True
+        ).start()
 
-    def _audio_worker(self, wav_bytes: bytes) -> None:
-        result = interpret_audio_command(wav_bytes)
+    def interpret_audio_command(self, wav_bytes: bytes) -> None:
+        """Interpret a voice command and queue its orders for the next tick.
+
+        Blocks for the interpreter call: run it off the game loop thread. A command
+        that cannot be interpreted is logged and leaves the game unchanged.
+        """
+        try:
+            orders = self._interpreter.interpret(wav_bytes)
+        except OrderInterpretationError as error:
+            logger.bind(event="order_interpretation").warning(f"Voice command dropped: {error}")
+            return
         with self._lock:
-            self._pending_response = result
+            self._pending_orders = orders
 
     # ── background loop ──────────────────────────────────────────────────
 
@@ -396,7 +366,6 @@ class GameEngine:
 
     def stop(self) -> None:
         self._running = False
-        self.tts.close()
         pipeline_logger.close()
 
 
@@ -404,7 +373,10 @@ class GameEngine:
 #  Flask App
 # ═══════════════════════════════════════════════════════════════════════════
 
-engine = GameEngine()
+_interpreter = VoxtralOrderInterpreter()
+_speaker = TTSEngine()
+engine = GameEngine(interpreter=_interpreter, speaker=_speaker)
+_interpreter.register_roster(engine.npcs)
 app = Flask(__name__, static_folder="static")
 CORS(app)
 socketio = SocketIO(app, cors_allowed_origins="*", async_mode="threading")
@@ -562,6 +534,7 @@ def main() -> None:
         pass
     finally:
         engine.stop()
+        _speaker.close()
 
 
 if __name__ == "__main__":

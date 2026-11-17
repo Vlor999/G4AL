@@ -1,21 +1,51 @@
 [project]
 name = "g4al-survival"
 version = "0.2.0"
-description = "2D top-down survival game with bot-controlled NPCs (Web + Pygame)"
+description = "Voice-controlled 2D top-down survival game: command NPCs with Mistral Voxtral"
 readme = "README.md"
+license = "MIT"
 requires-python = ">=3.11"
 dependencies = [
-    "mistralai[realtime]>=1.12.4",
-    "pyaudio>=0.2.14",
-    "pygame>=2.5",
-    "mistralai>=1.0",
-    "python-dotenv>=1.0",
-    "loguru>=0.7.3",
     "elevenlabs>=2.37.0",
     "flask>=3.0",
     "flask-cors>=4.0",
-    "flask-socketio>=5.3",
-    "ruff>=0.15.4",
     "flask-socketio>=5.6.1",
-    "pillow>=12.1.1",
+    "loguru>=0.7.3",
+    "mistralai[realtime]>=1.12.4",
+    "pygame>=2.5",
+    "python-dotenv>=1.0",
 ]
+
+[dependency-groups]
+dev = [
+    "mypy>=1.13",
+    "pre-commit>=4.0",
+    "pytest>=8.3",
+    "pytest-cov>=6.0",
+    "ruff>=0.15.4",
+    "vulture>=2.14",
+]
+
+########################################################################################################################
+# Pytest & coverage
+########################################################################################################################
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra --strict-markers"
+
+[tool.coverage.run]
+source = ["game", "api"]
+branch = true
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+
+########################################################################################################################
+# Vulture (dead code)
+########################################################################################################################
+
+[tool.vulture]
+paths = ["game", "api", "server.py", "main.py"]
+min_confidence = 80

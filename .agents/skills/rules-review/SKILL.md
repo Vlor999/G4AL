@@ -23,9 +23,9 @@ changes: a reviewer with cold eyes catches what the author rationalized away.
 1. Compute the diff:
 
    ```bash
-   git fetch origin main --quiet
-   git diff origin/main...HEAD --stat
-   git diff origin/main...HEAD
+   git fetch origin dev --quiet
+   git diff origin/dev...HEAD --stat
+   git diff origin/dev...HEAD
    git status --short
    ```
 

@@ -13,15 +13,17 @@ Optional, for the `openwiki` MCP server declared in `.mcp.json`:
 
 ## Workflow
 
-1. Branch from `main`: `<type>/<slug>` (`feat/archer-patrol`).
+1. Branch from `dev`: `<type>/<slug>` (`feat/archer-patrol`).
 2. Write the change and its tests. The rules in [`.claude/rules/`](.claude/rules/) apply
    to humans and agents alike; [AGENTS.md](AGENTS.md) is the entry point.
 3. `make check` must pass (format, lint, `mypy --strict`, vulture, tests). The
    pre-commit hooks run the fast part of it plus `gitleaks` on every commit.
 4. Commit with Conventional Commits in English (`feat(npc): add patrol action`),
    atomic commits in dependency order.
-5. Open a PR against `main` with the template. CI must be green before merge. Pull
-   `main` in with a rebase, never a merge commit.
+5. Open a PR against `dev` with the template. CI must be green before merge. Pull
+   `dev` in with a rebase, never a merge commit.
+6. Releases go from `dev` to `main` through a PR from `dev`, merged with a merge
+   commit so `dev` stays an ancestor of `main`.
 
 ## Security review
 
@@ -44,6 +46,11 @@ The action is not hardened against prompt injection, so it skips fork PRs; keep
 
 ## Branch protection
 
-`main` is a protected branch: changes land through a pull request only, with the
-`CI` checks (quality and security jobs) and CodeQL required to pass, a linear history
-(rebase or squash merge), and no force push.
+`dev` and `main` are protected by repository rulesets. Both take changes through a
+pull request only, with 1 approving review, the `CI` checks (quality and security
+jobs) and CodeQL required to pass, no force push and no deletion.
+
+- `dev`: feature branches merge with squash or rebase; linear history.
+- `main`: only PRs from `dev` (the `Main source branch` check fails otherwise),
+  merged with a merge commit.
+- Repository admins can bypass both rulesets.

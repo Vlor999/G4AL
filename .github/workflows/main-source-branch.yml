@@ -1,0 +1,23 @@
+name: Main source branch
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, edited]
+
+permissions: {}
+
+jobs:
+  source:
+    name: PR into main comes from dev
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check the source branch
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+          HEAD_REPO: ${{ github.event.pull_request.head.repo.full_name }}
+        run: |
+          if [ "$HEAD_REF" != "dev" ] || [ "$HEAD_REPO" != "$GITHUB_REPOSITORY" ]; then
+            echo "::error::A PR into main must come from dev of this repository, not ${HEAD_REPO}:${HEAD_REF}. Open it against dev."
+            exit 1
+          fi

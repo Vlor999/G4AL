@@ -16,7 +16,7 @@ Reviews a GitHub pull request and produces findings prioritized by importance an
 
 ## Step 1 — Preflight
 
-- Identify the pull request: `gh pr view <number>` gives its source and target branches and its body; `gh pr diff <number>` gives the diff. Without a number, assume the source branch is the current branch and the target is `main`, and confirm with the user (AskUserQuestion). Branches may live in a worktree under `.claude/worktrees/`.
+- Identify the pull request: `gh pr view <number>` gives its source and target branches and its body; `gh pr diff <number>` gives the diff. Without a number, assume the source branch is the current branch and the target is `dev`, and confirm with the user (AskUserQuestion). Branches may live in a worktree under `.claude/worktrees/`.
 - Run `git fetch` so the local repository is up to date with the remote branches.
 - Check the working tree. If modified or staged files exist, determine whether they affect the PR review. If they do not, continue without modifying them. If they affect the reviewed changes or prevent a reliable comparison, ask the user to resolve the state before proceeding.
 

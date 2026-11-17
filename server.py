@@ -28,7 +28,8 @@ from api.tts import TTSEngine
 from game.entities import Rock, Structure, WheatField
 from game.map import GameMap
 from game.npc import NPC, Action, ActionType
-from game.settings import FPS, TILE_SIZE, TTS_MAX_SPEAKERS
+from game.orders import NpcOrder, apply_orders
+from game.settings import FPS, TILE_SIZE
 from game.spawning import spawn_world
 
 # Lazy-import LLM
@@ -66,6 +67,18 @@ _ACTION_MAP = {
     "shoot": ActionType.SHOOT,
     "defend": ActionType.DEFEND,
 }
+
+
+def _to_npc_orders(response: CommandResponse) -> list[NpcOrder]:
+    return [
+        NpcOrder(
+            npc_id=order.npc_id,
+            npc_name=order.npc_name,
+            action_type=_ACTION_MAP.get(order.action),
+            voice_line=order.voice_line,
+        )
+        for order in response.actions
+    ]
 
 
 class GameEngine:
@@ -186,27 +199,10 @@ class GameEngine:
 
         pipeline_logger.pipeline_summary(voice_text="", order=asdict(response))
 
-        spoken_count = 0
-        for order in response.actions:
-            npc = self._find_npc(order.npc_id)
-            if npc is None and self.npcs:
-                npc = self.npcs[0]
-            if npc is None:
-                continue
-
-            action_type = _ACTION_MAP.get(order.action)
-            accepted = False
-            if action_type:
-                if action_type in (ActionType.BUILD, ActionType.PLANT_WHEAT):
-                    accepted = npc.enqueue(Action(action_type, target=npc.tile_pos))
-                else:
-                    accepted = npc.enqueue(Action(action_type))
-
-            if accepted:
-                npc.say(order.voice_line, duration_frames=360)
-                if spoken_count < TTS_MAX_SPEAKERS:
-                    self.tts.speak(order.voice_line, order.npc_name)
-                    spoken_count += 1
+        for outcome in apply_orders(self.npcs, _to_npc_orders(response)):
+            order = outcome.order
+            if outcome.is_spoken:
+                self.tts.speak(order.voice_line, order.npc_name)
             self._add_log(f'{order.npc_name}: "{order.voice_line}"')
 
     def _find_npc(self, npc_id: int) -> NPC | None:

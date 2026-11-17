@@ -96,3 +96,4 @@ BUILD_COST_STONE = 3
 
 # ── TTS ──────────────────────────────────────────────────────────────────
 TTS_MAX_SPEAKERS = 1  # max NPCs that speak aloud per command (0 = mute)
+ORDER_SPEECH_DURATION_FRAMES = 360  # speech bubble of an NPC answering a voice order

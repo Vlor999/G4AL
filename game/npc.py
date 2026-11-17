@@ -33,6 +33,7 @@ from game.settings import (
 )
 
 if TYPE_CHECKING:
+    from game.creatures import Arrow, Fauna
     from game.map import GameMap
     from game.storage import ResourceStorage
 
@@ -142,7 +143,7 @@ def find_path(
         else:
             return []
 
-    open_set: list = []
+    open_set: list[tuple[float, tuple[int, int]]] = []
     heapq.heappush(open_set, (0.0, start))
     came_from: dict[tuple[int, int], tuple[int, int]] = {}
     g_score: dict[tuple[int, int], float] = {start: 0.0}
@@ -230,10 +231,10 @@ class NPC:
         self._hut: Structure | None = hut  # storage hut (deposit point)
 
         # stats
-        self.health = NPC_MAX_HEALTH
+        self.health: float = NPC_MAX_HEALTH
         self.max_health = NPC_MAX_HEALTH
         self.speed = NPC_SPEED
-        self.hunger = NPC_HUNGER_MAX
+        self.hunger: float = NPC_HUNGER_MAX
         self.max_hunger = NPC_HUNGER_MAX
 
         # FSM
@@ -263,7 +264,7 @@ class NPC:
 
     # ── public interface ─────────────────────────────────────────────────
 
-    def say(self, text: str, duration_frames: int = 300):
+    def say(self, text: str, duration_frames: int = 300) -> None:
         """Show a speech bubble above this NPC for *duration_frames* frames."""
         self._speech_text = text
         self._speech_timer = duration_frames
@@ -292,7 +293,7 @@ class NPC:
 
     # ── FSM update ───────────────────────────────────────────────────────
 
-    def update(self):
+    def update(self) -> None:
         """Called every frame."""
         # speech bubble countdown
         if self._speech_timer > 0:
@@ -332,7 +333,7 @@ class NPC:
 
     # ── internal FSM helpers ─────────────────────────────────────────────
 
-    def _next_action(self):
+    def _next_action(self) -> None:
         # Must deposit carried resource before starting any new action
         if self.is_carrying:
             self._start_return_to_hut()
@@ -364,8 +365,10 @@ class NPC:
         elif action.action_type == ActionType.collect_wheat:
             self._start_collect_wheat(action)
 
-    def _start_harvest(self, action: Action, kind: type, *, unavailable_message: str):
-        target = action.target or self._find_nearest(kind)
+    def _start_harvest(
+        self, action: Action, kind: type[Resource], *, unavailable_message: str
+    ) -> None:
+        target = action.target if isinstance(action.target, Resource) else self._find_nearest(kind)
         if target is None:
             self.say(unavailable_message, 120)
             self.state = State.DONE
@@ -374,7 +377,7 @@ class NPC:
         target.reserved_by = self.id
         self._plan_move_to(target.col, target.row)
 
-    def _start_build(self, action: Action):
+    def _start_build(self, action: Action) -> None:
         if isinstance(action.target, Structure):
             # Already have a structure object – walk to an adjacent tile
             adj = self._adjacent_to_structure(action.target)
@@ -385,7 +388,7 @@ class NPC:
         else:
             self._start_new_structure(action)
 
-    def _start_new_structure(self, action: Action):
+    def _start_new_structure(self, action: Action) -> None:
         # Resolve location: explicit (col, row) or fallback to NPC tile
         if isinstance(action.target, tuple):
             col, row = action.target
@@ -421,7 +424,7 @@ class NPC:
         else:
             self._plan_move_to(*adj)
 
-    def _start_eat(self):
+    def _start_eat(self) -> None:
         # Consume wheat from global storage, no movement needed
         if self._storage.get("wheat") < EAT_WHEAT_COST:
             self.say("No wheat to eat!", 120)
@@ -432,7 +435,7 @@ class NPC:
         self._perform_duration = NPC_EAT_TIME
         self.state = State.PERFORMING
 
-    def _start_plant_wheat(self, action: Action):
+    def _start_plant_wheat(self, action: Action) -> None:
         # Plant a new wheat field at the given tile or NPC's tile
         if isinstance(action.target, tuple):
             col, row = action.target
@@ -450,8 +453,12 @@ class NPC:
         action.target = field
         self._plan_move_to(col, row)
 
-    def _start_collect_wheat(self, action: Action):
-        target = action.target or self._find_nearest_ready_wheat()
+    def _start_collect_wheat(self, action: Action) -> None:
+        target = (
+            action.target
+            if isinstance(action.target, Resource)
+            else self._find_nearest_ready_wheat()
+        )
         if target is None:
             self.say("No wheat ready!", 120)
             self.state = State.DONE
@@ -459,7 +466,7 @@ class NPC:
         action.target = target
         self._plan_move_to(target.col, target.row)
 
-    def _plan_move_to(self, col: int, row: int):
+    def _plan_move_to(self, col: int, row: int) -> None:
         start = self.tile_pos
         blocked = self._occupied_by_structures()
         path = find_path(self._map, start, (col, row), blocked=blocked)
@@ -470,7 +477,7 @@ class NPC:
         self._path_index = 0
         self.state = State.MOVING
 
-    def _follow_path(self):
+    def _follow_path(self) -> None:
         if self._path_index >= len(self._path):
             # arrived – deposit if carrying, otherwise normal arrival
             if self.state == State.RETURNING:
@@ -493,7 +500,7 @@ class NPC:
             self.x += dx / dist * self.speed
             self.y += dy / dist * self.speed
 
-    def _on_arrival(self):
+    def _on_arrival(self) -> None:
         """Arrived at target tile → begin performing or finish."""
         if self._current_action is None:
             self.state = State.DONE
@@ -521,7 +528,7 @@ class NPC:
         else:
             self.state = State.DONE
 
-    def _perform(self):
+    def _perform(self) -> None:
         self._perform_timer += 1
 
         action = self._current_action
@@ -550,7 +557,7 @@ class NPC:
         if self._perform_timer >= self._perform_duration:
             self.state = State.DONE
 
-    def _advance_resource_work(self, action_type: ActionType, target: Resource):
+    def _advance_resource_work(self, action_type: ActionType, target: Resource) -> bool:
         """Advance work on *target*; return True when this frame is fully handled."""
         if action_type in (ActionType.CHOP_WOOD, ActionType.MINE_ROCK):
             self._collect_unit_when_ready(action_type, target)
@@ -568,7 +575,7 @@ class NPC:
             return True
         return False
 
-    def _collect_unit_when_ready(self, action_type: ActionType, target: Resource):
+    def _collect_unit_when_ready(self, action_type: ActionType, target: Resource) -> None:
         if self._perform_timer < NPC_COLLECT_UNIT_TIME:
             return  # still working, wait for timer
         result = target.collect_one_unit()
@@ -582,7 +589,7 @@ class NPC:
         self._last_harvest_target = target
         self._start_return_to_hut()
 
-    def _advance_construction(self, target: Structure):
+    def _advance_construction(self, target: Structure) -> None:
         # Advance build progress once every NPC_BUILD_TIME/100
         # frames so the full build takes NPC_BUILD_TIME frames.
         interval = max(1, NPC_BUILD_TIME // 100)
@@ -596,7 +603,7 @@ class NPC:
 
     # ── carry / return-to-hut helpers ────────────────────────────────────
 
-    def _start_return_to_hut(self):
+    def _start_return_to_hut(self) -> None:
         """Path to the storage hut to deposit carried resources."""
         if self._hut is None:
             # No hut registered – deposit immediately (fallback)
@@ -616,7 +623,7 @@ class NPC:
         self._path_index = 0
         self.state = State.RETURNING
 
-    def _deposit_at_hut(self):
+    def _deposit_at_hut(self) -> None:
         """Deposit carried resources into global storage and auto-loop."""
         for res_type, amount in self.carrying.items():
             self._storage.add(res_type, amount)
@@ -661,7 +668,7 @@ class NPC:
 
     # ── queries ──────────────────────────────────────────────────────────
 
-    def _release_reservation(self):
+    def _release_reservation(self) -> None:
         """Release the resource reservation held by this NPC, if any."""
         if self._current_action and isinstance(self._current_action.target, Resource):
             target = self._current_action.target
@@ -809,7 +816,7 @@ class NPC:
                 return True
         return False  # no room to push
 
-    def _find_nearest(self, kind: type) -> Resource | None:
+    def _find_nearest(self, kind: type[Resource]) -> Resource | None:
         best: Resource | None = None
         best_dist = float("inf")
         for r in self._resources:
@@ -869,7 +876,7 @@ class Archer(NPC):
         storage: ResourceStorage,
         all_npcs: list[NPC] | None = None,
         name: str | None = None,
-        all_fauna: list | None = None,
+        all_fauna: list[Fauna] | None = None,
     ):
         super().__init__(
             x,
@@ -883,18 +890,18 @@ class Archer(NPC):
         self.speed = NPC_SPEED * 1.1  # archers are slightly faster
         self.max_health = 70
         self.health = 70
-        self._all_fauna: list = all_fauna if all_fauna is not None else []
-        self._shoot_target = None  # the Fauna we're attacking
-        self._arrows: list = []  # shared arrow projectile list (set by server)
+        self._all_fauna: list[Fauna] = all_fauna if all_fauna is not None else []
+        self._shoot_target: Fauna | None = None
+        self._arrows: list[Arrow] = []  # shared arrow projectile list (set by server)
         self._is_firing: bool = False  # True during brief fire animation phase
         self._defending: bool = False  # True while in defend mode
 
     # ── helpers ──────────────────────────────────────────────────────────
 
-    def _find_nearest_enemy(self, max_range: int = 0):
+    def _find_nearest_enemy(self, max_range: int = 0) -> Fauna | None:
         """Find the nearest living WildArcher in the fauna list.
         If max_range > 0, only consider enemies within that tile distance."""
-        best = None
+        best: Fauna | None = None
         best_dist = float("inf")
         mc, mr = self.tile_pos
         for f in self._all_fauna:
@@ -911,31 +918,31 @@ class Archer(NPC):
                 best = f
         return best
 
-    def _enemy_tile_distance(self, enemy) -> int:
+    def _enemy_tile_distance(self, enemy: Fauna) -> int:
         mc, mr = self.tile_pos
         ec, er = enemy.tile_pos
         return abs(ec - mc) + abs(er - mr)
 
-    def _pixel_distance(self, enemy) -> float:
+    def _pixel_distance(self, enemy: Fauna) -> float:
         return math.hypot(enemy.x - self.x, enemy.y - self.y)
 
     # ── FSM overrides ────────────────────────────────────────────────────
 
-    def enqueue(self, action: Action):
+    def enqueue(self, action: Action) -> bool:
         """Override: cancel defend mode when a new action is enqueued."""
         self._defending = False
         self._shoot_target = None
         self._is_firing = False
-        super().enqueue(action)
+        return super().enqueue(action)
 
-    def update(self):
+    def update(self) -> None:
         """Override: while defending and idle, keep scanning for enemies."""
         super().update()
         # If defending and idle (no enemies found last scan), rescan periodically
         if self._defending and self.state == State.IDLE and not self.action_queue:
             self._defend_scan()
 
-    def _next_action(self):
+    def _next_action(self) -> None:
         """Archer-specific action dispatch (only MOVE_TO, SHOOT, EAT)."""
         if self.is_carrying:
             self._start_return_to_hut()
@@ -988,12 +995,12 @@ class Archer(NPC):
         else:
             self.state = State.DONE
 
-    def _walk_toward_enemy(self, enemy):
+    def _walk_toward_enemy(self, enemy: Fauna) -> None:
         """Pathfind to a tile within ARCHER_RANGE of the enemy."""
         ec, er = enemy.tile_pos
         mc, mr = self.tile_pos
         # Find the closest walkable tile within range of the enemy
-        best_tile = None
+        best_tile: tuple[int, int] | None = None
         best_cost = float("inf")
         for dc in range(-ARCHER_RANGE, ARCHER_RANGE + 1):
             for dr in range(-ARCHER_RANGE, ARCHER_RANGE + 1):
@@ -1012,7 +1019,7 @@ class Archer(NPC):
             return
         self._plan_move_to(*best_tile)
 
-    def _defend_scan(self):
+    def _defend_scan(self) -> None:
         """Scan for enemies within defend radius and engage if found."""
         enemy = self._find_nearest_enemy(max_range=ARCHER_DEFEND_SCAN_RADIUS)
         if enemy is None:
@@ -1026,14 +1033,14 @@ class Archer(NPC):
         else:
             self._walk_toward_enemy(enemy)
 
-    def _start_shoot_perform(self):
+    def _start_shoot_perform(self) -> None:
         """Begin the shoot animation cycle."""
         self._perform_timer = 0
         self._perform_duration = ARCHER_SHOOT_TIME
         self._is_firing = False
         self.state = State.PERFORMING
 
-    def _on_arrival(self):
+    def _on_arrival(self) -> None:
         """Override: after walking toward enemy, start shooting."""
         if (
             self._current_action
@@ -1065,7 +1072,7 @@ class Archer(NPC):
         # Fallback
         self.state = State.DONE
 
-    def _perform(self):
+    def _perform(self) -> None:
         """Archer-specific perform logic."""
         self._perform_timer += 1
 

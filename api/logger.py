@@ -21,6 +21,7 @@ import sys
 import time
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import Any
 
 from loguru import logger
 
@@ -83,7 +84,7 @@ def _setup_loguru(log_dir: Path) -> str:
 class PipelineLogger:
     """Thread-safe structured logger for voice + LLM pipeline events."""
 
-    def __init__(self, log_dir: Path = LOG_DIR):
+    def __init__(self, log_dir: Path = LOG_DIR) -> None:
         self._session_ts = _setup_loguru(log_dir)
 
         # running totals
@@ -106,7 +107,7 @@ class PipelineLogger:
 
     # ── voice events ─────────────────────────────────────────────────────
 
-    def voice_start(self):
+    def voice_start(self) -> None:
         self._voice_t0 = time.perf_counter()
         logger.bind(event="voice_start").info("Microphone recording started")
 
@@ -115,7 +116,7 @@ class PipelineLogger:
         text: str,
         audio_seconds: float = 0.0,
         error: str | None = None,
-    ):
+    ) -> None:
         elapsed = time.perf_counter() - (self._voice_t0 or time.perf_counter())
         cost = audio_seconds * VOXTRAL_REALTIME_COST_PER_SECOND
         self._total_voice_cost += cost
@@ -140,18 +141,18 @@ class PipelineLogger:
 
     # ── LLM events ───────────────────────────────────────────────────────
 
-    def llm_start(self, input_text: str):
+    def llm_start(self, input_text: str) -> None:
         self._llm_t0 = time.perf_counter()
         logger.bind(event="llm_start", input_text=input_text).info(f'LLM request: "{input_text}"')
 
     def llm_end(
         self,
-        order: dict | None,
+        order: dict[str, Any] | None,
         prompt_tokens: int = 0,
         completion_tokens: int = 0,
         model: str = LLM_MODEL,
         error: str | None = None,
-    ):
+    ) -> None:
         elapsed = time.perf_counter() - (self._llm_t0 or time.perf_counter())
         cost = (
             prompt_tokens * LLM_INPUT_COST_PER_TOKEN + completion_tokens * LLM_OUTPUT_COST_PER_TOKEN
@@ -185,7 +186,7 @@ class PipelineLogger:
 
     # ── TTS events ────────────────────────────────────────────────────────
 
-    def tts_start(self, text: str, npc_name: str, voice_id: str):
+    def tts_start(self, text: str, npc_name: str, voice_id: str) -> None:
         self._tts_t0 = time.perf_counter()
         logger.bind(
             event="tts_start",
@@ -201,7 +202,7 @@ class PipelineLogger:
         audio_bytes: int = 0,
         tts_latency_ms: int = 0,
         error: str | None = None,
-    ):
+    ) -> None:
         elapsed = time.perf_counter() - (self._tts_t0 or time.perf_counter())
         cost = char_count * TTS_COST_PER_CHAR
         self._total_tts_cost += cost
@@ -231,7 +232,7 @@ class PipelineLogger:
 
     # ── pipeline round-trip ──────────────────────────────────────────────
 
-    def pipeline_summary(self, voice_text: str, order: dict | None):
+    def pipeline_summary(self, voice_text: str, order: dict[str, Any] | None) -> None:
         """Log an end-to-end summary for one voice→LLM→TTS cycle."""
         total_time = self._total_voice_time + self._total_llm_time + self._total_tts_time
         total_cost = self._total_voice_cost + self._total_llm_cost + self._total_tts_cost
@@ -260,7 +261,7 @@ class PipelineLogger:
 
     # ── session close ────────────────────────────────────────────────────
 
-    def close(self):
+    def close(self) -> None:
         total_cost = self._total_voice_cost + self._total_llm_cost + self._total_tts_cost
         logger.bind(
             event="session_end",

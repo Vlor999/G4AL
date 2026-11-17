@@ -15,8 +15,10 @@ import base64
 import json
 import os
 from dataclasses import asdict, dataclass
+from typing import TypedDict
 
 from mistralai import Mistral
+from mistralai.models import MessagesTypedDict
 
 from api.logger import pipeline_logger
 from api.roster import get_soul
@@ -61,11 +63,19 @@ VALID_ACTIONS = [
 #  NPC roster (set by the game at runtime)
 # ═══════════════════════════════════════════════════════════════════════════
 
-# Maps lowercased NPC name → {id, name}
-_npc_roster: dict[str, dict] = {}
+
+class RosterEntry(TypedDict):
+    id: int
+    name: str
+    kind: str
+    allowed_actions: list[str]
 
 
-def register_npcs(npcs: list[dict]) -> None:
+# Maps lowercased NPC name → roster entry
+_npc_roster: dict[str, RosterEntry] = {}
+
+
+def register_npcs(npcs: list[RosterEntry]) -> None:
     """Called by the game to sync the live NPC list.
 
     Args:
@@ -254,29 +264,31 @@ def interpret_audio_command(wav_bytes: bytes) -> CommandResponse | None:
 
     pipeline_logger.llm_start(input_text="(audio input)")
 
+    messages: list[MessagesTypedDict] = [
+        {"role": "system", "content": system},
+        {
+            "role": "user",
+            "content": [
+                {
+                    "type": "input_audio",
+                    "input_audio": audio_b64,
+                },
+                {
+                    "type": "text",
+                    "text": (
+                        "Listen to my voice command above and respond "
+                        "with ONLY the JSON order as specified in the "
+                        "system prompt. No markdown fences, no explanation."
+                    ),
+                },
+            ],
+        },
+    ]
+
     try:
         response = client.chat.complete(
             model=AUDIO_MODEL,
-            messages=[
-                {"role": "system", "content": system},
-                {
-                    "role": "user",
-                    "content": [
-                        {
-                            "type": "input_audio",
-                            "input_audio": audio_b64,
-                        },
-                        {
-                            "type": "text",
-                            "text": (
-                                "Listen to my voice command above and respond "
-                                "with ONLY the JSON order as specified in the "
-                                "system prompt. No markdown fences, no explanation."
-                            ),
-                        },
-                    ],
-                },
-            ],
+            messages=messages,
             temperature=0.7,
             max_tokens=1024,
         )

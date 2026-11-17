@@ -14,7 +14,7 @@ from __future__ import annotations
 import math
 import random
 from enum import Enum, auto
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, TypedDict
 
 from game.map import TileType
 from game.settings import (
@@ -28,6 +28,17 @@ from game.settings import (
 if TYPE_CHECKING:
     from game.entities import Resource
     from game.map import GameMap
+    from game.npc import NPC
+
+
+class Arrow(TypedDict):
+    fromX: float
+    fromY: float
+    toX: float
+    toY: float
+    frame: int
+    totalFrames: int
+    team: str
 
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -93,7 +104,7 @@ class Fauna:
     def tile_pos(self) -> tuple[int, int]:
         return self._map.world_to_tile(self.x, self.y)
 
-    def update(self):
+    def update(self) -> None:
         """Called every frame. Drives the autonomous behaviour loop."""
         if self.state == FaunaState.IDLE:
             self._do_idle()
@@ -104,7 +115,7 @@ class Fauna:
 
     # ── behaviour phases ─────────────────────────────────────────────────
 
-    def _do_idle(self):
+    def _do_idle(self) -> None:
         self._timer += 1
         if self._timer >= self._idle_duration:
             self._timer = 0
@@ -114,26 +125,26 @@ class Fauna:
             else:
                 self._start_wander()
 
-    def _do_wander(self):
+    def _do_wander(self) -> None:
         if self._path_index >= len(self._path):
             # arrived – go idle for a bit
             self._start_idle()
             return
         self._follow_path()
 
-    def _do_graze(self):
+    def _do_graze(self) -> None:
         self._timer += 1
         if self._timer >= self._graze_duration:
             self._start_idle()
 
     # ── transitions ──────────────────────────────────────────────────────
 
-    def _start_idle(self):
+    def _start_idle(self) -> None:
         self.state = FaunaState.IDLE
         self._timer = 0
         self._idle_duration = random.randint(60, 240)  # 1-4 seconds at 60fps
 
-    def _start_wander(self):
+    def _start_wander(self) -> None:
         """Pick a random nearby walkable tile and path to it."""
         col, row = self.tile_pos
         target = self._random_nearby_walkable(col, row, radius=5)
@@ -148,14 +159,14 @@ class Fauna:
         self._path_index = 0
         self.state = FaunaState.WANDERING
 
-    def _start_graze(self):
+    def _start_graze(self) -> None:
         self.state = FaunaState.GRAZING
         self._timer = 0
         self._graze_duration = random.randint(120, 360)  # 2-6 seconds
 
     # ── movement ─────────────────────────────────────────────────────────
 
-    def _follow_path(self):
+    def _follow_path(self) -> None:
         if self._path_index >= len(self._path):
             return
         target_col, target_row = self._path[self._path_index]
@@ -192,7 +203,7 @@ class Fauna:
         if not self._map.is_walkable(goal[0], goal[1]):
             return []
 
-        open_set: list = []
+        open_set: list[tuple[float, tuple[int, int]]] = []
         heapq.heappush(open_set, (0.0, start))
         came_from: dict[tuple[int, int], tuple[int, int]] = {}
         g_score: dict[tuple[int, int], float] = {start: 0.0}
@@ -268,7 +279,7 @@ class Cat(Fauna):
         self.state = FaunaState.IDLE
         self._idle_duration = 999_999  # never leaves idle
 
-    def update(self):
+    def update(self) -> None:
         """Cat does nothing — purely animated on the frontend."""
 
 
@@ -314,13 +325,13 @@ class WildArcher(Fauna):
         self.health = 50
         self.max_health = 50
         self._shoot_duration = 0
-        self._attack_target = None  # NPC we are shooting at
-        self._all_npcs: list = []  # set by server after spawn
-        self._arrows: list = []  # shared arrow projectile list
+        self._attack_target: NPC | None = None
+        self._all_npcs: list[NPC] = []  # set by server after spawn
+        self._arrows: list[Arrow] = []  # shared arrow projectile list
         self._is_firing: bool = False  # True during brief fire anim
         self._start_idle()
 
-    def update(self):
+    def update(self) -> None:
         """Override base: adds SHOOTING + CHASING states."""
         if self.health <= 0:
             return
@@ -333,9 +344,9 @@ class WildArcher(Fauna):
 
     # ── enemy detection ──────────────────────────────────────────────────
 
-    def _find_nearest_npc(self):
+    def _find_nearest_npc(self) -> tuple[NPC | None, float]:
         """Find the nearest living playable NPC."""
-        best = None
+        best: NPC | None = None
         best_dist = float("inf")
         mc, mr = self.tile_pos
         for npc in self._all_npcs:
@@ -350,7 +361,7 @@ class WildArcher(Fauna):
 
     # ── overrides / new behaviours ───────────────────────────────────────
 
-    def _do_idle(self):
+    def _do_idle(self) -> None:
         self._timer += 1
         if self._timer >= self._idle_duration:
             self._timer = 0
@@ -370,7 +381,7 @@ class WildArcher(Fauna):
             else:
                 self._idle_duration = random.randint(90, 300)
 
-    def _start_wander(self):
+    def _start_wander(self) -> None:
         """Patrol a wider radius than sheep."""
         col, row = self.tile_pos
         target = self._random_nearby_walkable(col, row, radius=8)
@@ -385,7 +396,7 @@ class WildArcher(Fauna):
         self._path_index = 0
         self.state = FaunaState.WANDERING
 
-    def _do_wander(self):
+    def _do_wander(self) -> None:
         """Override: check for enemies while walking."""
         if self._path_index >= len(self._path):
             self._start_idle()
@@ -398,12 +409,12 @@ class WildArcher(Fauna):
             return
         self._follow_path()
 
-    def _chase_target(self, target):
+    def _chase_target(self, target: NPC) -> None:
         """Walk toward a player unit to get in attack range."""
         tc, tr = target.tile_pos
         mc, mr = self.tile_pos
         # Find closest walkable tile within range of target
-        best_tile = None
+        best_tile: tuple[int, int] | None = None
         best_cost = float("inf")
         for dc in range(-WILD_ARCHER_RANGE, WILD_ARCHER_RANGE + 1):
             for dr in range(-WILD_ARCHER_RANGE, WILD_ARCHER_RANGE + 1):
@@ -427,14 +438,14 @@ class WildArcher(Fauna):
         self._path_index = 0
         self.state = FaunaState.WANDERING
 
-    def _start_shoot(self):
+    def _start_shoot(self) -> None:
         """Begin shooting at the current attack target."""
         self.state = FaunaState.SHOOTING
         self._timer = 0
         self._shoot_duration = WILD_ARCHER_SHOOT_TIME
         self._is_firing = False
 
-    def _do_shoot(self):
+    def _do_shoot(self) -> None:
         self._timer += 1
         target = self._attack_target
         # Target dead or gone

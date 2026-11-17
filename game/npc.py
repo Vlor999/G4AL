@@ -6,6 +6,7 @@ import math
 import random
 from collections import deque
 from enum import Enum, auto
+from typing import TYPE_CHECKING
 
 from api.roster import NPC_NAMES
 from game.entities import Resource, Rock, Structure, Tree, WheatField
@@ -30,6 +31,10 @@ from game.settings import (
     NPC_SPEED,
     WHEAT_PLANT_TIME,
 )
+
+if TYPE_CHECKING:
+    from game.map import GameMap
+    from game.storage import ResourceStorage
 
 # ═══════════════════════════════════════════════════════════════════════════
 #  FSM States

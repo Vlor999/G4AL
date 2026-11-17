@@ -8,8 +8,8 @@ from collections import deque
 from enum import Enum, auto
 from typing import TYPE_CHECKING
 
-from api.roster import NPC_NAMES
 from game.entities import Resource, Rock, Structure, Tree, WheatField
+from game.npc_names import NPC_NAMES
 from game.settings import (
     ARCHER_ARROW_DAMAGE,
     ARCHER_ARROW_FLIGHT,
@@ -179,7 +179,7 @@ def find_path(
 #  NPC
 # ═══════════════════════════════════════════════════════════════════════════
 
-# ── Name pool for NPCs (from the central roster) ────────────────────────
+# ── Name pool for NPCs ──────────────────────────────────────────────────
 _used_names: list[str] = []
 
 

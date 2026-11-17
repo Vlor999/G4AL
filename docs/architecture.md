@@ -44,10 +44,9 @@ writes them.
 Tracked on GitHub; the rules in `.claude/rules/` describe the target, these items do
 not meet it yet.
 
-- Game rules and technical code are mixed: `game/npc.py` imports `api.roster`,
-  `GameEngine` in `server.py` holds game decisions and routes mutate NPCs under
-  `engine._lock`. `game/npc.py` (~1150 lines) and `server.py` (~690 lines) exceed the
-  ~500-line budget (#5).
+- Game rules and technical code are mixed: `GameEngine` in `server.py` holds game
+  decisions and routes mutate NPCs under `engine._lock`. `game/npc.py` (~1150 lines)
+  and `server.py` (~690 lines) exceed the ~500-line budget (#5).
 - Routes do not validate their bodies, no upload size limit, CORS open to any origin
   (#2).
 - `api/interpreter.py` parses the LLM output from prose instead of constraining it with

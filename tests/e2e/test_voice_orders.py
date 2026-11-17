@@ -3,7 +3,7 @@
 from game.actions import ActionType
 from game.orders import NpcOrder
 from game.ports import OrderInterpretationError
-from server.app import GameEngine
+from server.engine import GameEngine
 from tests.fakes import RecordingSpeaker, ScriptedOrderInterpreter
 
 _AUDIO = b"RIFF"

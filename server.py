@@ -24,6 +24,7 @@ except ImportError:
 from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
 from flask_socketio import SocketIO, emit
+from loguru import logger
 
 # ── Pygame audio only (for TTS playback — no display needed) ─────────────
 os.environ["SDL_VIDEODRIVER"] = "dummy"
@@ -495,8 +496,8 @@ class GameEngine:
             if socketio_ref and self._frame_count % self._ws_push_interval == 0:
                 try:
                     socketio_ref.emit("state", self.get_state(), namespace="/")
-                except Exception:
-                    pass
+                except Exception as exc:  # noqa: BLE001 - a failed push must not stop the game loop
+                    logger.bind(event="state_push").warning(f"State push failed: {exc}")
 
             elapsed = time.perf_counter() - t0
             sleep_time = target_dt - elapsed
@@ -670,11 +671,12 @@ def main():
     game_thread = threading.Thread(target=engine.run_loop, args=(socketio,), daemon=True)
     game_thread.start()
 
-    print("\n  G4AL Web UI → http://127.0.0.1:8000\n")
+    host = os.environ.get("G4AL_HOST", "127.0.0.1")
+    print(f"\n  G4AL Web UI → http://{host}:8000\n")
     try:
         socketio.run(
             app,
-            host="0.0.0.0",
+            host=host,
             port=8000,
             debug=False,
             use_reloader=False,

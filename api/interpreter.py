@@ -305,7 +305,7 @@ def interpret_audio_command(wav_bytes: bytes) -> CommandResponse | None:
         )
         return result
 
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001 - API boundary: SDK, network and parse errors all yield None
         pipeline_logger.llm_end(order=None, error=str(e))
         print(f"[LLM AUDIO ERROR] {e}")
         return None

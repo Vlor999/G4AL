@@ -151,9 +151,7 @@ def _spawn_wild_archers_in_corner(world: SpawnedWorld, game_map: GameMap) -> Non
 def _link_combatants(world: SpawnedWorld) -> None:
     for npc in world.npcs:
         if isinstance(npc, Archer):
-            npc._all_fauna = world.fauna
-            npc._arrows = world.arrows
+            npc.link_battlefield(fauna=world.fauna, arrows=world.arrows)
     for creature in world.fauna:
         if isinstance(creature, WildArcher):
-            creature._all_npcs = world.npcs
-            creature._arrows = world.arrows
+            creature.link_battlefield(npcs=world.npcs, arrows=world.arrows)

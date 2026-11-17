@@ -91,6 +91,7 @@ api/
 game/
   map.py            procedural tile map
   npc.py            NPC and archer logic, actions, pathfinding
+  npc_names.py      canonical NPC names
   entities.py       trees, rocks, structures, wheat fields
   creatures.py      sheep and wild archers
   storage.py        resource storage (wood, stone, gold, wheat)

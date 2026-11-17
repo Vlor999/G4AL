@@ -14,6 +14,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from enum import Enum
 
+from game.npc_names import NPCName
+
 # ═══════════════════════════════════════════════════════════════════════════
 #  ElevenLabs voice library
 # ═══════════════════════════════════════════════════════════════════════════
@@ -34,22 +36,6 @@ class ElevenLabsVoice(Enum):
     ADAM = "pNInz6obpgDQGcFmaJgB"  # deep, resonant
     SAM = "yoZ06aMxZJJ28mfd3POQ"  # raspy, older
     ANTONI = "ErXwobaYiN019PkySvjV"  # warm, young male
-
-
-# ═══════════════════════════════════════════════════════════════════════════
-#  NPC Names
-# ═══════════════════════════════════════════════════════════════════════════
-
-
-class NPCName(Enum):
-    """All available NPC names."""
-
-    BOB = "Bob"
-    PAUL = "Paul"
-    THOMAS = "Thomas"
-    MARIE = "Marie"
-    SAM = "Sam"
-    LISA = "Lisa"
 
 
 @dataclass(frozen=True)
@@ -123,9 +109,6 @@ NPC_PROFILES: tuple[NPCProfile, ...] = (
 # ═══════════════════════════════════════════════════════════════════════════
 #  Derived lookups – generated once from NPC_PROFILES
 # ═══════════════════════════════════════════════════════════════════════════
-
-NPC_NAMES: list[str] = [p.name.value for p in NPC_PROFILES]
-"""Ordered list of all canonical NPC names (as display strings)."""
 
 CHARACTER_SOULS: dict[str, str] = {p.name.value: p.soul for p in NPC_PROFILES}
 """NPC name → personality description (for LLM prompts)."""

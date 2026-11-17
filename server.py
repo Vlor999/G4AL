@@ -107,15 +107,24 @@ class GameEngine:
         self._sync_npc_roster()
 
     def _spawn_initial_npcs(self, count: int):
-        cx, cy = self.game_map.cols // 2, self.game_map.rows // 2
         # Collect ALL occupied tiles (including multi-tile structures like the hut)
-        entity_tiles: set = set()
-        for r in self.resources:
-            if isinstance(r, Structure):
-                for t in r.occupied_tiles:
-                    entity_tiles.add(t)
+        entity_tiles = self._occupied_entity_tiles()
+        self._spawn_pawns_near_center(count, entity_tiles)
+        # Spawn 2 playable archers close to the storage hut
+        self._spawn_archers_near_hut(2, entity_tiles)
+
+    def _occupied_entity_tiles(self) -> set[tuple[int, int]]:
+        entity_tiles: set[tuple[int, int]] = set()
+        for resource in self.resources:
+            if isinstance(resource, Structure):
+                for tile in resource.occupied_tiles:
+                    entity_tiles.add(tile)
             else:
-                entity_tiles.add((r.col, r.row))
+                entity_tiles.add((resource.col, resource.row))
+        return entity_tiles
+
+    def _spawn_pawns_near_center(self, count: int, entity_tiles: set[tuple[int, int]]):
+        cx, cy = self.game_map.cols // 2, self.game_map.rows // 2
         placed = 0
         for dc in range(-3, 4):
             for dr in range(-3, 4):
@@ -135,11 +144,9 @@ class GameEngine:
                     entity_tiles.add((c, r))
                     placed += 1
                     if placed >= count:
-                        break
-            if placed >= count:
-                break
+                        return
 
-        # Spawn 2 playable archers close to the storage hut
+    def _spawn_archers_near_hut(self, count: int, entity_tiles: set[tuple[int, int]]):
         hut_col, hut_row = STORAGE_HUT_COL, STORAGE_HUT_ROW
         archer_placed = 0
         for dist in range(1, 6):
@@ -164,12 +171,8 @@ class GameEngine:
                     self.npcs.append(archer)
                     entity_tiles.add((c, r))
                     archer_placed += 1
-                    if archer_placed >= 2:
-                        break
-                if archer_placed >= 2:
-                    break
-            if archer_placed >= 2:
-                return
+                    if archer_placed >= count:
+                        return
 
     def _spawn_fauna(self):
         """Spawn autonomous creatures (sheep, wild archers, etc.)."""

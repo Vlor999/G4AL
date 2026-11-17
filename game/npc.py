@@ -347,112 +347,117 @@ class NPC:
         self._current_action = action
 
         if action.action_type == ActionType.CHOP_WOOD:
-            target = action.target or self._find_nearest(Tree)
-            if target is None:
-                self.say("No trees nearby!", 120)
-                self.state = State.DONE
-                return
-            action.target = target
-            target.reserved_by = self.id
-            self._plan_move_to(target.col, target.row)
-
+            self._start_harvest(action, Tree, unavailable_message="No trees nearby!")
         elif action.action_type == ActionType.MINE_ROCK:
-            target = action.target or self._find_nearest(Rock)
-            if target is None:
-                self.say("No rocks nearby!", 120)
-                self.state = State.DONE
-                return
-            action.target = target
-            target.reserved_by = self.id
-            self._plan_move_to(target.col, target.row)
-
+            self._start_harvest(action, Rock, unavailable_message="No rocks nearby!")
         elif action.action_type == ActionType.BUILD:
-            if isinstance(action.target, Structure):
-                # Already have a structure object – walk to an adjacent tile
-                adj = self._adjacent_to_structure(action.target)
-                if adj is None:
-                    self.state = State.DONE
-                    return
-                self._plan_move_to(*adj)
-            else:
-                # Resolve location: explicit (col, row) or fallback to NPC tile
-                if isinstance(action.target, tuple):
-                    col, row = action.target
-                else:
-                    col, row = self.tile_pos
-                # Determine building type grid size
-                btype = "house1"
-                gw, gh = Structure.GRID_SIZES.get(btype, (2, 2))
-                # Find a free area big enough for the multi-tile structure
-                resolved = self._find_free_area(col, row, gw, gh)
-                if resolved is None:
-                    self.say("No space to build!", 120)
-                    self.state = State.DONE
-                    return
-                col, row = resolved
-                # Pay resource cost
-                if (
-                    self._storage.get("wood") < BUILD_COST_WOOD
-                    or self._storage.get("stone") < BUILD_COST_STONE
-                ):
-                    self.say("Not enough resources to build!", 120)
-                    self.state = State.DONE
-                    return
-                self._storage.spend("wood", BUILD_COST_WOOD)
-                self._storage.spend("stone", BUILD_COST_STONE)
-                struct = Structure(col, row, building_type=btype)
-                self._resources.append(struct)
-                action.target = struct
-                # Walk to an adjacent tile (not onto the structure)
-                adj = self._adjacent_to_structure(struct)
-                if adj is None:
-                    self._plan_move_to(col, row)
-                else:
-                    self._plan_move_to(*adj)
-
+            self._start_build(action)
         elif action.action_type == ActionType.MOVE_TO:
             if isinstance(action.target, tuple):
                 self._plan_move_to(*action.target)
             else:
                 self.state = State.DONE
-
         elif action.action_type == ActionType.EAT:
-            # Consume wheat from global storage, no movement needed
-            if self._storage.get("wheat") < EAT_WHEAT_COST:
-                self.say("No wheat to eat!", 120)
-                self.state = State.DONE
-                return
-            self._storage.spend("wheat", EAT_WHEAT_COST)
-            self._perform_timer = 0
-            self._perform_duration = NPC_EAT_TIME
-            self.state = State.PERFORMING
-
+            self._start_eat()
         elif action.action_type == ActionType.PLANT_WHEAT:
-            # Plant a new wheat field at the given tile or NPC's tile
-            if isinstance(action.target, tuple):
-                col, row = action.target
-            else:
-                col, row = self.tile_pos
-            # Auto-find a nearby valid tile (walkable + no entity)
-            resolved = self._find_nearby_free_tile(col, row)
-            if resolved is None:
-                self.say("No space to plant!", 120)
-                self.state = State.DONE
-                return
-            col, row = resolved
-            field = WheatField(col, row)
-            self._resources.append(field)
-            action.target = field
-            self._plan_move_to(col, row)
-
+            self._start_plant_wheat(action)
         elif action.action_type == ActionType.collect_wheat:
-            target = action.target or self._find_nearest_ready_wheat()
-            if target is None:
-                self.say("No wheat ready!", 120)
+            self._start_collect_wheat(action)
+
+    def _start_harvest(self, action: Action, kind: type, *, unavailable_message: str):
+        target = action.target or self._find_nearest(kind)
+        if target is None:
+            self.say(unavailable_message, 120)
+            self.state = State.DONE
+            return
+        action.target = target
+        target.reserved_by = self.id
+        self._plan_move_to(target.col, target.row)
+
+    def _start_build(self, action: Action):
+        if isinstance(action.target, Structure):
+            # Already have a structure object – walk to an adjacent tile
+            adj = self._adjacent_to_structure(action.target)
+            if adj is None:
                 self.state = State.DONE
                 return
-            action.target = target
-            self._plan_move_to(target.col, target.row)
+            self._plan_move_to(*adj)
+        else:
+            self._start_new_structure(action)
+
+    def _start_new_structure(self, action: Action):
+        # Resolve location: explicit (col, row) or fallback to NPC tile
+        if isinstance(action.target, tuple):
+            col, row = action.target
+        else:
+            col, row = self.tile_pos
+        # Determine building type grid size
+        btype = "house1"
+        gw, gh = Structure.GRID_SIZES.get(btype, (2, 2))
+        # Find a free area big enough for the multi-tile structure
+        resolved = self._find_free_area(col, row, gw, gh)
+        if resolved is None:
+            self.say("No space to build!", 120)
+            self.state = State.DONE
+            return
+        col, row = resolved
+        # Pay resource cost
+        if (
+            self._storage.get("wood") < BUILD_COST_WOOD
+            or self._storage.get("stone") < BUILD_COST_STONE
+        ):
+            self.say("Not enough resources to build!", 120)
+            self.state = State.DONE
+            return
+        self._storage.spend("wood", BUILD_COST_WOOD)
+        self._storage.spend("stone", BUILD_COST_STONE)
+        struct = Structure(col, row, building_type=btype)
+        self._resources.append(struct)
+        action.target = struct
+        # Walk to an adjacent tile (not onto the structure)
+        adj = self._adjacent_to_structure(struct)
+        if adj is None:
+            self._plan_move_to(col, row)
+        else:
+            self._plan_move_to(*adj)
+
+    def _start_eat(self):
+        # Consume wheat from global storage, no movement needed
+        if self._storage.get("wheat") < EAT_WHEAT_COST:
+            self.say("No wheat to eat!", 120)
+            self.state = State.DONE
+            return
+        self._storage.spend("wheat", EAT_WHEAT_COST)
+        self._perform_timer = 0
+        self._perform_duration = NPC_EAT_TIME
+        self.state = State.PERFORMING
+
+    def _start_plant_wheat(self, action: Action):
+        # Plant a new wheat field at the given tile or NPC's tile
+        if isinstance(action.target, tuple):
+            col, row = action.target
+        else:
+            col, row = self.tile_pos
+        # Auto-find a nearby valid tile (walkable + no entity)
+        resolved = self._find_nearby_free_tile(col, row)
+        if resolved is None:
+            self.say("No space to plant!", 120)
+            self.state = State.DONE
+            return
+        col, row = resolved
+        field = WheatField(col, row)
+        self._resources.append(field)
+        action.target = field
+        self._plan_move_to(col, row)
+
+    def _start_collect_wheat(self, action: Action):
+        target = action.target or self._find_nearest_ready_wheat()
+        if target is None:
+            self.say("No wheat ready!", 120)
+            self.state = State.DONE
+            return
+        action.target = target
+        self._plan_move_to(target.col, target.row)
 
     def _plan_move_to(self, col: int, row: int):
         start = self.tile_pos
@@ -519,60 +524,17 @@ class NPC:
     def _perform(self):
         self._perform_timer += 1
 
-        target = self._current_action.target if self._current_action else None
+        action = self._current_action
+        target = action.target if action else None
 
         # ── Harvest actions: collect 1 unit then carry it back to hut ──
-        if isinstance(target, Resource) and not target.depleted:
-            if self._current_action.action_type in (
-                ActionType.CHOP_WOOD,
-                ActionType.MINE_ROCK,
-            ):
-                if self._perform_timer >= NPC_COLLECT_UNIT_TIME:
-                    result = target.collect_one_unit()
-                    if result:
-                        res_type, amount = result
-                        self.is_carrying = True
-                        self.carrying = {res_type: amount}
-                        self._last_harvest_action = self._current_action.action_type
-                        self._last_harvest_target = target
-                        self._start_return_to_hut()
-                        return
-                    else:
-                        self.state = State.DONE
-                        return
-                return  # still working, wait for timer
-
-            elif self._current_action.action_type == ActionType.BUILD:
-                if isinstance(target, Structure):
-                    # Advance build progress once every NPC_BUILD_TIME/100
-                    # frames so the full build takes NPC_BUILD_TIME frames.
-                    interval = max(1, NPC_BUILD_TIME // 100)
-                    if self._perform_timer % interval == 0:
-                        target.build_tick()
-                    if target.built:
-                        # Houses increase global storage capacity
-                        if target.building_type == "house1":
-                            self._storage.register_house()
-                        self.state = State.DONE
-                        return
-                return  # still building
-
-            elif self._current_action.action_type == ActionType.collect_wheat:
-                if isinstance(target, WheatField) and target.fully_grown:
-                    if self._perform_timer >= NPC_COLLECT_UNIT_TIME:
-                        result = target.collect_one_unit()
-                        if result:
-                            res_type, amount = result
-                            self.is_carrying = True
-                            self.carrying = {res_type: amount}
-                            self._last_harvest_action = self._current_action.action_type
-                            self._last_harvest_target = target
-                            self._start_return_to_hut()
-                            return
-                        else:
-                            self.state = State.DONE
-                            return
-                    return  # still working
+        if (
+            action is not None
+            and isinstance(target, Resource)
+            and not target.depleted
+            and self._advance_resource_work(action.action_type, target)
+        ):
+            return
 
         # EAT action completes on timer
         if (
@@ -586,6 +548,50 @@ class NPC:
             return
 
         if self._perform_timer >= self._perform_duration:
+            self.state = State.DONE
+
+    def _advance_resource_work(self, action_type: ActionType, target: Resource):
+        """Advance work on *target*; return True when this frame is fully handled."""
+        if action_type in (ActionType.CHOP_WOOD, ActionType.MINE_ROCK):
+            self._collect_unit_when_ready(action_type, target)
+            return True
+        if action_type == ActionType.BUILD:
+            if isinstance(target, Structure):
+                self._advance_construction(target)
+            return True
+        if (
+            action_type == ActionType.collect_wheat
+            and isinstance(target, WheatField)
+            and target.fully_grown
+        ):
+            self._collect_unit_when_ready(action_type, target)
+            return True
+        return False
+
+    def _collect_unit_when_ready(self, action_type: ActionType, target: Resource):
+        if self._perform_timer < NPC_COLLECT_UNIT_TIME:
+            return  # still working, wait for timer
+        result = target.collect_one_unit()
+        if result is None:
+            self.state = State.DONE
+            return
+        res_type, amount = result
+        self.is_carrying = True
+        self.carrying = {res_type: amount}
+        self._last_harvest_action = action_type
+        self._last_harvest_target = target
+        self._start_return_to_hut()
+
+    def _advance_construction(self, target: Structure):
+        # Advance build progress once every NPC_BUILD_TIME/100
+        # frames so the full build takes NPC_BUILD_TIME frames.
+        interval = max(1, NPC_BUILD_TIME // 100)
+        if self._perform_timer % interval == 0:
+            target.build_tick()
+        if target.built:
+            # Houses increase global storage capacity
+            if target.building_type == "house1":
+                self._storage.register_house()
             self.state = State.DONE
 
     # ── carry / return-to-hut helpers ────────────────────────────────────

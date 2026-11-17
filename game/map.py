@@ -41,9 +41,12 @@ class GameMap:
             for dy in range(-radius, radius + 1):
                 for dx in range(-radius, radius + 1):
                     nx, ny = cx + dx, cy + dy
-                    if 0 <= nx < self.cols and 0 <= ny < self.rows:
-                        if dx * dx + dy * dy <= radius * radius:
-                            grid[ny][nx] = TileType.DIRT
+                    if (
+                        0 <= nx < self.cols
+                        and 0 <= ny < self.rows
+                        and dx * dx + dy * dy <= radius * radius
+                    ):
+                        grid[ny][nx] = TileType.DIRT
 
         # a couple of small ponds (water only, no sand border)
         for _ in range(3):
@@ -52,9 +55,12 @@ class GameMap:
             for dy in range(-radius, radius + 1):
                 for dx in range(-radius, radius + 1):
                     nx, ny = cx + dx, cy + dy
-                    if 0 <= nx < self.cols and 0 <= ny < self.rows:
-                        if dx * dx + dy * dy <= radius * radius:
-                            grid[ny][nx] = TileType.WATER
+                    if (
+                        0 <= nx < self.cols
+                        and 0 <= ny < self.rows
+                        and dx * dx + dy * dy <= radius * radius
+                    ):
+                        grid[ny][nx] = TileType.WATER
         return grid
 
     # ── queries ──────────────────────────────────────────────────────────
@@ -87,8 +93,13 @@ class GameMap:
                 return (c, r)
             for dc, dr in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
                 nc, nr = c + dc, r + dr
-                if (nc, nr) not in visited and 0 <= nc < self.cols and 0 <= nr < self.rows:
-                    if abs(nc - col) <= max_radius and abs(nr - row) <= max_radius:
-                        visited.add((nc, nr))
-                        queue.append((nc, nr))
+                if (
+                    (nc, nr) not in visited
+                    and 0 <= nc < self.cols
+                    and 0 <= nr < self.rows
+                    and abs(nc - col) <= max_radius
+                    and abs(nr - row) <= max_radius
+                ):
+                    visited.add((nc, nr))
+                    queue.append((nc, nr))
         return None

@@ -1,0 +1,16 @@
+**G4AL secrets and player data (see .claude/rules/security.md):**
+- MISTRAL_API_KEY or ELEVENLABS_API_KEY hardcoded, logged, printed, put in an error message or sent to the client, even partially beyond key[:4]
+- Recorded player audio written to disk, to logs/ or to any file instead of only being sent to Mistral
+- Log lines (JSONL in logs/) that include audio bytes or API keys
+
+**G4AL server surface (server.py, Flask + Socket.IO):**
+- Server bound to 0.0.0.0 or another non-loopback address without an explicit environment opt-in
+- Route or Socket.IO handler reading a body without validating required fields, types and ranges (npcId must exist, col/row inside the map)
+- /api/audio upload without a size limit, or a bad request answered with a stack trace instead of a 400
+- Filesystem path built from request data instead of send_from_directory
+- Permissive CORS (cors_allowed_origins="*") on the Socket.IO server
+- Route or handler mutating game state outside GameEngine, racing with the game loop thread
+
+**G4AL LLM output (api/interpreter.py):**
+- Mistral Voxtral output reaching game/ without being parsed against a schema and the allowed actions (prompt injection through the spoken order)
+- Transcript or LLM text rendered in the client through innerHTML or another HTML sink (static/ ui.js, renderer.js)

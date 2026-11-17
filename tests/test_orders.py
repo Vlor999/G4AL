@@ -1,7 +1,8 @@
 import pytest
 
 from game.actions import ActionType, State
-from game.npc import NPC, Archer
+from game.archer import Archer
+from game.npc import NPC
 from game.orders import NpcOrder, apply_orders
 from game.settings import TTS_MAX_SPEAKERS
 from game.storage import ResourceStorage

@@ -92,6 +92,7 @@ game/
   map.py            procedural tile map
   npc.py            NPC and archer logic, actions, pathfinding
   npc_names.py      canonical NPC names
+  ports.py          protocols the domain needs from the outside world
   entities.py       trees, rocks, structures, wheat fields
   creatures.py      sheep and wild archers
   storage.py        resource storage (wood, stone, gold, wheat)

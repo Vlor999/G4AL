@@ -331,6 +331,11 @@ class WildArcher(Fauna):
         self._is_firing: bool = False  # True during brief fire anim
         self._start_idle()
 
+    def link_battlefield(self, *, npcs: list[NPC], arrows: list[Arrow]) -> None:
+        """Share the world's lists by reference: targets come from *npcs*, shots go to *arrows*."""
+        self._all_npcs = npcs
+        self._arrows = arrows
+
     def update(self) -> None:
         """Override base: adds SHOOTING + CHASING states."""
         if self.health <= 0:

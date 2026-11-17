@@ -64,6 +64,11 @@ class Archer(NPC):
         self._is_firing: bool = False
         self._defending: bool = False
 
+    def link_battlefield(self, *, fauna: list[Fauna], arrows: list[Arrow]) -> None:
+        """Share the world's lists by reference: targets come from *fauna*, shots go to *arrows*."""
+        self._all_fauna = fauna
+        self._arrows = arrows
+
     def _find_nearest_enemy(self, max_range: int = 0) -> Fauna | None:
         """Find the nearest living WildArcher in the fauna list.
         If max_range > 0, only consider enemies within that tile distance."""

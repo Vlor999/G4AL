@@ -60,3 +60,21 @@ def test_chop_wood_brings_wood_to_storage(build_map: MapBuilder) -> None:
     for _ in range(400):
         npc.update()
     assert storage.wood >= 1
+
+
+@pytest.mark.parametrize(
+    ("state", "expected_released"), [(State.WAITING_DEPOSIT, True), (State.MOVING, False)]
+)
+def test_give_up_waiting_deposit_drops_the_load_only_when_waiting(
+    build_map: MapBuilder, state: State, expected_released: bool
+) -> None:
+    npc = make_npc(build_map, [], ResourceStorage())
+    npc.state = state
+    npc.is_carrying = True
+    npc.carrying = {"wood": 3}
+
+    assert npc.give_up_waiting_deposit() is expected_released
+
+    assert npc.state == (State.IDLE if expected_released else state)
+    assert npc.carrying == ({} if expected_released else {"wood": 3})
+    assert npc.is_carrying is not expected_released

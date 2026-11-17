@@ -211,6 +211,11 @@ class GameEngine:
         with self._lock:
             return self.storage.discard_resources(amounts)
 
+    def release_npcs_waiting_deposit(self) -> int:
+        """Make every NPC waiting for storage space drop its load; returns how many did."""
+        with self._lock:
+            return sum(npc.give_up_waiting_deposit() for npc in self.npcs)
+
     def _find_npc(self, npc_id: int) -> NPC | None:
         for n in self.npcs:
             if n.id == npc_id:
@@ -493,19 +498,7 @@ def post_discard() -> Response:
 @app.route("/api/dismiss_storage", methods=["POST"])
 def post_dismiss_storage() -> Response:
     """Release all NPCs stuck in WAITING_DEPOSIT → IDLE."""
-    from game.npc import State as NpcState
-
-    released = 0
-    with engine._lock:
-        for npc in engine.npcs:
-            if npc.state == NpcState.WAITING_DEPOSIT:
-                npc.is_carrying = False
-                npc.carrying = {}
-                npc._last_harvest_action = None
-                npc._last_harvest_target = None
-                npc._current_action = None
-                npc.state = NpcState.IDLE
-                released += 1
+    released = engine.release_npcs_waiting_deposit()
     return jsonify({"ok": True, "released": released})
 
 

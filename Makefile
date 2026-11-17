@@ -29,6 +29,7 @@ format-fix:
 
 lint-check:
 	uv run ruff check .
+	uv run lint-imports
 
 lint-fix:
 	uv run ruff check . --fix

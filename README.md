@@ -78,7 +78,7 @@ Example voice commands:
 ```
 main.py             entry point, starts the server
 server.py           loads .env, Flask + Socket.IO backend and game loop
-Makefile            install, run, check (format, lint, types, dead code, tests) and fix targets
+Makefile            install, run, check (format, lint, import contract, types, dead code, tests) and fix targets
 pyproject.toml      dependencies
 .env.example        environment variable template
 

@@ -23,7 +23,7 @@ HTML5 Canvas client every 3rd tick (~20 Hz).
 ```bash
 make install       # uv sync + pre-commit hooks
 make run           # start the server on http://127.0.0.1:8000
-make check         # format, lint, mypy --strict, vulture, pytest + coverage (what CI runs)
+make check         # format, lint + import contract, mypy --strict, vulture, pytest + coverage (what CI runs)
 make format-fix lint-fix
 uv run pytest tests/test_storage.py -k capacity   # one test
 ```

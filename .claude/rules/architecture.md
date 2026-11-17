@@ -81,9 +81,10 @@ From the repository root:
 make check
 ```
 
-It runs `ruff format --check`, `ruff check`, `mypy` (strict), `vulture` and `pytest`
-with coverage. When `ub-mode` is installed, also run its CRAP and duplication gates on
-the changed files:
+It runs `ruff format --check`, `ruff check`, `lint-imports` (the `game/` import
+contract in `pyproject.toml`), `mypy` (strict), `vulture` and `pytest` with coverage.
+When `ub-mode` is installed, also run its CRAP and duplication gates on the changed
+files:
 
 ```bash
 uv run --script ~/.claude/skills/ub-mode/scripts/quality.py --base origin/dev --tests tests

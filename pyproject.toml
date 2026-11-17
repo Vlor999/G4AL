@@ -18,6 +18,7 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+    "import-linter>=2.16",
     "mypy>=1.13",
     "pre-commit>=4.0",
     "pytest>=8.3",
@@ -50,3 +51,31 @@ skip_covered = true
 [tool.vulture]
 paths = ["game", "api", "server.py", "main.py"]
 min_confidence = 80
+
+########################################################################################################################
+# Import contracts (lint-imports, run by `make lint-check`)
+########################################################################################################################
+# Layer rule of `.claude/rules/architecture.md`: the domain imports no adapter, no entry
+# point and no library that talks to an outside system, `TYPE_CHECKING` imports included.
+
+[tool.importlinter]
+root_packages = ["game", "api"]
+include_external_packages = true
+
+[[tool.importlinter.contracts]]
+name = "game imports no adapter, entry point or I/O library"
+type = "forbidden"
+source_modules = ["game"]
+forbidden_modules = [
+    "api",
+    "server",
+    "main",
+    "flask",
+    "flask_socketio",
+    "flask_cors",
+    "mistralai",
+    "elevenlabs",
+    "pygame",
+    "loguru",
+    "dotenv",
+]

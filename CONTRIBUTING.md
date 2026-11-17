@@ -1,0 +1,38 @@
+# Contributing
+
+## Setup
+
+```bash
+make install          # uv sync + pre-commit install
+cp .env.example .env  # add your Mistral (and optionally ElevenLabs) key
+make run
+```
+
+Optional, for the `openwiki` MCP server declared in `.mcp.json`:
+`npm install --global openwiki@0.5.2`.
+
+## Workflow
+
+1. Branch from `main`: `<type>/<slug>` (`feat/archer-patrol`).
+2. Write the change and its tests. The rules in [`.claude/rules/`](.claude/rules/) apply
+   to humans and agents alike; [AGENTS.md](AGENTS.md) is the entry point.
+3. `make check` must pass (format, lint, `mypy --strict`, vulture, tests). The
+   pre-commit hooks run the fast part of it plus `gitleaks` on every commit.
+4. Commit with Conventional Commits in English (`feat(npc): add patrol action`),
+   atomic commits in dependency order.
+5. Open a PR against `main` with the template. CI must be green before merge. Pull
+   `main` in with a rebase, never a merge commit.
+
+## Coding standards in short
+
+- `game/` is pure: no Flask, Mistral, ElevenLabs, pygame, file or network access.
+- Full-word English names, enums for fixed sets, full type annotations.
+- Files under ~500 lines, one concern per file.
+- A bug fix comes with the test that would have caught it.
+- Dead code is deleted, not commented out.
+
+## Branch protection
+
+`main` is a protected branch: changes land through a pull request only, with the
+`CI` checks (quality and security jobs) and CodeQL required to pass, a linear history
+(rebase or squash merge), and no force push.

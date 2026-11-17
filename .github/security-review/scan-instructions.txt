@@ -3,7 +3,7 @@
 - Recorded player audio written to disk, to logs/ or to any file instead of only being sent to Mistral
 - Log lines (JSONL in logs/) that include audio bytes or API keys
 
-**G4AL server surface (server.py, Flask + Socket.IO):**
+**G4AL server surface (server/, Flask + Socket.IO):**
 - Server bound to 0.0.0.0 or another non-loopback address without an explicit environment opt-in
 - Route or Socket.IO handler reading a body without validating required fields, types and ranges (npcId must exist, col/row inside the map)
 - /api/audio upload without a size limit, or a bad request answered with a stack trace instead of a 400

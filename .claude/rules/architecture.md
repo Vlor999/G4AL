@@ -1,7 +1,7 @@
 # Architecture of application code
 
 Applies to every PR that adds or changes Python application code (`game/`, `api/`,
-`server.py`, `main.py`, scripts). The frontend (`static/`) follows the last section.
+`server/`, `main.py`, scripts). The frontend (`static/`) follows the last section.
 The principles come from the `ub-mode` skill (`~/.claude/skills/ub-mode/SKILL.md`)
 when it is installed; this file wins where they differ.
 
@@ -12,7 +12,7 @@ when it is installed; this file wins where they differ.
 | Domain | `game/` | the simulation: map, NPCs and their action queue, fauna, resources, storage, pathfinding, game rules and tuning (`game/settings.py`) | `game/` only, standard library |
 | Ports | `game/ports.py` (create it with the first one) | every `Protocol` the domain needs from the outside world (an order source, a voice line sink, a clock) and their errors | domain types |
 | Adapters | `api/` | one module per external system: Mistral Voxtral (`interpreter.py`), ElevenLabs + pygame mixer (`tts.py`), log files (`logger.py`) | ports, domain types, constants |
-| Entry point | `server.py`, `main.py` | builds the adapters, owns the game loop thread, maps HTTP/Socket.IO payloads to domain calls and domain state to JSON | everything |
+| Entry point | `server/`, `main.py` | builds the adapters, owns the game loop thread, maps HTTP/Socket.IO payloads to domain calls and domain state to JSON | everything |
 | Client | `static/` | rendering, input, push-to-talk capture | the server's HTTP and Socket.IO contract only |
 
 - The domain does no I/O: no Flask, Socket.IO, Mistral, ElevenLabs, pygame, `print`,
@@ -25,7 +25,7 @@ when it is installed; this file wins where they differ.
   methods after game actions (`interpret`, `speak`), never after vendor calls.
 - An adapter holds no game rule, translates every vendor error into its port's error,
   and never puts a secret in an error or a log line.
-- The entry point holds no game decision. A rule that lives in `server.py`
+- The entry point holds no game decision. A rule that lives in `server/`
   (`GameEngine`) today moves to `game/` when a PR touches it.
 - Smallest design that holds these rules: a type exists when it carries a rule or a
   validation, a module when it has its own role.

@@ -2,6 +2,7 @@
 paths:
   - "game/**/*.py"
   - "api/**/*.py"
+  - "server/**/*.py"
   - "*.py"
   - "static/**/*.js"
   - "tests/**/*.py"

@@ -20,7 +20,7 @@ It was built for the Mistral Worldwide Hackathon 2026. The backend runs locally 
 ```
 Browser (HTML5 Canvas + Socket.IO)
         |  WebSocket (state push + events)
-Flask + Socket.IO server (server.py)
+Flask + Socket.IO server (server/)
         |-- Game engine      map, NPCs, entities, resources, combat   (game/)
         |-- Mistral Voxtral  audio -> structured NPC orders           (api/interpreter.py)
         |-- ElevenLabs TTS   NPC voice line playback                  (api/tts.py)
@@ -77,7 +77,11 @@ Example voice commands:
 
 ```
 main.py             entry point, starts the server
-server.py           loads .env, Flask + Socket.IO backend and game loop
+server/
+  app.py            loads .env, builds the adapters and the Flask + Socket.IO app, starts the server
+  engine.py         GameEngine and its game loop thread
+  routes.py         HTTP routes and Socket.IO events
+  serialization.py  game state -> client JSON
 Makefile            install, run, check (format, lint, import contract, types, dead code, tests) and fix targets
 pyproject.toml      dependencies
 .env.example        environment variable template

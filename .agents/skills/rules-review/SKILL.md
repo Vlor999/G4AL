@@ -65,7 +65,7 @@ it breaks (if any), one sentence of explanation, a concrete fix.
   default), broken or skipped tests, failing gate, broken client/server contract,
   game state mutated outside the loop's lock.
 - HIGH: breach of an explicit rule: I/O or vendor import in game/, game rule in
-  server.py or static/, prompt-and-parse LLM output, bare str for a fixed set,
+  server/ or static/, prompt-and-parse LLM output, bare str for a fixed set,
   abbreviated names, file pushed past ~500 lines, dead code left behind.
 - MEDIUM: judgment calls (a shallow module, repeated error handling, a missing
   test for a new branch). Mark "intent unclear" when you cannot tell.

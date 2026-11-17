@@ -1,6 +1,6 @@
 ---
 paths:
-  - "server.py"
+  - "server/**/*.py"
 ---
 
 # Server style (Flask + Socket.IO)

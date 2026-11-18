@@ -218,14 +218,13 @@ class PipelineLogger:
 
     # ── pipeline round-trip ──────────────────────────────────────────────
 
-    def pipeline_summary(self, voice_text: str, order: dict[str, Any] | None) -> None:
+    def pipeline_summary(self, order: dict[str, Any] | None) -> None:
         """Log an end-to-end summary for one voice→LLM→TTS cycle."""
         total_time = self._total_llm_time + self._total_tts_time
         total_cost = self._total_llm_cost + self._total_tts_cost
 
         logger.bind(
             event="pipeline_summary",
-            voice_text=voice_text,
             order=order,
             cumulative_calls=self._call_count,
             cumulative_llm_time_s=round(self._total_llm_time, 3),

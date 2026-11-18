@@ -42,29 +42,6 @@ def test_tile_center_is_middle_of_tile(build_map: MapBuilder) -> None:
     assert build_map(GRID).tile_center(1, 2) == (1.5 * TILE_SIZE, 2.5 * TILE_SIZE)
 
 
-@pytest.mark.parametrize(
-    ("rows", "origin", "expected"),
-    [
-        (["....."] * 5, (2, 2), (2, 2)),
-        (["~~~~~", "~~~~~", "~~~~.", "~~~~~", "~~~~~"], (2, 2), (4, 2)),
-        (["~~~~~"] * 5, (2, 2), None),
-    ],
-    ids=["origin-walkable", "nearest-found", "none-walkable"],
-)
-def test_find_nearest_walkable(
-    build_map: MapBuilder,
-    rows: list[str],
-    origin: tuple[int, int],
-    expected: tuple[int, int] | None,
-) -> None:
-    assert build_map(rows).find_nearest_walkable(*origin) == expected
-
-
-def test_find_nearest_walkable_respects_max_radius(build_map: MapBuilder) -> None:
-    rows = ["~~~~~", "~~~~~", "~~~~.", "~~~~~", "~~~~~"]
-    assert build_map(rows).find_nearest_walkable(0, 2, max_radius=2) is None
-
-
 def test_generation_is_reproducible_with_a_seed() -> None:
     first = GameMap(cols=12, rows=9, seed=7)
     second = GameMap(cols=12, rows=9, seed=7)

@@ -77,30 +77,3 @@ class GameMap:
     def world_to_tile(self, x: float, y: float) -> tuple[int, int]:
         """Convert world pixel coords → (col, row)."""
         return int(x // TILE_SIZE), int(y // TILE_SIZE)
-
-    def find_nearest_walkable(
-        self, col: int, row: int, max_radius: int = 10
-    ) -> tuple[int, int] | None:
-        """BFS outward to find nearest walkable tile (used for placement fallback)."""
-        from collections import deque
-
-        visited: set[tuple[int, int]] = set()
-        queue: deque[tuple[int, int]] = deque()
-        queue.append((col, row))
-        visited.add((col, row))
-        while queue:
-            c, r = queue.popleft()
-            if self.is_walkable(c, r):
-                return (c, r)
-            for dc, dr in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
-                nc, nr = c + dc, r + dr
-                if (
-                    (nc, nr) not in visited
-                    and 0 <= nc < self.cols
-                    and 0 <= nr < self.rows
-                    and abs(nc - col) <= max_radius
-                    and abs(nr - row) <= max_radius
-                ):
-                    visited.add((nc, nr))
-                    queue.append((nc, nr))
-        return None

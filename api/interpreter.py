@@ -21,7 +21,7 @@ from mistralai import Mistral
 from mistralai.models import ChatCompletionResponse, MessagesTypedDict, ToolTypedDict
 
 from api.constants import AUDIO_MODEL, ORDERS_TOOL_NAME
-from api.logger import pipeline_logger
+from api.logger import LoggedOrder, pipeline_logger
 from api.roster import get_soul
 from game.actions import ActionType
 from game.npc import NPC
@@ -199,18 +199,17 @@ def _parse_order(item: object, roster: Roster) -> NpcOrder | CommandRefused:
     )
 
 
-def _orders_for_log(orders: Sequence[NpcOrder]) -> dict[str, Any]:
-    return {
-        "orders": [
-            {
-                "npc_id": order.npc_id,
-                "npc_name": order.npc_name,
-                "action": order.action_type.value,
-                "voice_line": order.voice_line,
-            }
-            for order in orders
-        ]
-    }
+def _orders_for_log(orders: Sequence[NpcOrder]) -> dict[str, list[LoggedOrder]]:
+    logged_orders = [
+        LoggedOrder(
+            npc_id=order.npc_id,
+            npc_name=order.npc_name,
+            action=order.action_type.value,
+            voice_line=order.voice_line,
+        )
+        for order in orders
+    ]
+    return {"orders": logged_orders}
 
 
 def _log_answer(response: ChatCompletionResponse, answer: list[NpcOrder] | CommandRefused) -> None:

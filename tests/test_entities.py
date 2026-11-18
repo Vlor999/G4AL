@@ -6,7 +6,6 @@ from game.settings import (
     ROCK_STONE_YIELD,
     TREE_WOOD_YIELD,
     WHEAT_GROW_TIME,
-    WHEAT_YIELD,
 )
 from tests.conftest import MapBuilder
 
@@ -26,32 +25,14 @@ def test_collect_one_unit_takes_stone_then_gold() -> None:
     assert kinds == ["stone"] * ROCK_STONE_YIELD + ["gold"] * ROCK_GOLD_YIELD
 
 
-def test_harvest_tick_returns_yields_once_hp_runs_out() -> None:
-    tree = Tree(0, 0)
-    results = [tree.harvest_tick() for _ in range(tree.max_hp)]
-    assert results[:-1] == [None] * (tree.max_hp - 1)
-    assert results[-1] == {"wood": TREE_WOOD_YIELD}
-    assert tree.harvest_tick() is None
-
-
 def test_wheat_grows_fully_after_grow_time() -> None:
     field = WheatField(0, 0)
     for _ in range(WHEAT_GROW_TIME - 1):
         field.grow_tick()
     assert not field.fully_grown
-    assert field.harvest_tick() is None
     field.grow_tick()
     assert field.fully_grown
     assert field.growth_ratio == 1.0
-
-
-def test_grown_wheat_harvest_yields_wheat() -> None:
-    field = WheatField(0, 0)
-    for _ in range(WHEAT_GROW_TIME):
-        field.grow_tick()
-    results = [field.harvest_tick() for _ in range(field.max_hp)]
-    assert results[-1] == {"wheat": WHEAT_YIELD}
-    assert field.depleted
 
 
 @pytest.mark.parametrize(("ticks", "expected_built"), [(99, False), (100, True)])

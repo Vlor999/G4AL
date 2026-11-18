@@ -31,6 +31,8 @@ WHEAT_PLANT_TIME = 60  # frames to plant
 NPC_COLLECT_UNIT_TIME = 90  # frames to harvest 1 unit of any resource (1.5 s)
 
 # ── Archer ───────────────────────────────────────────────────────────────
+# Keep 0 < ARCHER_FIRE_ANIM_TIME < ARCHER_SHOOT_TIME: Archer._perform relies on the
+# shot landing before the shoot cycle ends.
 ARCHER_SHOOT_TIME = 96  # frames for full shoot cycle (aim + fire)
 ARCHER_FIRE_ANIM_TIME = 24  # frames of the actual shoot animation (end of cycle)
 ARCHER_RANGE = 1  # tiles – max distance to shoot an enemy (melee-range)

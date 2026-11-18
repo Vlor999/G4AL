@@ -9,3 +9,15 @@ ENGINE_EXTENSION = "g4al_game_engine"
 MAX_REQUEST_BYTES = 4 * 1024 * 1024
 # Shorter than a WAV header plus a few samples: nothing was recorded.
 MIN_AUDIO_BYTES = 100
+
+SERVER_PORT = 8000
+# Address the server binds to when G4AL_HOST is not set.
+DEFAULT_SERVED_HOST = "127.0.0.1"
+# Names a browser on this machine uses to reach a server bound to loopback; the
+# startup banner shows the first.
+LOOPBACK_HOST_NAMES = ("localhost", "127.0.0.1")
+# Wildcard bind addresses: they listen on loopback too, and no browser types them.
+# Compared with G4AL_HOST, never bound to here.
+WILDCARD_BIND_ADDRESSES = frozenset({"0.0.0.0", "::"})  # noqa: S104
+# Bind addresses that listen on loopback.
+LOOPBACK_BIND_ADDRESSES = frozenset({"localhost", "127.0.0.1", "::1"}) | WILDCARD_BIND_ADDRESSES

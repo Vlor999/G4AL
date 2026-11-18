@@ -1,12 +1,15 @@
 """Drive the HTTP contract of docs/api.md through the Flask app, as the browser client does."""
 
+import base64
 import io
+import os
 from typing import Any
 
 import pytest
 from flask.testing import FlaskClient
 
 from game.settings import MAP_COLS, MAP_ROWS
+from server.app import create_app
 from server.constants import MAX_REQUEST_BYTES, MIN_AUDIO_BYTES
 from server.engine import GameEngine
 
@@ -140,7 +143,7 @@ def test_uploaded_audio_is_sent_to_the_engine(client: FlaskClient, engine: GameE
 
 @pytest.mark.parametrize(
     ("origin", "expected_status"),
-    [(None, 200), ("http://localhost", 200), ("http://evil.example", 403), ("null", 403)],
+    [(None, 200), ("http://localhost:8000", 200), ("http://evil.example", 403), ("null", 403)],
 )
 def test_only_the_served_origin_may_post(
     client: FlaskClient, origin: str | None, expected_status: int
@@ -154,7 +157,7 @@ def test_only_the_served_origin_may_post(
 
 @pytest.mark.parametrize(
     ("origin", "expected_status"),
-    [("http://localhost", 200), ("http://evil.example", 400), ("null", 400)],
+    [("http://localhost:8000", 200), ("http://evil.example", 400), ("null", 400)],
 )
 def test_only_the_served_origin_may_open_a_socket(
     client: FlaskClient, origin: str, expected_status: int
@@ -162,6 +165,82 @@ def test_only_the_served_origin_may_open_a_socket(
     response = client.get("/socket.io/?EIO=4&transport=polling", headers={"Origin": origin})
 
     assert response.status_code == expected_status
+
+
+@pytest.mark.parametrize("host", ["localhost:8000", "127.0.0.1:8000", "LOCALHOST:8000"])
+def test_a_served_host_is_answered(client: FlaskClient, host: str) -> None:
+    response = client.get("/api/state", headers={"Host": host})
+
+    assert response.status_code == 200
+
+
+# DNS rebinding: the attacker's page re-resolves to this server and sends its own
+# domain as Host, with an Origin equal to it (or none on a same-origin GET).
+_REBOUND_HOST = "evil.example:8000"
+_REBOUND = {"Host": _REBOUND_HOST}
+_POLLING = "/socket.io/?EIO=4&transport=polling"
+_WEBSOCKET_UPGRADE = {
+    "Upgrade": "websocket",
+    "Connection": "Upgrade",
+    # A fresh 16-byte nonce, as RFC 6455 asks of a client.
+    "Sec-WebSocket-Key": base64.b64encode(os.urandom(16)).decode(),
+    "Sec-WebSocket-Version": "13",
+}
+
+
+@pytest.mark.parametrize(
+    ("method", "path", "headers"),
+    [
+        pytest.param(
+            "POST",
+            "/api/dismiss_storage",
+            _REBOUND | {"Origin": f"http://{_REBOUND_HOST}"},
+            id="route-with-origin",
+        ),
+        pytest.param("GET", "/api/state", _REBOUND, id="route-without-origin"),
+        pytest.param("GET", "/", _REBOUND, id="static"),
+        pytest.param(
+            "GET",
+            _POLLING,
+            _REBOUND | {"Origin": f"http://{_REBOUND_HOST}"},
+            id="polling-with-origin",
+        ),
+        pytest.param("GET", _POLLING, _REBOUND, id="polling-without-origin"),
+        pytest.param(
+            "GET",
+            "/socket.io/?EIO=4&transport=websocket",
+            _REBOUND | _WEBSOCKET_UPGRADE,
+            id="websocket-upgrade",
+        ),
+        pytest.param(
+            "GET",
+            "/api/state",
+            _REBOUND | {"X-Forwarded-Host": "localhost:8000"},
+            id="forwarded-host-ignored",
+        ),
+        pytest.param("GET", "/api/state", {"Host": ""}, id="empty-host"),
+        pytest.param("GET", "/api/state", {"Host": "localhost.:8000"}, id="trailing-dot"),
+        pytest.param("GET", "/api/state", {"Host": "localhost:8001"}, id="wrong-port"),
+        pytest.param("GET", "/api/state", {"Host": "localhost"}, id="no-port"),
+    ],
+)
+def test_a_host_outside_the_allowlist_is_refused_with_403(
+    client: FlaskClient, method: str, path: str, headers: dict[str, str]
+) -> None:
+    response = client.open(path, method=method, headers=headers)
+
+    assert response.status_code == 403
+    assert response.get_json() == {"error": "host not allowed"}
+
+
+def test_a_network_bind_allows_its_address_and_not_loopback(engine: GameEngine) -> None:
+    app, _ = create_app(engine, served_host="192.168.1.20")
+    client = app.test_client()
+
+    served = client.get("/api/state", headers={"Host": "192.168.1.20:8000"})
+    loopback = client.get("/api/state", headers={"Host": "localhost:8000"})
+
+    assert (served.status_code, loopback.status_code) == (200, 403)
 
 
 def test_discard_removes_only_what_storage_holds(client: FlaskClient, engine: GameEngine) -> None:

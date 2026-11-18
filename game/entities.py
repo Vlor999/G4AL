@@ -8,7 +8,6 @@ from typing import TYPE_CHECKING, ClassVar
 from game.settings import (
     ROCK_GOLD_YIELD,
     ROCK_STONE_YIELD,
-    TILE_SIZE,
     TREE_WOOD_YIELD,
     WHEAT_GROW_TIME,
     WHEAT_YIELD,
@@ -36,23 +35,6 @@ class Resource:
         self.remaining_yields: dict[str, int] = dict(yields)
         self._total_units: int = sum(yields.values())
 
-    @property
-    def world_pos(self) -> tuple[float, float]:
-        return (
-            self.col * TILE_SIZE + TILE_SIZE // 2,
-            self.row * TILE_SIZE + TILE_SIZE // 2,
-        )
-
-    def harvest_tick(self) -> dict[str, int] | None:
-        """Call once per action-frame. Returns yield dict when fully depleted."""
-        if self.depleted:
-            return None
-        self.hp -= 1
-        if self.hp <= 0:
-            self.depleted = True
-            return dict(self.yields)
-        return None
-
     def collect_one_unit(self) -> tuple[str, int] | None:
         """Collect a single unit from this resource.
 
@@ -70,10 +52,6 @@ class Resource:
                 return (res_type, 1)
         self.depleted = True
         return None
-
-    @property
-    def units_remaining(self) -> int:
-        return sum(self.remaining_yields.values())
 
 
 class Tree(Resource):
@@ -126,7 +104,6 @@ class Structure(Resource):
         gw, gh = self.GRID_SIZES.get(building_type, (2, 2))
         self.grid_width = gw
         self.grid_height = gh
-        self._size = 40
 
     @property
     def occupied_tiles(self) -> list[tuple[int, int]]:
@@ -149,12 +126,10 @@ class WheatField(Resource):
     kind = "wheat"
 
     def __init__(self, col: int, row: int) -> None:
-        # hp here is the harvest effort (how many harvest_tick calls to collect).
         # Growth is tracked separately by self.growth.
         super().__init__(col, row, hp=10, yields={"wheat": WHEAT_YIELD})
         self.growth = 0  # 0..WHEAT_GROW_TIME
         self.fully_grown = False
-        self.planted = True
 
     @property
     def growth_ratio(self) -> float:
@@ -167,16 +142,6 @@ class WheatField(Resource):
         self.growth += 1
         if self.growth >= WHEAT_GROW_TIME:
             self.fully_grown = True
-
-    def harvest_tick(self) -> dict[str, int] | None:
-        """Can only harvest when fully grown."""
-        if not self.fully_grown or self.depleted:
-            return None
-        self.hp -= 1
-        if self.hp <= 0:
-            self.depleted = True
-            return dict(self.yields)
-        return None
 
 
 def spawn_resources(

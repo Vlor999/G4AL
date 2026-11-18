@@ -8,7 +8,7 @@
 - Route or Socket.IO handler reading a body without validating required fields, types and ranges (npcId must exist, col/row inside the map)
 - /api/audio upload without a size limit, or a bad request answered with a stack trace instead of a 400
 - Filesystem path built from request data instead of send_from_directory
-- Permissive CORS (cors_allowed_origins="*") on the Socket.IO server
+- CORS headers on the routes, a wildcard or foreign Socket.IO origin (cors_allowed_origins), or a route that skips the served-origin check, reintroduced
 - Route or handler mutating game state outside GameEngine, racing with the game loop thread
 
 **G4AL LLM output (api/interpreter.py):**

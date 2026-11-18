@@ -8,7 +8,6 @@ import threading
 import pygame
 from dotenv import load_dotenv
 from flask import Flask
-from flask_cors import CORS
 from flask_socketio import SocketIO
 
 from api.interpreter import VoxtralOrderInterpreter
@@ -24,9 +23,10 @@ def create_app(engine: GameEngine) -> tuple[Flask, SocketIO]:
     app.extensions[ENGINE_EXTENSION] = engine
     # Werkzeug refuses a larger body with 413 before reading it.
     app.config["MAX_CONTENT_LENGTH"] = MAX_REQUEST_BYTES
-    CORS(app)
     app.register_blueprint(routes)
-    socketio = SocketIO(app, cors_allowed_origins="*", async_mode="threading")
+    # No CORS headers on the routes and Socket.IO's default origin check: only pages
+    # served by this server, on whichever host and port G4AL_HOST exposes, connect.
+    socketio = SocketIO(app, async_mode="threading")
     register_socket_events(socketio, engine)
     return app, socketio
 

@@ -56,7 +56,7 @@ ELEVENLABS_API_KEY="your-elevenlabs-api-key"   # optional
 make run            # same as: uv run python main.py
 ```
 
-Open http://127.0.0.1:8000 in your browser. The server listens on port 8000 on `127.0.0.1`; set `G4AL_HOST=0.0.0.0` to listen on all interfaces.
+Open http://127.0.0.1:8000 in your browser. The server listens on port 8000 on `127.0.0.1`; set `G4AL_HOST=0.0.0.0` to listen on all interfaces. The server accepts requests only from the pages it serves itself, whatever address it is reached at (`docs/api.md`).
 
 ## Controls
 

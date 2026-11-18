@@ -67,8 +67,6 @@ writes them.
 Tracked on GitHub; the rules in `.claude/rules/` describe the target, these items do
 not meet it yet.
 
-- Routes do not validate their bodies, no upload size limit, CORS open to any origin
-  (#2).
 - Coverage is ~54%, weak on NPC planning and adapters (#4).
 - About 40 unused functions, attributes and constants that vulture reports at 60%
   confidence; the gate runs at 80% until they are removed (#8).

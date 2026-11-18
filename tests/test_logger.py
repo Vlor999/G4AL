@@ -7,6 +7,7 @@ from typing import Any
 import pytest
 from loguru import logger
 
+from api.constants import AUDIO_MODEL
 from api.logger import configure_sinks, has_event, pipeline_logger
 
 
@@ -60,3 +61,14 @@ def test_the_llm_line_lists_each_order_of_the_answer(
 
     [(message, _)] = llm_end_records
     assert message.startswith(f"LLM response: {described} | tokens=10+5 | ")
+
+
+def test_a_failed_call_is_labelled_and_priced_as_the_audio_model(
+    llm_end_records: list[tuple[str, dict[str, Any]]],
+) -> None:
+    pipeline_logger.llm_end(
+        order=None, prompt_tokens=1_000_000, completion_tokens=1_000_000, error="timeout"
+    )
+
+    [(_, extra)] = llm_end_records
+    assert (extra["model"], extra["cost_usd"]) == (AUDIO_MODEL, pytest.approx(0.1 + 0.4))

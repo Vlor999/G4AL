@@ -29,3 +29,4 @@ max-complexity = 12
 
 [lint.per-file-ignores]
 "tests/**/*.py" = ["S101"]
+"vulture_allowlist.py" = ["B018"]  # bare attribute access is the whitelist format

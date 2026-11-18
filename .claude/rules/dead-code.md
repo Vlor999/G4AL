@@ -9,8 +9,10 @@ paths:
 
 # Dead code
 
-`uv run vulture` runs in `make check` and in CI. It catches unused names; the rules
-below catch what it cannot.
+`uv run vulture` runs in `make check` and in CI at 60% confidence. It catches unused
+names; the rules below catch what it cannot. A name read only where vulture cannot see
+it (a dict key the client reads) goes in `vulture_allowlist.py` with the reason; a
+method only tests call is deleted with its tests.
 
 ## Question every branch you didn't take
 
@@ -38,8 +40,7 @@ Remove it.
 
 - An `else:` that the game never reaches.
 - A function only called by another dead function.
-- A setting in `game/settings.py` nobody reads (the `COLOR_*` constants of the old
-  pygame renderer are candidates).
+- A setting in `game/settings.py` nobody reads.
 - A route or Socket.IO event the client never calls.
 
 When you spot one, raise it in your reply rather than silently keeping it.

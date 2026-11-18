@@ -8,7 +8,7 @@ It was built for the Mistral Worldwide Hackathon 2026. The backend runs locally 
 
 | Feature | Details |
 |---|---|
-| Voice commands | Push-to-talk in the browser. The audio goes to Voxtral, which returns structured JSON orders. |
+| Voice commands | Push-to-talk in the browser. The audio goes to Voxtral, which answers with a function call whose JSON schema lists the game's actions. |
 | NPC personalities | Each NPC has a name, a personality and an ElevenLabs voice. |
 | Survival | Chop wood, mine rock, plant and harvest wheat, build structures, manage hunger. |
 | Combat | Archers shoot enemies. Wild archers attack from the map edges. |

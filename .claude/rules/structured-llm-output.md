@@ -66,5 +66,5 @@ models (Voxtral included) support each mode before relying on it.
 - An answer that fails validation is a named outcome (`order refused: unknown
   action`), logged and reported to the player, never a silent `None`.
 
-`api/interpreter.py` predates this rule (prompt-and-parse with fence stripping); it
-migrates in its own PR.
+`api/interpreter.py` follows it with a forced tool call: the Mistral docs document
+function calling with audio input for `voxtral-small-latest`, not `response_format`.

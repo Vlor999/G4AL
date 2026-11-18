@@ -273,16 +273,6 @@ class Archer(NPC):
 
             if self._perform_timer >= self._perform_duration:
                 self._is_firing = False
-
-                if enemy.health <= 0:
-                    self.say("Enemy defeated!", 90)
-                    self._shoot_target = None
-                    if self._defending:
-                        self._defend_scan()
-                    else:
-                        self.state = State.DONE
-                    return
-
                 dist = self._enemy_tile_distance(enemy)
                 if dist <= ARCHER_RANGE:
                     self._perform_timer = 0

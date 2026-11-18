@@ -9,7 +9,7 @@ from mistralai import Mistral
 from api.constants import ORDERS_TOOL_NAME
 from api.interpreter import ORDERS_SCHEMA, VoxtralOrderInterpreter
 from game.actions import ActionType
-from game.orders import CommandRefused, NpcOrder, RefusalReason
+from game.orders import VOICE_ORDER_ACTIONS, CommandRefused, NpcOrder, RefusalReason
 from game.ports import OrderInterpretationError
 from tests.conftest import MapBuilder
 from tests.test_orders import make_npcs
@@ -46,10 +46,22 @@ def interpreter_answering(
     return interpreter, chat
 
 
-def test_schema_actions_are_the_action_types() -> None:
+def test_schema_actions_are_the_voice_order_actions() -> None:
     action_schema = ORDERS_SCHEMA["properties"]["orders"]["items"]["properties"]["action"]
 
-    assert action_schema["enum"] == [action_type.value for action_type in ActionType]
+    assert action_schema["enum"] == [action_type.value for action_type in VOICE_ORDER_ACTIONS]
+    assert ActionType.MOVE_TO.value not in action_schema["enum"]
+
+
+def test_prompt_roster_lists_no_action_a_voice_order_cannot_give(build_map: MapBuilder) -> None:
+    interpreter, chat = interpreter_answering(answer_with([tool_call({"orders": []})]), build_map)
+
+    interpreter.interpret(b"RIFF")
+
+    [call] = chat.calls
+    system_prompt = call["messages"][0]["content"]
+    assert "chop_wood" in system_prompt
+    assert ActionType.MOVE_TO.value not in system_prompt
 
 
 def test_interpret_forces_the_orders_tool_call() -> None:
@@ -136,6 +148,12 @@ def test_interpret_merges_the_orders_of_every_orders_call(build_map: MapBuilder)
         ),
         (
             answer_with(
+                [tool_call({"orders": [{"npc_id": 1, "action": "move_to", "voice_line": ""}]})]
+            ),
+            RefusalReason.ACTION_NEEDS_TARGET,
+        ),
+        (
+            answer_with(
                 [
                     tool_call({"orders": []}),
                     tool_call({"orders": [{"npc_id": 1, "action": "dance", "voice_line": ""}]}),
@@ -154,6 +172,7 @@ def test_interpret_merges_the_orders_of_every_orders_call(build_map: MapBuilder)
         "npc-id-not-an-integer",
         "unknown-action",
         "unknown-npc",
+        "move-to-without-target",
         "second-orders-call-refused",
     ],
 )

@@ -10,15 +10,31 @@ from game.actions import Action, ActionType
 from game.npc import NPC
 from game.settings import ORDER_SPEECH_DURATION_FRAMES, TTS_MAX_SPEAKERS
 
+VOICE_ORDER_ACTIONS: tuple[ActionType, ...] = tuple(
+    action_type for action_type in ActionType if action_type is not ActionType.MOVE_TO
+)
+"""Actions a spoken order can give. ``move_to`` needs a target tile, which a voice
+order does not carry: the player gives it with a right-click instead."""
+
 
 @dataclass(frozen=True)
 class NpcOrder:
-    """One order addressed to one NPC."""
+    """One spoken order addressed to one NPC.
+
+    Its action is one of ``VOICE_ORDER_ACTIONS``: building it with another one raises
+    ``ValueError``, as a domain invariant. The parser in ``api/interpreter.py`` refuses
+    such an answer with ``RefusalReason.ACTION_NEEDS_TARGET`` before any ``NpcOrder``
+    is built.
+    """
 
     npc_id: int
     npc_name: str
     action_type: ActionType
     voice_line: str
+
+    def __post_init__(self) -> None:
+        if self.action_type not in VOICE_ORDER_ACTIONS:
+            raise ValueError(f"{self.action_type.value} needs a target tile")
 
 
 class RefusalReason(StrEnum):
@@ -28,6 +44,7 @@ class RefusalReason(StrEnum):
     MALFORMED_ANSWER = "malformed answer"
     UNKNOWN_ACTION = "unknown action"
     UNKNOWN_NPC = "unknown npc"
+    ACTION_NEEDS_TARGET = "action needs a target tile"
 
 
 @dataclass(frozen=True)

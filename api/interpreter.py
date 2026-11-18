@@ -4,7 +4,7 @@
 one multimodal call (no intermediate transcription step). The answer is constrained on
 the API side: Voxtral must call the ``give_npc_orders`` function (``tool_choice="any"``)
 once (``parallel_tool_calls=False``), and its JSON schema lists the actions of
-``ActionType``. The arguments of every such call are then validated into ``NpcOrder``
+``VOICE_ORDER_ACTIONS``. The arguments of every such call are then validated into ``NpcOrder``
 values; an answer that breaks the contract becomes a ``CommandRefused`` outcome.
 """
 
@@ -25,7 +25,7 @@ from api.logger import pipeline_logger
 from api.roster import get_soul
 from game.actions import ActionType
 from game.npc import NPC
-from game.orders import CommandRefused, NpcOrder, RefusalReason
+from game.orders import VOICE_ORDER_ACTIONS, CommandRefused, NpcOrder, RefusalReason
 from game.ports import OrderInterpretationError
 
 
@@ -50,7 +50,7 @@ ORDERS_SCHEMA: dict[str, Any] = {
                     "npc_id": {"type": "integer", "description": "ID of the NPC in the roster"},
                     "action": {
                         "type": "string",
-                        "enum": [action_type.value for action_type in ActionType],
+                        "enum": [action_type.value for action_type in VOICE_ORDER_ACTIONS],
                     },
                     "voice_line": {
                         "type": "string",
@@ -189,6 +189,8 @@ def _parse_order(item: object, roster: Roster) -> NpcOrder | CommandRefused:
         action_type = ActionType(action)
     except ValueError:
         return CommandRefused(RefusalReason.UNKNOWN_ACTION)
+    if action_type not in VOICE_ORDER_ACTIONS:
+        return CommandRefused(RefusalReason.ACTION_NEEDS_TARGET)
     npc = roster.get(npc_id)
     if npc is None:
         return CommandRefused(RefusalReason.UNKNOWN_NPC)
@@ -247,13 +249,18 @@ class VoxtralOrderInterpreter:
         self._roster: dict[int, RosterEntry] = {}
 
     def register_roster(self, npcs: Sequence[NPC]) -> None:
-        """Make ``npcs`` the roster the prompt lists and the answers are matched against."""
+        """Make ``npcs`` the roster the prompt lists and the answers are matched against.
+
+        Each NPC's allowed actions are narrowed to the ones a voice order can give.
+        """
         self._roster = {
             npc.id: {
                 "id": npc.id,
                 "name": npc.name,
                 "kind": npc.kind,
-                "allowed_actions": [action.value for action in npc.allowed_actions],
+                "allowed_actions": [
+                    action.value for action in npc.allowed_actions if action in VOICE_ORDER_ACTIONS
+                ],
             }
             for npc in npcs
         }

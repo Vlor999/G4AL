@@ -1,7 +1,8 @@
 """Structured logging for the game pipeline (powered by loguru).
 
-Writes log files under ``logs/`` with timing, cost, and event data
-for every voice transcription and LLM interpretation call.
+Writes log files under ``logs/`` with timing, cost, and event data for
+every Voxtral call (LLM, audio in), every ElevenLabs TTS call, and a
+session summary.
 
 Two sinks:
   • ``logs/pipeline_YYYYMMDD_HHMMSS.log`` – human-readable log
@@ -9,8 +10,6 @@ Two sinks:
 
 Usage:
     from api.logger import pipeline_logger
-    pipeline_logger.voice_start()
-    pipeline_logger.voice_end(text="hello", audio_seconds=2.3)
     pipeline_logger.llm_start(input_text="hello")
     pipeline_logger.llm_end(order={...}, prompt_tokens=120, completion_tokens=45)
 """
@@ -25,11 +24,10 @@ from typing import Any
 
 from loguru import logger
 
-# ── Pricing (USD per 1 M tokens / per audio-second) ─────────────────────
+# ── Pricing (USD per 1 M tokens / per character) ─────────────────────
 # Update these when Mistral changes pricing.
 # Source: https://docs.mistral.ai/getting-started/pricing/
 
-VOXTRAL_REALTIME_COST_PER_SECOND = 0.015 / 60  # ~$0.015 / minute → per second
 LLM_MODEL = "mistral-small-latest"
 LLM_INPUT_COST_PER_TOKEN = 0.1 / 1_000_000  # $0.1 / 1M input tokens
 LLM_OUTPUT_COST_PER_TOKEN = 0.3 / 1_000_000  # $0.3 / 1M output tokens
@@ -41,8 +39,8 @@ TTS_COST_PER_CHAR = 0.30 / 1_000  # ~$0.30 per 1 000 characters
 LOG_DIR = Path(__file__).resolve().parent.parent / "logs"
 
 
-def _setup_loguru(log_dir: Path) -> str:
-    """Configure loguru sinks and return the session timestamp."""
+def _setup_loguru(log_dir: Path) -> None:
+    """Configure loguru sinks, one file pair per session."""
     log_dir.mkdir(parents=True, exist_ok=True)
     session_ts = datetime.now(UTC).strftime("%Y%m%d_%H%M%S")
 
@@ -78,14 +76,12 @@ def _setup_loguru(log_dir: Path) -> str:
         encoding="utf-8",
     )
 
-    return session_ts
-
 
 class PipelineLogger:
-    """Thread-safe structured logger for voice + LLM pipeline events."""
+    """Thread-safe structured logger for Voxtral, TTS and session summary events."""
 
     def __init__(self, log_dir: Path = LOG_DIR) -> None:
-        self._session_ts = _setup_loguru(log_dir)
+        _setup_loguru(log_dir)
 
         # running totals
         self._total_voice_cost = 0.0
@@ -99,45 +95,10 @@ class PipelineLogger:
         self._call_count = 0
 
         # in-flight timers
-        self._voice_t0: float | None = None
         self._llm_t0: float | None = None
         self._tts_t0: float | None = None
 
         logger.bind(event="session_start").info("Session started")
-
-    # ── voice events ─────────────────────────────────────────────────────
-
-    def voice_start(self) -> None:
-        self._voice_t0 = time.perf_counter()
-        logger.bind(event="voice_start").info("Microphone recording started")
-
-    def voice_end(
-        self,
-        text: str,
-        audio_seconds: float = 0.0,
-        error: str | None = None,
-    ) -> None:
-        elapsed = time.perf_counter() - (self._voice_t0 or time.perf_counter())
-        cost = audio_seconds * VOXTRAL_REALTIME_COST_PER_SECOND
-        self._total_voice_cost += cost
-        self._total_voice_time += elapsed
-        self._voice_t0 = None
-
-        log = logger.bind(
-            event="voice_end",
-            transcription=text,
-            audio_seconds=round(audio_seconds, 2),
-            elapsed_s=round(elapsed, 3),
-            cost_usd=round(cost, 6),
-            error=error,
-        )
-        if error:
-            log.error(f"Voice error: {error} ({elapsed:.2f}s)")
-        else:
-            log.info(
-                f'Transcription: "{text}" | audio={audio_seconds:.1f}s | '
-                f"elapsed={elapsed:.2f}s | cost=${cost:.4f}"
-            )
 
     # ── LLM events ───────────────────────────────────────────────────────
 

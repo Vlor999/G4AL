@@ -28,12 +28,10 @@ class ElevenLabsVoice(Enum):
     RACHEL = "21m00Tcm4TlvDq8ikWAM"  # calm, mature
     DOMI = "AZnzlk1XvdvUeBnXmlld"  # strong, confident
     BELLA = "EXAVITQu4vr4xnSDxMaL"  # soft, warm
-    ELLI = "MF3mGyEYCl7XYWbV9V6O"  # young, cheerful
 
     # Male voices
     JOSH = "TxGEqnHWrfWFTfGW9XjX"  # deep, authoritative
     ARNOLD = "VR6AewLTigWG4xSOukaG"  # crisp, military
-    ADAM = "pNInz6obpgDQGcFmaJgB"  # deep, resonant
     SAM = "yoZ06aMxZJJ28mfd3POQ"  # raspy, older
     ANTONI = "ErXwobaYiN019PkySvjV"  # warm, young male
 

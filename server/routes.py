@@ -94,6 +94,20 @@ def post_audio() -> ResponseReturnValue:
     return jsonify({"ok": True})
 
 
+@routes.before_request
+def refuse_cross_origin_request() -> ResponseReturnValue | None:
+    """Answer 403 to a browser request sent by a page of another origin.
+
+    Browsers send `Origin` on cross-origin requests, including the form and
+    `text/plain` POSTs that skip the CORS preflight. A request without it (curl, the
+    test client) is not a browser page and goes through.
+    """
+    origin = request.headers.get("Origin")
+    if origin is not None and origin != request.host_url.rstrip("/"):
+        return jsonify({"error": "cross-origin request refused"}), 403
+    return None
+
+
 @routes.errorhandler(InvalidRequestError)
 def answer_invalid_request(error: InvalidRequestError) -> ResponseReturnValue:
     return _refuse(str(error))

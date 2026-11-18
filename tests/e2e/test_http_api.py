@@ -138,6 +138,32 @@ def test_uploaded_audio_is_sent_to_the_engine(client: FlaskClient, engine: GameE
     assert engine.log_messages[-1] == "Listening..."
 
 
+@pytest.mark.parametrize(
+    ("origin", "expected_status"),
+    [(None, 200), ("http://localhost", 200), ("http://evil.example", 403), ("null", 403)],
+)
+def test_only_the_served_origin_may_post(
+    client: FlaskClient, origin: str | None, expected_status: int
+) -> None:
+    headers = {} if origin is None else {"Origin": origin}
+
+    response = client.post("/api/dismiss_storage", headers=headers)
+
+    assert response.status_code == expected_status
+
+
+@pytest.mark.parametrize(
+    ("origin", "expected_status"),
+    [("http://localhost", 200), ("http://evil.example", 400), ("null", 400)],
+)
+def test_only_the_served_origin_may_open_a_socket(
+    client: FlaskClient, origin: str, expected_status: int
+) -> None:
+    response = client.get("/socket.io/?EIO=4&transport=polling", headers={"Origin": origin})
+
+    assert response.status_code == expected_status
+
+
 def test_discard_removes_only_what_storage_holds(client: FlaskClient, engine: GameEngine) -> None:
     engine.storage.add("wood", 5)
 

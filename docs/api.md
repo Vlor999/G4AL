@@ -19,6 +19,8 @@ body once (`server/request_bodies.py`) and answers:
 - 400 `{"error": "<reason>"}` when the body is not a JSON object, or a field is
   missing, of the wrong type (`true` is not an integer) or out of range: an unknown
   `npcId` or `action`, a tile outside the map, a `target` that is not two integers;
+- 403 `{"error": ...}` when a browser page of another origin sends the request (its
+  `Origin` header differs from the host and port the request reached);
 - 413 `{"error": ...}` when the body exceeds `MAX_REQUEST_BYTES` (4 MiB,
   `server/constants.py`), checked before the body is read.
 
@@ -31,6 +33,21 @@ body once (`server/request_bodies.py`) and answers:
 | `POST /api/discard` | `{"wood"?: int, "stone"?: int, "gold"?: int, "wheat"?: int}`, amounts ≥ 0, no other key | discards resources from storage; returns `discarded` |
 | `POST /api/dismiss_storage` | none | releases NPCs waiting to deposit into a full storage; returns `released` |
 | `POST /api/audio` | multipart field `audio` (WAV), or `{"audio_b64": str}` in standard base64 | sends a push-to-talk recording to Voxtral; under 100 bytes of audio answers 400; the resulting orders arrive through the next `state` events |
+
+## Origins
+
+The client is served by the same server, so the routes send no CORS headers and the
+Socket.IO server keeps its default origin check (same scheme, host and port as the
+request). Both follow the address the server is reached at, including a network
+address chosen with `G4AL_HOST`.
+
+Limits:
+
+- A reverse proxy is not supported: the HTTP check compares `Origin` with the `Host`
+  the server received and ignores `X-Forwarded-*`, while the Socket.IO check honours
+  them.
+- DNS rebinding is not covered: a page whose domain re-resolves to the server's
+  address sends an `Origin` equal to its `Host`, and both checks accept it.
 
 ## Static files
 

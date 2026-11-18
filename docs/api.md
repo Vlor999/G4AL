@@ -24,7 +24,7 @@ success. Validation today is partial (#2):
 | Route | Body | Effect |
 |---|---|---|
 | `GET /api/state` | none | returns the full game state |
-| `POST /api/action` | `{"npcId": int, "action": str, "target": [col, row]?}` | enqueues an action on an NPC; `action` is one of the `VALID_ACTIONS` of `api/interpreter.py` |
+| `POST /api/action` | `{"npcId": int, "action": str, "target": [col, row]?}` | enqueues an action on an NPC; `action` is one of the `ActionType` values of `game/actions.py` |
 | `POST /api/select` | `{"npcId": int}` or `{}` | selects an NPC, or deselects all |
 | `POST /api/move` | `{"npcId": int, "col": int, "row": int}` | enqueues a `move_to` |
 | `POST /api/discard` | `{"wood"?: int, "stone"?: int, "gold"?: int, "wheat"?: int}` | discards resources from storage; returns `discarded` |

@@ -218,23 +218,81 @@ def test_a_pawn_goes_idle_once_its_tree_is_used_up(build_map: MapBuilder) -> Non
     assert storage.wood == 1
 
 
-def test_a_pawn_waits_while_storage_is_full_then_resumes_harvesting(
+def test_a_pawn_keeps_its_load_while_storage_is_full_then_stores_it(
     build_map: MapBuilder,
 ) -> None:
     game_map = build_map(OPEN_FIELD)
     storage = ResourceStorage()
     storage.add("stone", STORAGE_BASE_CAPACITY)
     tree = Tree(1, 0)
+    tree.remaining_yields = {"wood": 1}
     npc = make_pawn(game_map, (0, 0), resources=[tree], storage=storage)
     npc.enqueue(Action(ActionType.CHOP_WOOD))
     assert run_until(npc, lambda: npc.state == State.WAITING_DEPOSIT)
 
     npc.update()
     assert npc.state == State.WAITING_DEPOSIT
+    assert npc.carrying == {"wood": 1}
+    assert tree.depleted
 
     storage.discard("stone", STORAGE_BASE_CAPACITY)
 
-    assert run_until(npc, lambda: storage.wood == 1)
+    assert run_until(npc, lambda: npc.state == State.IDLE)
+    assert storage.wood == 1
+    assert npc.carrying == {}
+    assert not npc.is_carrying
+
+
+@pytest.mark.parametrize(
+    ("stone_stored", "load", "queued_order", "stored_wood", "kept_load"),
+    [
+        (STORAGE_BASE_CAPACITY, {"wood": 1}, None, 0, {"wood": 1}),
+        (STORAGE_BASE_CAPACITY - 1, {"wood": 2}, None, 1, {"wood": 1}),
+        (STORAGE_BASE_CAPACITY - 1, {"wood": 1}, None, 1, {}),
+        (
+            STORAGE_BASE_CAPACITY,
+            {"wood": 1},
+            Action(ActionType.MOVE_TO, target=(3, 2)),
+            0,
+            {"wood": 1},
+        ),
+    ],
+    ids=["no-room", "partial-room", "exactly-full", "no-room-with-queued-order"],
+)
+def test_a_pawn_at_a_full_storage_keeps_what_does_not_fit_and_waits(
+    build_map: MapBuilder,
+    stone_stored: int,
+    load: dict[str, int],
+    queued_order: Action | None,
+    stored_wood: int,
+    kept_load: dict[str, int],
+) -> None:
+    game_map = build_map(OPEN_FIELD)
+    storage = ResourceStorage()
+    storage.add("stone", stone_stored)
+    npc = make_pawn(game_map, (0, 0), storage=storage)
+    npc.carrying = dict(load)
+    npc.is_carrying = True
+    npc.state = State.RETURNING
+    if queued_order is not None:
+        npc.enqueue(queued_order)
+
+    npc.update()
+
+    assert npc.state == State.WAITING_DEPOSIT
+    assert npc.carrying == kept_load
+    assert storage.wood == stored_wood
+    assert storage.total == STORAGE_BASE_CAPACITY
+    assert len(npc.action_queue) == (0 if queued_order is None else 1)
+
+    storage.discard("stone", STORAGE_BASE_CAPACITY)
+
+    assert run_until(npc, lambda: npc.state == State.IDLE and not npc.action_queue)
+    assert npc.carrying == {}
+    assert not npc.is_carrying
+    assert storage.wood == sum(load.values())
+    if queued_order is not None:
+        assert npc.tile_pos == queued_order.target
 
 
 def empty_world(build_map: MapBuilder) -> tuple[GameMap, list[Resource], ResourceStorage]:

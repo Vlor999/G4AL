@@ -228,13 +228,18 @@ class NPCBase:
         self.state = State.RETURNING
 
     def _deposit_at_hut(self) -> None:
-        """Deposit carried resources into global storage and auto-loop."""
-        for res_type, amount in self.carrying.items():
-            self._storage.add(res_type, amount)
-        self.is_carrying = False
-        self.carrying = {}
+        """Deposit the carried load into storage and auto-loop.
 
+        What does not fit stays in ``carrying`` and the NPC waits in
+        ``WAITING_DEPOSIT`` until storage has room for it.
+        """
+        self._store_carried_load()
         self._release_reservation()
+
+        if self.is_carrying:
+            self.say("Storage full!", 180)
+            self.state = State.WAITING_DEPOSIT
+            return
 
         if self.action_queue:
             self._last_harvest_action = None
@@ -263,6 +268,16 @@ class NPCBase:
         else:
             self._current_action = None
             self.state = State.IDLE
+
+    def _store_carried_load(self) -> None:
+        """Move the carried load into storage, keeping in ``carrying`` what does not fit."""
+        kept: dict[str, int] = {}
+        for res_type, amount in self.carrying.items():
+            left = amount - self._storage.add(res_type, amount)
+            if left > 0:
+                kept[res_type] = left
+        self.carrying = kept
+        self.is_carrying = bool(kept)
 
     def _release_reservation(self) -> None:
         """Release the resource reservation held by this NPC, if any."""

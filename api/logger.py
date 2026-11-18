@@ -24,20 +24,15 @@ from typing import TYPE_CHECKING, Any, TypedDict
 
 from loguru import logger
 
+from api.constants import (
+    AUDIO_MODEL,
+    AUDIO_MODEL_INPUT_COST_PER_TOKEN,
+    AUDIO_MODEL_OUTPUT_COST_PER_TOKEN,
+    TTS_COST_PER_CHAR,
+)
+
 if TYPE_CHECKING:
     from loguru import Record
-
-# ── Pricing (USD per 1 M tokens / per character) ─────────────────────
-# Update these when Mistral changes pricing.
-# Source: https://docs.mistral.ai/getting-started/pricing/
-
-LLM_MODEL = "mistral-small-latest"
-LLM_INPUT_COST_PER_TOKEN = 0.1 / 1_000_000  # $0.1 / 1M input tokens
-LLM_OUTPUT_COST_PER_TOKEN = 0.3 / 1_000_000  # $0.3 / 1M output tokens
-
-# ElevenLabs TTS pricing (varies by plan – using usage-based estimate).
-# Source: https://elevenlabs.io/pricing
-TTS_COST_PER_CHAR = 0.30 / 1_000  # ~$0.30 per 1 000 characters
 
 LOG_DIR = Path(__file__).resolve().parent.parent / "logs"
 
@@ -142,12 +137,13 @@ class PipelineLogger:
         order: dict[str, Any] | None,
         prompt_tokens: int = 0,
         completion_tokens: int = 0,
-        model: str = LLM_MODEL,
+        model: str = AUDIO_MODEL,
         error: str | None = None,
     ) -> None:
         elapsed = time.perf_counter() - (self._llm_t0 or time.perf_counter())
         cost = (
-            prompt_tokens * LLM_INPUT_COST_PER_TOKEN + completion_tokens * LLM_OUTPUT_COST_PER_TOKEN
+            prompt_tokens * AUDIO_MODEL_INPUT_COST_PER_TOKEN
+            + completion_tokens * AUDIO_MODEL_OUTPUT_COST_PER_TOKEN
         )
         self._total_llm_cost += cost
         self._total_llm_time += elapsed

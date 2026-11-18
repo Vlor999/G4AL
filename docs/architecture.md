@@ -67,5 +67,4 @@ writes them.
 Tracked on GitHub; the rules in `.claude/rules/` describe the target, these items do
 not meet it yet.
 
-- Coverage is ~54%, weak on NPC planning and adapters (#4).
 - `static/renderer.js` (~950 lines) exceeds the ~500-line budget.

@@ -1,5 +1,7 @@
 """Drive the voice order hand-off of GameEngine: interpreter answer in, NPC actions, log and voice lines out."""
 
+import pytest
+
 from game.actions import ActionType
 from game.orders import CommandRefused, NpcOrder, RefusalReason
 from game.ports import OrderInterpretationError
@@ -59,3 +61,27 @@ def test_orders_are_logged_and_only_accepted_lines_are_spoken() -> None:
 
     assert engine.log_messages[-2:] == [f'{pawn.name}: "Huh?"', f'{pawn.name}: "Food!"']
     assert speaker.lines == [("Food!", pawn.name)]
+
+
+@pytest.mark.parametrize(
+    ("kind", "action_type"),
+    [("pawn", ActionType.CHOP_WOOD), ("archer", ActionType.DEFEND)],
+)
+def test_an_accepted_order_shows_its_voice_line_in_a_bubble_and_speaks_it(
+    kind: str, action_type: ActionType
+) -> None:
+    speaker = RecordingSpeaker()
+    interpreter = ScriptedOrderInterpreter()
+    engine = GameEngine(interpreter=interpreter, speaker=speaker)
+    npc = next(npc for npc in engine.npcs if npc.kind == kind)
+    interpreter.orders = [
+        NpcOrder(npc_id=npc.id, npc_name=npc.name, action_type=action_type, voice_line="Aye!")
+    ]
+
+    engine.interpret_audio_command(_AUDIO)
+    engine.tick()
+
+    [npc_state] = [state for state in engine.get_state()["npcs"] if state["id"] == npc.id]
+    assert npc_state["speechText"] == "Aye!"
+    assert npc_state["actionType"] == action_type.value
+    assert speaker.lines == [("Aye!", npc.name)]

@@ -46,7 +46,9 @@ def test_orders_are_logged_and_only_accepted_lines_are_spoken() -> None:
     engine = GameEngine(interpreter=interpreter, speaker=speaker)
     pawn = next(npc for npc in engine.npcs if npc.kind == "pawn")
     interpreter.orders = [
-        NpcOrder(npc_id=pawn.id, npc_name=pawn.name, action_type=None, voice_line="Huh?"),
+        NpcOrder(
+            npc_id=pawn.id, npc_name=pawn.name, action_type=ActionType.SHOOT, voice_line="Huh?"
+        ),
         NpcOrder(
             npc_id=pawn.id, npc_name=pawn.name, action_type=ActionType.EAT, voice_line="Food!"
         ),

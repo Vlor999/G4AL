@@ -13,15 +13,11 @@ from game.settings import ORDER_SPEECH_DURATION_FRAMES, TTS_MAX_SPEAKERS
 
 @dataclass(frozen=True)
 class NpcOrder:
-    """One order addressed to one NPC.
-
-    ``action_type`` is ``None`` when the order named an action the game does not know:
-    the NPC still answers in the log but receives no action.
-    """
+    """One order addressed to one NPC."""
 
     npc_id: int
     npc_name: str
-    action_type: ActionType | None
+    action_type: ActionType
     voice_line: str
 
 
@@ -73,9 +69,7 @@ def apply_orders(npcs: Sequence[NPC], orders: Sequence[NpcOrder]) -> list[OrderO
     return outcomes
 
 
-def _enqueue_order(npc: NPC, action_type: ActionType | None) -> bool:
-    if action_type is None:
-        return False
+def _enqueue_order(npc: NPC, action_type: ActionType) -> bool:
     if action_type in (ActionType.BUILD, ActionType.PLANT_WHEAT):
         return npc.enqueue(Action(action_type, target=npc.tile_pos))
     return npc.enqueue(Action(action_type))

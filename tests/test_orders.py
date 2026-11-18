@@ -22,16 +22,16 @@ def make_npcs(build_map: MapBuilder) -> list[NPC]:
     return npcs
 
 
-def make_order(npc: NPC, action_type: ActionType | None) -> NpcOrder:
+def make_order(npc: NPC, action_type: ActionType) -> NpcOrder:
     return NpcOrder(npc_id=npc.id, npc_name=npc.name, action_type=action_type, voice_line="On it!")
 
 
 @pytest.mark.parametrize(
     ("archer_action", "expected_accepted"),
-    [(ActionType.DEFEND, True), (ActionType.CHOP_WOOD, False), (None, False)],
+    [(ActionType.DEFEND, True), (ActionType.CHOP_WOOD, False)],
 )
 def test_apply_orders_reports_whether_the_npc_took_the_action(
-    build_map: MapBuilder, archer_action: ActionType | None, expected_accepted: bool
+    build_map: MapBuilder, archer_action: ActionType, expected_accepted: bool
 ) -> None:
     archer = make_npcs(build_map)[1]
 

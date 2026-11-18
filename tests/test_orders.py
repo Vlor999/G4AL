@@ -56,6 +56,11 @@ def test_apply_orders_targets_the_npc_tile_for_build_and_plant(
     assert queued.target == pawn.tile_pos
 
 
+def test_voice_order_cannot_be_a_move_to_without_target() -> None:
+    with pytest.raises(ValueError, match="move_to needs a target tile"):
+        NpcOrder(npc_id=1, npc_name="Bob", action_type=ActionType.MOVE_TO, voice_line="Going!")
+
+
 @pytest.mark.parametrize("has_npcs", [True, False], ids=["other-npcs", "no-npc"])
 def test_apply_orders_does_not_accept_an_order_for_an_unknown_npc_id(
     build_map: MapBuilder, has_npcs: bool

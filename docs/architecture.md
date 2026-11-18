@@ -26,8 +26,10 @@ server/: app.py (create_app, main), routes.py (Flask + Socket.IO),
    the system prompt and the NPC roster. Voxtral must answer by calling the
    `give_npc_orders` function once (`tool_choice="any"`,
    `parallel_tool_calls=False`), whose JSON schema takes its actions from
-   `ActionType`; the adapter validates the arguments into `game.orders.NpcOrder`
-   values. Mistral documents audio input with a forced tool call, but not with
+   `game.orders.VOICE_ORDER_ACTIONS`: every `ActionType` but `move_to`, whose target
+   tile a voice order does not carry (the player gives it with a right-click). The
+   adapter validates the arguments into `game.orders.NpcOrder` values. Mistral
+   documents audio input with a forced tool call, but not with
    `parallel_tool_calls=False`; that combination is untested against the live API.
    The safety net is the adapter: an answer that still holds several
    `give_npc_orders` calls has their orders merged in call order, duplicates

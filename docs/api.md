@@ -18,7 +18,9 @@ body once (`server/request_bodies.py`) and answers:
 - 200 `{"ok": true, ...}` on success;
 - 400 `{"error": "<reason>"}` when the body is not a JSON object, or a field is
   missing, of the wrong type (`true` is not an integer) or out of range: an unknown
-  `npcId` or `action`, a tile outside the map, a `target` that is not two integers.
+  `npcId` or `action`, a tile outside the map, a `target` that is not two integers;
+- 413 `{"error": ...}` when the body exceeds `MAX_REQUEST_BYTES` (4 MiB,
+  `server/constants.py`), checked before the body is read.
 
 | Route | Body | Effect |
 |---|---|---|

@@ -48,8 +48,10 @@ skip_covered = true
 ########################################################################################################################
 
 [tool.vulture]
-paths = ["game", "api", "server", "main.py"]
-min_confidence = 80
+paths = ["game", "api", "server", "main.py", "vulture_allowlist.py"]
+min_confidence = 60
+# Flask and Socket.IO call the handlers they register; nothing else references them.
+ignore_decorators = ["@routes.*", "@socketio.on"]
 
 ########################################################################################################################
 # Import contracts (lint-imports, run by `make lint-check`)

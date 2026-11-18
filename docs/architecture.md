@@ -68,6 +68,4 @@ Tracked on GitHub; the rules in `.claude/rules/` describe the target, these item
 not meet it yet.
 
 - Coverage is ~54%, weak on NPC planning and adapters (#4).
-- About 40 unused functions, attributes and constants that vulture reports at 60%
-  confidence; the gate runs at 80% until they are removed (#8).
 - `static/renderer.js` (~950 lines) exceeds the ~500-line budget.

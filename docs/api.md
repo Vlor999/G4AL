@@ -21,6 +21,8 @@ body once (`server/request_bodies.py`) and answers:
   `npcId` or `action`, a tile outside the map, a `target` that is not two integers;
 - 403 `{"error": ...}` when a browser page of another origin sends the request (its
   `Origin` header differs from the host and port the request reached);
+- 403 `{"error": "host not allowed"}` when the `Host` header is not an allowed host
+  (see [Origins](#origins));
 - 413 `{"error": ...}` when the body exceeds `MAX_REQUEST_BYTES` (4 MiB,
   `server/constants.py`), checked before the body is read.
 
@@ -38,16 +40,30 @@ body once (`server/request_bodies.py`) and answers:
 
 The client is served by the same server, so the routes send no CORS headers and the
 Socket.IO server keeps its default origin check (same scheme, host and port as the
-request). Both follow the address the server is reached at, including a network
-address chosen with `G4AL_HOST`.
+request).
 
-Limits:
+Before both checks, every request, the Socket.IO handshake and the static files
+included, must carry an allowed `Host` header (`server/host_allowlist.py`), or it
+gets 403 `{"error": "host not allowed"}`. The allowed hosts follow `G4AL_HOST`, always
+with port 8000. `G4AL_HOST` is read without brackets and with an IPv6 address
+compressed (`[0:0:0:0:0:0:0:1]` reads as `::1`):
 
-- A reverse proxy is not supported: the HTTP check compares `Origin` with the `Host`
-  the server received and ignores `X-Forwarded-*`, while the Socket.IO check honours
-  them.
-- DNS rebinding is not covered: a page whose domain re-resolves to the server's
-  address sends an `Origin` equal to its `Host`, and both checks accept it.
+| `G4AL_HOST` | Allowed `Host` |
+|---|---|
+| unset, empty, `127.0.0.1`, `localhost` | `localhost:8000`, `127.0.0.1:8000` |
+| `0.0.0.0`, `::` | `localhost:8000`, `127.0.0.1:8000` |
+| `::1` | `localhost:8000`, `127.0.0.1:8000`, `[::1]:8000` |
+| a network address or name (`192.168.1.20`) | that address with `:8000` |
+| a link-local address with a zone id (`fe80::1%en0`) | none: the server refuses to start |
+
+This blocks DNS rebinding: a page whose domain re-resolves to the server's address
+sends its own domain as `Host`, and an `Origin` equal to it (none on a same-origin
+`GET`), so the origin checks alone accept it. To play from another machine, set
+`G4AL_HOST` to the address the players type; a wildcard bind accepts loopback only.
+
+Limit: a reverse proxy is not supported. The `Host` the server receives must be an
+allowed one, the HTTP origin check ignores `X-Forwarded-*`, while the Socket.IO check
+honours them.
 
 ## Static files
 

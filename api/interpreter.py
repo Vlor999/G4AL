@@ -2,10 +2,10 @@
 
 ``VoxtralOrderInterpreter`` sends the recorded audio and the system prompt to Voxtral in
 one multimodal call (no intermediate transcription step). The answer is constrained on
-the API side: Voxtral must call the ``give_npc_orders`` function (``tool_choice="any"``),
-whose JSON schema lists the actions of ``ActionType``. The call's arguments are then
-validated into ``NpcOrder`` values; an answer that breaks the contract becomes a
-``CommandRefused`` outcome.
+the API side: Voxtral must call the ``give_npc_orders`` function (``tool_choice="any"``)
+once (``parallel_tool_calls=False``), and its JSON schema lists the actions of
+``ActionType``. The arguments of every such call are then validated into ``NpcOrder``
+values; an answer that breaks the contract becomes a ``CommandRefused`` outcome.
 """
 
 from __future__ import annotations
@@ -141,12 +141,23 @@ def _build_messages(audio: bytes, roster: Roster) -> list[MessagesTypedDict]:
 def read_orders_answer(
     response: ChatCompletionResponse, roster: Roster
 ) -> list[NpcOrder] | CommandRefused:
-    """The orders of Voxtral's ``give_npc_orders`` call, or why the answer is refused."""
+    """The orders of every ``give_npc_orders`` call in Voxtral's answer, in call order,
+    or why the answer is refused.
+
+    The request asks for a single call, but an answer that still holds several loses
+    none of them: their orders are merged, and one refused call refuses the answer.
+    """
     tool_calls = response.choices[0].message.tool_calls or []
-    for tool_call in tool_calls:
-        if tool_call.function.name == ORDERS_TOOL_NAME:
-            return _parse_orders(tool_call.function.arguments, roster)
-    return CommandRefused(RefusalReason.NO_ORDERS_GIVEN)
+    orders_calls = [call for call in tool_calls if call.function.name == ORDERS_TOOL_NAME]
+    if not orders_calls:
+        return CommandRefused(RefusalReason.NO_ORDERS_GIVEN)
+    orders: list[NpcOrder] = []
+    for tool_call in orders_calls:
+        call_orders = _parse_orders(tool_call.function.arguments, roster)
+        if isinstance(call_orders, CommandRefused):
+            return call_orders
+        orders.extend(call_orders)
+    return orders
 
 
 def _parse_orders(
@@ -276,6 +287,7 @@ class VoxtralOrderInterpreter:
                 messages=_build_messages(audio, self._roster),
                 tools=[ORDERS_TOOL],
                 tool_choice="any",
+                parallel_tool_calls=False,
                 temperature=0.7,
                 max_tokens=1024,
             )

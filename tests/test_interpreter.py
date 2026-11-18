@@ -59,6 +59,7 @@ def test_interpret_forces_the_orders_tool_call() -> None:
 
     [call] = chat.calls
     assert call["tool_choice"] == "any"
+    assert call["parallel_tool_calls"] is False
     assert [tool["function"]["name"] for tool in call["tools"]] == [ORDERS_TOOL_NAME]
     assert call["tools"][0]["function"]["parameters"] is ORDERS_SCHEMA
 
@@ -83,6 +84,26 @@ def test_interpret_maps_each_called_order_to_an_npc_order(
     assert orders == [
         NpcOrder(pawn.id, pawn.name, ActionType.MINE_ROCK, "Fine."),
         NpcOrder(archer.id, archer.name, ActionType.SHOOT, "Aim!"),
+    ]
+
+
+def test_interpret_merges_the_orders_of_every_orders_call(build_map: MapBuilder) -> None:
+    npcs = make_npcs(build_map)
+    pawn, archer = npcs
+    first_call = tool_call(
+        {"orders": [{"npc_id": pawn.id, "action": "chop_wood", "voice_line": "On it."}]}
+    )
+    second_call = tool_call(
+        {"orders": [{"npc_id": archer.id, "action": "defend", "voice_line": "Ready."}]}
+    )
+    interpreter, _ = interpreter_answering(answer_with([first_call, second_call]))
+    interpreter.register_roster(npcs)
+
+    orders = interpreter.interpret(b"RIFF")
+
+    assert orders == [
+        NpcOrder(pawn.id, pawn.name, ActionType.CHOP_WOOD, "On it."),
+        NpcOrder(archer.id, archer.name, ActionType.DEFEND, "Ready."),
     ]
 
 
@@ -113,6 +134,15 @@ def test_interpret_maps_each_called_order_to_an_npc_order(
             ),
             RefusalReason.UNKNOWN_NPC,
         ),
+        (
+            answer_with(
+                [
+                    tool_call({"orders": []}),
+                    tool_call({"orders": [{"npc_id": 1, "action": "dance", "voice_line": ""}]}),
+                ]
+            ),
+            RefusalReason.UNKNOWN_ACTION,
+        ),
     ],
     ids=[
         "prose-without-call",
@@ -124,6 +154,7 @@ def test_interpret_maps_each_called_order_to_an_npc_order(
         "npc-id-not-an-integer",
         "unknown-action",
         "unknown-npc",
+        "second-orders-call-refused",
     ],
 )
 def test_interpret_refuses_an_answer_that_breaks_the_order_contract(

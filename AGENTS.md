@@ -17,6 +17,7 @@ HTML5 Canvas client every 3rd tick (~20 Hz).
 | `static/` | Browser client: classic scripts sharing globals, loaded in order by `index.html`, no build step (`game.js` entry, `renderer.js`, `input.js`, `ptt.js`, `ui.js`, `sprites.js`). |
 | `tests/` | Pytest suite. |
 | `docs/` | [Architecture](docs/architecture.md), [client/server contract](docs/api.md), [decisions](docs/adr/). |
+| `openwiki/` | Generated repository wiki, start at the [quickstart](openwiki/quickstart.md). Refresh it by running the `openwiki` skill in `update` mode after significant merges into `dev`; no scheduled workflow. |
 
 ## Commands
 
@@ -65,3 +66,16 @@ the rules, multi-agent in full mode), `rules-review` (quick audit of a branch), 
 - Durations and speeds in `game/settings.py` are in frames (60 FPS), not seconds.
 - `ELEVENLABS_API_KEY` is optional: without it NPCs do not speak, and nothing fails.
 - Logs go to `logs/` (git-ignored) as JSONL with cost and token usage per call.
+
+<!-- OPENWIKI:START -->
+
+## OpenWiki
+
+This repository has a generated `openwiki/` evidence index. It is optional just-in-time context, not required startup reading.
+
+- Treat source code and tests as authoritative. A brief's unknowns and review items are verification gaps, not automatic requirements.
+- Prefer the narrowest quiet validation that proves the changed behavior. Preserve complete failure output.
+
+The scheduled OpenWiki GitHub Actions workflow refreshes the repository wiki. Do not hand-edit generated OpenWiki pages unless explicitly asked; prefer updating source code/docs and letting OpenWiki regenerate.
+
+<!-- OPENWIKI:END -->

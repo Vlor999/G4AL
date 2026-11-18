@@ -25,6 +25,18 @@ Optional, for the `openwiki` MCP server declared in `.mcp.json`:
 6. Releases go from `dev` to `main` through a PR from `dev`, merged with a merge
    commit so `dev` stays an ancestor of `main`.
 
+## Wiki
+
+`openwiki/` is a generated wiki of the repository; start at
+[`openwiki/quickstart.md`](openwiki/quickstart.md). Do not edit its pages by hand. After
+a significant merge into `dev` (a new system, a changed contract, a moved module), run
+the `openwiki` skill in `update` mode from a branch and commit the result as
+`docs(wiki): update the repository wiki`. There is no scheduled workflow, and the managed OpenWiki block in
+`AGENTS.md` that mentions one does not apply to this repository. Refresh the wiki with
+`update` only and never re-run `init`: `init` re-creates
+`.github/workflows/openwiki-update.yml`. The skill
+needs `npm install --global openwiki@0.5.2` and the `openwiki` MCP server of `.mcp.json`.
+
 ## Security review
 
 The `Security review` workflow runs

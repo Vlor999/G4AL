@@ -234,7 +234,7 @@ def _log_answer(response: ChatCompletionResponse, answer: list[NpcOrder] | Comma
         model=AUDIO_MODEL,
     )
     if answer:
-        pipeline_logger.pipeline_summary(voice_text="", order=order)
+        pipeline_logger.pipeline_summary(order=order)
 
 
 class VoxtralOrderInterpreter:

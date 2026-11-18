@@ -13,7 +13,7 @@ from game.actions import Action, ActionType
 from game.entities import WheatField
 from game.map import GameMap
 from game.npc import NPC
-from game.orders import NpcOrder, apply_orders
+from game.orders import CommandRefused, NpcOrder, apply_orders
 from game.ports import OrderInterpretationError, OrderInterpreter, VoiceLineSpeaker
 from game.settings import FPS
 from game.spawning import spawn_world
@@ -41,7 +41,7 @@ class GameEngine:
         self.log_messages: list[str] = []
         self._lock = threading.Lock()
         self._running = False
-        self._pending_orders: list[NpcOrder] | None = None
+        self._pending_orders: list[NpcOrder] | CommandRefused | None = None
 
     def _add_log(self, msg: str) -> None:
         self.log_messages.append(msg)
@@ -112,6 +112,9 @@ class GameEngine:
     def _apply_pending_orders(self) -> None:
         orders = self._pending_orders
         self._pending_orders = None
+        if isinstance(orders, CommandRefused):
+            self._add_log(f"Order refused: {orders.reason}")
+            return
         if not orders:
             self._add_log("No actions understood.")
             return
@@ -161,8 +164,9 @@ class GameEngine:
     def interpret_audio_command(self, wav_bytes: bytes) -> None:
         """Interpret a voice command and queue its orders for the next tick.
 
-        Blocks for the interpreter call: run it off the game loop thread. A command
-        that cannot be interpreted is logged and leaves the game unchanged.
+        Blocks for the interpreter call: run it off the game loop thread. A refused
+        answer reaches the game log on the next tick; a failed service call is logged
+        and leaves the game unchanged.
         """
         try:
             orders = self._interpreter.interpret(wav_bytes)

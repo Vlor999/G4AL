@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 from dataclasses import dataclass
+from enum import StrEnum
 
 from game.actions import Action, ActionType
 from game.npc import NPC
@@ -22,6 +23,22 @@ class NpcOrder:
     npc_name: str
     action_type: ActionType | None
     voice_line: str
+
+
+class RefusalReason(StrEnum):
+    """Why the answer to a spoken command was refused instead of turned into orders."""
+
+    NO_ORDERS_GIVEN = "no orders given"
+    MALFORMED_ANSWER = "malformed answer"
+    UNKNOWN_ACTION = "unknown action"
+    UNKNOWN_NPC = "unknown npc"
+
+
+@dataclass(frozen=True)
+class CommandRefused:
+    """The answer to a spoken command broke the order contract: no order is applied."""
+
+    reason: RefusalReason
 
 
 @dataclass(frozen=True)

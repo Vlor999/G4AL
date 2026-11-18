@@ -10,20 +10,22 @@ from __future__ import annotations
 
 from typing import Protocol
 
-from game.orders import NpcOrder
+from game.orders import CommandRefused, NpcOrder
 
 
 class OrderInterpretationError(Exception):
-    """A spoken command could not be turned into orders (service, network or answer)."""
+    """The interpreter service could not be reached or failed (key, network, API)."""
 
 
 class OrderInterpreter(Protocol):
     """Turns a spoken command into orders for the NPCs."""
 
-    def interpret(self, audio: bytes) -> list[NpcOrder]:
+    def interpret(self, audio: bytes) -> list[NpcOrder] | CommandRefused:
         """The orders heard in ``audio`` (a WAV recording); empty when none were.
 
-        Raises ``OrderInterpretationError`` when the command cannot be interpreted.
+        Returns ``CommandRefused`` when the service answered but its answer breaks the
+        order contract. Raises ``OrderInterpretationError`` when the service fails, and
+        nothing else: implementations translate every other exception into it.
         Blocks for the duration of the call: never run it on the game loop thread.
         """
         ...

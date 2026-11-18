@@ -23,9 +23,14 @@ server/: app.py (create_app, main), routes.py (Flask + Socket.IO),
 2. `GameEngine.send_audio_command` hands the bytes to a worker thread, which calls the
    injected `OrderInterpreter` port (`game/ports.py`). Its adapter,
    `api.interpreter.VoxtralOrderInterpreter`, makes one multimodal Voxtral call with
-   the system prompt and the NPC roster, and returns `game.orders.NpcOrder` values; a
-   failure is raised as `OrderInterpretationError`, logged, and leaves the game
-   unchanged.
+   the system prompt and the NPC roster. Voxtral must answer by calling the
+   `give_npc_orders` function (`tool_choice="any"`), whose JSON schema takes its
+   actions from `ActionType`; the adapter validates the arguments into
+   `game.orders.NpcOrder` values. An answer that breaks this contract is returned as
+   `CommandRefused` with a `RefusalReason`, and the game log shows
+   `Order refused: <reason>`. One bad order refuses the whole answer: no order of
+   that command is applied. A service failure is raised as
+   `OrderInterpretationError`, logged, and leaves the game unchanged.
 3. On its next tick the game loop calls `game.orders.apply_orders`, which enqueues the
    actions and returns one `OrderOutcome` per order (accepted, spoken).
 4. `GameEngine` logs each reply and sends the spoken ones to the injected
@@ -64,8 +69,6 @@ not meet it yet.
 
 - Routes do not validate their bodies, no upload size limit, CORS open to any origin
   (#2).
-- `api/interpreter.py` parses the LLM output from prose instead of constraining it with
-  a schema (#3).
 - Coverage is ~54%, weak on NPC planning and adapters (#4).
 - About 40 unused functions, attributes and constants that vulture reports at 60%
   confidence; the gate runs at 80% until they are removed (#8).

@@ -6,7 +6,7 @@ import pytest
 
 from game.actions import Action, ActionType, State
 from game.archer import Archer
-from game.creatures import Arrow, Fauna, Sheep, WildArcher
+from game.creatures import Arrow, Fauna, Sheep, WildArcher, remove_dead_fauna
 from game.map import GameMap
 from game.settings import ARCHER_ARROW_DAMAGE, ARCHER_RANGE
 from game.storage import ResourceStorage
@@ -230,3 +230,17 @@ def test_a_new_order_ends_defend_mode(build_map: MapBuilder) -> None:
     battlefield.run_until(lambda: False, max_frames=200)
     assert battlefield.archer.tile_pos == (2, 1)
     assert battlefield.arrows == []
+
+
+def test_the_archer_shoots_an_enemy_added_after_the_dead_were_removed(
+    build_map: MapBuilder,
+) -> None:
+    battlefield = Battlefield(build_map(FIELD))
+    battlefield.add_enemy((1, 1)).health = 0
+    remove_dead_fauna(battlefield.fauna)
+    newcomer = battlefield.add_enemy((2, 1))
+
+    battlefield.archer.enqueue(Action(ActionType.SHOOT))
+
+    assert battlefield.run_until(lambda: len(battlefield.arrows) == 1)
+    assert newcomer.health == newcomer.max_health - ARCHER_ARROW_DAMAGE

@@ -7,9 +7,13 @@ import pytest
 from flask_socketio import SocketIO
 from loguru import logger
 
-from game.creatures import Arrow
+from game.actions import Action, ActionType
+from game.archer import Archer
+from game.creatures import Arrow, WildArcher
 from game.entities import WheatField
 from server.engine import GameEngine
+
+MAX_FRAMES = 600
 
 
 def make_arrow(*, frame: int, total_frames: int) -> Arrow:
@@ -109,6 +113,28 @@ def test_tick_removes_dead_fauna(engine: GameEngine) -> None:
     engine.tick()
 
     assert dead not in engine.fauna
+
+
+def test_an_archer_shoots_a_creature_added_after_tick_removed_the_dead(
+    engine: GameEngine,
+) -> None:
+    spawn_point = engine.npcs[0]
+    archer = Archer(spawn_point.x, spawn_point.y, engine.game_map, [], engine.storage)
+    archer.link_battlefield(fauna=engine.fauna, arrows=engine.arrows)
+    engine.npcs[:] = [archer]
+    for creature in engine.fauna:
+        creature.health = 0
+
+    engine.tick()
+    newcomer = WildArcher(archer.x, archer.y, engine.game_map, engine.resources)
+    engine.fauna.append(newcomer)
+    archer.enqueue(Action(ActionType.SHOOT))
+    for _ in range(MAX_FRAMES):
+        if newcomer.health < newcomer.max_health:
+            break
+        engine.tick()
+
+    assert newcomer.health < newcomer.max_health
 
 
 @pytest.mark.parametrize(

@@ -9,6 +9,7 @@ from flask_socketio import SocketIO
 from loguru import logger
 
 from api.logger import pipeline_logger
+from game.creatures import remove_dead_fauna
 from game.direct_orders import DirectOrder, DirectOrderOutcome, apply_direct_order
 from game.entities import WheatField
 from game.map import GameMap
@@ -68,7 +69,7 @@ class GameEngine:
                 arrow["frame"] += 1
             self.arrows[:] = [a for a in self.arrows if a["frame"] < a["totalFrames"]]
 
-            self.fauna = [f for f in self.fauna if f.health > 0]
+            remove_dead_fauna(self.fauna)
 
             # Mutated in place: the wild archers share this list.
             dead_npcs = [n for n in self.npcs if n.health <= 0]

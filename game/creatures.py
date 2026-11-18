@@ -562,6 +562,11 @@ def _place_cat_in_corner(
     return None
 
 
+def remove_dead_fauna(fauna: list[Fauna]) -> None:
+    """Drop the dead creatures from *fauna* in place: archers hold this same list."""
+    fauna[:] = [creature for creature in fauna if creature.health > 0]
+
+
 def spawn_fauna(
     game_map: GameMap,
     resources: list[Resource],

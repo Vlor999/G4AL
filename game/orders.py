@@ -6,7 +6,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 from enum import StrEnum
 
-from game.actions import Action, ActionType
+from game.actions import ActionType, create_order_action
 from game.npc import NPC
 from game.settings import ORDER_SPEECH_DURATION_FRAMES, TTS_MAX_SPEAKERS
 
@@ -76,7 +76,9 @@ def apply_orders(npcs: Sequence[NPC], orders: Sequence[NpcOrder]) -> list[OrderO
     spoken_count = 0
     for order in orders:
         npc = npcs_by_id.get(order.npc_id)
-        is_accepted = npc is not None and _enqueue_order(npc, order.action_type)
+        is_accepted = npc is not None and npc.enqueue(
+            create_order_action(order.action_type, target=None, own_tile=npc.tile_pos)
+        )
         is_spoken = is_accepted and spoken_count < TTS_MAX_SPEAKERS
         if npc is not None and is_accepted:
             npc.say(order.voice_line, duration_frames=ORDER_SPEECH_DURATION_FRAMES)
@@ -84,9 +86,3 @@ def apply_orders(npcs: Sequence[NPC], orders: Sequence[NpcOrder]) -> list[OrderO
             spoken_count += 1
         outcomes.append(OrderOutcome(order, is_accepted=is_accepted, is_spoken=is_spoken))
     return outcomes
-
-
-def _enqueue_order(npc: NPC, action_type: ActionType) -> bool:
-    if action_type in (ActionType.BUILD, ActionType.PLANT_WHEAT):
-        return npc.enqueue(Action(action_type, target=npc.tile_pos))
-    return npc.enqueue(Action(action_type))

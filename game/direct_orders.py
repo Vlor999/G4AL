@@ -6,7 +6,7 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 from enum import StrEnum
 
-from game.actions import Action, ActionType
+from game.actions import ActionType, create_order_action
 from game.map import GameMap
 from game.npc import NPC
 
@@ -49,14 +49,7 @@ def apply_direct_order(
     npc = next((npc for npc in npcs if npc.id == order.npc_id), None)
     if npc is None:
         return DirectOrderOutcome.UNKNOWN_NPC
-    if npc.enqueue(_action_for(npc, order)):
+    action = create_order_action(order.action_type, target=order.target, own_tile=npc.tile_pos)
+    if npc.enqueue(action):
         return DirectOrderOutcome.ACCEPTED
     return DirectOrderOutcome.REFUSED_BY_NPC
-
-
-def _action_for(npc: NPC, order: DirectOrder) -> Action:
-    if order.action_type == ActionType.MOVE_TO:
-        return Action(order.action_type, target=order.target)
-    if order.action_type in (ActionType.BUILD, ActionType.PLANT_WHEAT):
-        return Action(order.action_type, target=order.target or npc.tile_pos)
-    return Action(order.action_type)

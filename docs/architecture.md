@@ -44,6 +44,9 @@ initial spawning (`game/spawning.py`), order application (`game/orders.py`), sto
 discard and storage dismissal live in `game/`; each HTTP route calls one public
 `GameEngine` method.
 
+A pawn that reaches a full storage keeps the part of its load that does not fit and
+waits, queued orders included, until space frees or `/api/dismiss_storage` is called.
+
 The entry point is the `server/` package:
 
 | Module | Role |

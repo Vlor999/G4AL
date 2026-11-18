@@ -64,10 +64,11 @@ class GameMap:
         return grid
 
     # ── queries ──────────────────────────────────────────────────────────
+    def contains_tile(self, col: int, row: int) -> bool:
+        return 0 <= col < self.cols and 0 <= row < self.rows
+
     def is_walkable(self, col: int, row: int) -> bool:
-        if 0 <= col < self.cols and 0 <= row < self.rows:
-            return self.tiles[row][col] in WALKABLE
-        return False
+        return self.contains_tile(col, row) and self.tiles[row][col] in WALKABLE
 
     def tile_center(self, col: int, row: int) -> tuple[float, float]:
         """Return the world-pixel center of a tile."""

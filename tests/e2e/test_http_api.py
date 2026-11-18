@@ -1,10 +1,13 @@
 """Drive the HTTP contract of docs/api.md through the Flask app, as the browser client does."""
 
+import io
 from typing import Any
 
 import pytest
 from flask.testing import FlaskClient
 
+from game.settings import MAP_COLS, MAP_ROWS
+from server.constants import MIN_AUDIO_BYTES
 from server.engine import GameEngine
 
 
@@ -49,34 +52,81 @@ def test_move_enqueues_an_action_on_the_npc(client: FlaskClient, engine: GameEng
 
 
 @pytest.mark.parametrize("action", ["dance", ["chop_wood"], {"name": "chop_wood"}])
-def test_action_outside_the_action_names_is_ignored(
+def test_action_outside_the_action_names_is_refused(
     client: FlaskClient, engine: GameEngine, action: object
 ) -> None:
     npc = first_controllable_npc(client)
 
     response = client.post("/api/action", json={"npcId": npc["id"], "action": action})
 
-    assert response.status_code == 200
-    assert response.get_json() == {"ok": True}
+    assert response.status_code == 400
+    assert "unknown action" in response.get_json()["error"]
     assert engine._find_npc(npc["id"]).queue_size == npc["queueSize"]  # type: ignore[union-attr]
+
+
+UNKNOWN_NPC_ID = 999_999
 
 
 @pytest.mark.parametrize(
     ("route", "body"),
     [
+        ("/api/select", [1]),
+        ("/api/select", {"npcId": "1"}),
+        ("/api/select", {"npcId": True}),
+        ("/api/select", {"npcId": UNKNOWN_NPC_ID}),
+        ("/api/discard", [1]),
+        ("/api/discard", {"wood": -1}),
+        ("/api/discard", {"wood": "3"}),
+        ("/api/discard", {"wood": 1.5}),
+        ("/api/discard", {"iron": 2}),
         ("/api/move", {"npcId": 1, "col": 3}),
+        ("/api/move", {"npcId": 1, "col": "x", "row": 2}),
+        ("/api/move", {"npcId": UNKNOWN_NPC_ID, "col": 1, "row": 1}),
+        ("/api/move", {"npcId": 1, "col": MAP_COLS, "row": 1}),
+        ("/api/move", {"npcId": 1, "col": 1, "row": -1}),
         ("/api/action", {"action": "chop_wood"}),
+        ("/api/action", {"npcId": UNKNOWN_NPC_ID, "action": "eat"}),
+        ("/api/action", {"npcId": 1, "action": "move_to"}),
+        ("/api/action", {"npcId": 1, "action": "move_to", "target": [1]}),
+        ("/api/action", {"npcId": 1, "action": "move_to", "target": [1, "2"]}),
+        ("/api/action", {"npcId": 1, "action": "build", "target": [0, MAP_ROWS]}),
         ("/api/audio", {}),
+        ("/api/audio", {"audio_b64": 3}),
         ("/api/audio", {"audio_b64": "c2hvcnQ="}),
+        ("/api/audio", {"audio_b64": "not base64!"}),
+        ("/api/audio", {"audio_b64": "é"}),
     ],
 )
-def test_incomplete_request_is_refused(
-    client: FlaskClient, route: str, body: dict[str, Any]
-) -> None:
+def test_invalid_request_is_refused(client: FlaskClient, route: str, body: object) -> None:
     response = client.post(route, json=body)
 
     assert response.status_code == 400
     assert "error" in response.get_json()
+
+
+def test_body_not_sent_as_json_is_refused(client: FlaskClient) -> None:
+    response = client.post("/api/select", data="{}", content_type="text/plain")
+
+    assert response.status_code == 400
+    assert response.get_json() == {"error": "body must be a JSON object"}
+
+
+def test_multipart_audio_without_its_file_names_both_accepted_forms(client: FlaskClient) -> None:
+    response = client.post("/api/audio", data={"other": "x"})
+
+    assert response.status_code == 400
+    assert response.get_json() == {
+        "error": "multipart audio file or JSON audio_b64 string required"
+    }
+
+
+def test_uploaded_audio_is_sent_to_the_engine(client: FlaskClient, engine: GameEngine) -> None:
+    response = client.post(
+        "/api/audio", data={"audio": (io.BytesIO(bytes(MIN_AUDIO_BYTES)), "a.wav")}
+    )
+
+    assert response.get_json() == {"ok": True}
+    assert engine.log_messages[-1] == "Listening..."
 
 
 def test_discard_removes_only_what_storage_holds(client: FlaskClient, engine: GameEngine) -> None:

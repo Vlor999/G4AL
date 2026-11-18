@@ -12,24 +12,23 @@ to a route, an event or a payload updates both sides in the same PR
 
 ## HTTP
 
-All POST bodies are JSON unless stated. POST routes answer `{"ok": true, ...}` on
-success. Validation today is partial (#2):
+All POST bodies are JSON sent as `application/json` unless stated. A route parses its
+body once (`server/request_bodies.py`) and answers:
 
-- `/api/action` and `/api/move` answer 400 `{"error": ...}` when a required field is
-  missing, `/api/audio` when no audio is sent.
-- An unknown `action` or `npcId` is ignored and still answers 200.
-- A body that is not a JSON object, a non-integer `col`/`row` or a `target` with fewer
-  than two values raises a 500.
+- 200 `{"ok": true, ...}` on success;
+- 400 `{"error": "<reason>"}` when the body is not a JSON object, or a field is
+  missing, of the wrong type (`true` is not an integer) or out of range: an unknown
+  `npcId` or `action`, a tile outside the map, a `target` that is not two integers.
 
 | Route | Body | Effect |
 |---|---|---|
 | `GET /api/state` | none | returns the full game state |
-| `POST /api/action` | `{"npcId": int, "action": str, "target": [col, row]?}` | enqueues an action on an NPC; `action` is one of the `ActionType` values of `game/actions.py` |
+| `POST /api/action` | `{"npcId": int, "action": str, "target"?: [col, row]}` | enqueues an action on an NPC; `action` is an `ActionType` value of `game/actions.py`; `target`, when given, must be two integers inside the map, whatever the action; `move_to` needs one, `build` and `plant_wheat` without one aim at the NPC's tile, the other actions do not use it. An action the NPC is not allowed to do still answers 200: the NPC says so in the game |
 | `POST /api/select` | `{"npcId": int}` or `{}` | selects an NPC, or deselects all |
 | `POST /api/move` | `{"npcId": int, "col": int, "row": int}` | enqueues a `move_to` |
-| `POST /api/discard` | `{"wood"?: int, "stone"?: int, "gold"?: int, "wheat"?: int}` | discards resources from storage; returns `discarded` |
+| `POST /api/discard` | `{"wood"?: int, "stone"?: int, "gold"?: int, "wheat"?: int}`, amounts ≥ 0, no other key | discards resources from storage; returns `discarded` |
 | `POST /api/dismiss_storage` | none | releases NPCs waiting to deposit into a full storage; returns `released` |
-| `POST /api/audio` | multipart field `audio` (WAV), or `{"audio_b64": str}` | sends a push-to-talk recording to Voxtral; the resulting orders arrive through the next `state` events |
+| `POST /api/audio` | multipart field `audio` (WAV), or `{"audio_b64": str}` in standard base64 | sends a push-to-talk recording to Voxtral; under 100 bytes of audio answers 400; the resulting orders arrive through the next `state` events |
 
 ## Static files
 

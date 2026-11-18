@@ -91,39 +91,53 @@ class TTSEngine:
                 break
 
             text, npc_name = item
+            audio = self._synthesize(text, npc_name, client=self._client)
+            if audio is not None:
+                self._play(audio, npc_name)
+
+    def _synthesize(self, text: str, npc_name: str, *, client: ElevenLabs) -> bytes | None:
+        """The mp3 clip of ``text`` in the NPC's voice, or None when the API call fails.
+
+        Logs exactly one ``tts_end``, success or error.
+        """
+        try:
             voice_id = self._voice_id_for(npc_name)
+            pipeline_logger.tts_start(text, npc_name, voice_id)
+            # Use with_raw_response to access API-reported usage headers
+            raw_resp = client.text_to_speech.with_raw_response.convert(
+                voice_id=voice_id,
+                text=text,
+                model_id=_MODEL_ID,
+                output_format="mp3_22050_32",
+            )
+            with raw_resp as http_resp:
+                headers = http_resp.headers
+                character_cost = int(headers.get("character-cost", 0))
+                tts_latency_ms = int(headers.get("tts-latency-ms", 0))
+                audio = b"".join(http_resp.data)
+        except Exception as exc:  # noqa: BLE001 - worker thread must survive any API error
+            pipeline_logger.tts_end(
+                npc_name=npc_name,
+                char_count=len(text),
+                error=mask_api_key(str(exc), self._api_key),
+            )
+            return None
+        pipeline_logger.tts_end(
+            npc_name=npc_name,
+            char_count=character_cost,
+            audio_bytes=len(audio),
+            tts_latency_ms=tts_latency_ms,
+        )
+        return audio
 
-            try:
-                pipeline_logger.tts_start(text, npc_name, voice_id)
-
-                # Use with_raw_response to access API-reported usage headers
-                raw_resp = self._client.text_to_speech.with_raw_response.convert(
-                    voice_id=voice_id,
-                    text=text,
-                    model_id=_MODEL_ID,
-                    output_format="mp3_22050_32",
-                )
-                with raw_resp as http_resp:
-                    headers = http_resp.headers
-                    character_cost = int(headers.get("character-cost", 0))
-                    tts_latency_ms = int(headers.get("tts-latency-ms", 0))
-                    audio_bytes = b"".join(http_resp.data)
-
-                pipeline_logger.tts_end(
-                    npc_name=npc_name,
-                    char_count=character_cost,
-                    audio_bytes=len(audio_bytes),
-                    tts_latency_ms=tts_latency_ms,
-                )
-
-                self._play_audio(audio_bytes)
-
-            except Exception as exc:  # noqa: BLE001 - worker thread must survive any API or playback error
-                pipeline_logger.tts_end(
-                    npc_name=npc_name,
-                    char_count=len(text),
-                    error=mask_api_key(str(exc), self._api_key),
-                )
+    def _play(self, audio: bytes, npc_name: str) -> None:
+        """Play one clip; a playback failure is logged as ``tts_playback``, not as a TTS call."""
+        try:
+            self._play_audio(audio)
+        except Exception as exc:  # noqa: BLE001 - worker thread must survive any playback error
+            logger.bind(event="tts_playback", npc_name=npc_name).error(
+                f"Playback failed for {npc_name}: {mask_api_key(str(exc), self._api_key)}"
+            )
 
 
 def mask_api_key(text: str, api_key: str) -> str:

@@ -149,6 +149,37 @@ def test_a_failed_line_is_logged_and_the_next_one_still_plays(
     assert [event["error"] for event in tts_end_events] == ["quota exceeded", None]
 
 
+class FailingFirstPlayback(RecordingPlayback):
+    """Raises ``error`` on the first clip, then records the next ones."""
+
+    has_failed = False
+    error = RuntimeError("no audio device")
+
+    def __call__(self, audio: bytes) -> None:
+        if not self.has_failed:
+            self.has_failed = True
+            raise self.error
+        super().__call__(audio)
+
+
+def test_a_failed_playback_logs_one_tts_end_and_a_playback_error(
+    api_key: str, tts_end_events: list[dict[str, Any]], log_lines: list[tuple[str, str]]
+) -> None:
+    playback = FailingFirstPlayback()
+    speaker, _ = speaker_answering([CLIP, CLIP], playback)
+
+    speaker.speak("First", "Unknown")
+    speaker.speak("Second", "Unknown")
+
+    assert playback.finished.wait(WAIT_SECONDS)
+    speaker.close()
+    assert [(event["char_count"], event["error"]) for event in tts_end_events] == [
+        (42, None),
+        (42, None),
+    ]
+    assert ("ERROR", "Playback failed for Unknown: no audio device") in log_lines
+
+
 def test_a_blank_line_is_never_synthesized(api_key: str) -> None:
     playback = RecordingPlayback()
     speaker, text_to_speech = speaker_answering([CLIP], playback)
@@ -222,3 +253,21 @@ def test_a_failed_line_masks_the_api_key(
         "401 for key <ELEVENLABS_API_KEY>",
         None,
     ]
+
+
+def test_a_failed_playback_masks_the_api_key(
+    api_key: str, log_lines: list[tuple[str, str]]
+) -> None:
+    playback = FailingFirstPlayback()
+    playback.error = RuntimeError(f"device bound to {api_key}")
+    speaker, _ = speaker_answering([CLIP, CLIP], playback)
+
+    speaker.speak("First", "Unknown")
+    speaker.speak("Second", "Unknown")
+
+    assert playback.finished.wait(WAIT_SECONDS)
+    speaker.close()
+    assert ("ERROR", "Playback failed for Unknown: device bound to <ELEVENLABS_API_KEY>") in (
+        log_lines
+    )
+    assert not any(api_key in message for _, message in log_lines)

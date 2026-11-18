@@ -7,7 +7,7 @@ import pytest
 from flask.testing import FlaskClient
 
 from game.settings import MAP_COLS, MAP_ROWS
-from server.constants import MIN_AUDIO_BYTES
+from server.constants import MAX_REQUEST_BYTES, MIN_AUDIO_BYTES
 from server.engine import GameEngine
 
 
@@ -109,6 +109,15 @@ def test_body_not_sent_as_json_is_refused(client: FlaskClient) -> None:
 
     assert response.status_code == 400
     assert response.get_json() == {"error": "body must be a JSON object"}
+
+
+def test_body_over_the_size_limit_is_refused(client: FlaskClient) -> None:
+    response = client.post(
+        "/api/audio", data={"audio": (io.BytesIO(bytes(MAX_REQUEST_BYTES)), "a.wav")}
+    )
+
+    assert response.status_code == 413
+    assert "error" in response.get_json()
 
 
 def test_multipart_audio_without_its_file_names_both_accepted_forms(client: FlaskClient) -> None:

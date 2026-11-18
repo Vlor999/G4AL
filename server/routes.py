@@ -5,9 +5,10 @@ from __future__ import annotations
 from flask import Blueprint, Response, current_app, jsonify, request, send_from_directory
 from flask.typing import ResponseReturnValue
 from flask_socketio import SocketIO, emit
+from werkzeug.exceptions import RequestEntityTooLarge
 
 from game.direct_orders import DirectOrder, DirectOrderOutcome
-from server.constants import ENGINE_EXTENSION, MIN_AUDIO_BYTES
+from server.constants import ENGINE_EXTENSION, MAX_REQUEST_BYTES, MIN_AUDIO_BYTES
 from server.engine import GameEngine
 from server.request_bodies import (
     InvalidRequestError,
@@ -96,6 +97,11 @@ def post_audio() -> ResponseReturnValue:
 @routes.errorhandler(InvalidRequestError)
 def answer_invalid_request(error: InvalidRequestError) -> ResponseReturnValue:
     return _refuse(str(error))
+
+
+@routes.errorhandler(RequestEntityTooLarge)
+def answer_request_too_large(_: RequestEntityTooLarge) -> ResponseReturnValue:
+    return jsonify({"error": f"body larger than {MAX_REQUEST_BYTES} bytes"}), 413
 
 
 def _json_body() -> object:

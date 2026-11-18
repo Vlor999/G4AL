@@ -13,7 +13,7 @@ from flask_socketio import SocketIO
 
 from api.interpreter import VoxtralOrderInterpreter
 from api.tts import TTSEngine
-from server.constants import ENGINE_EXTENSION, PROJECT_ROOT
+from server.constants import ENGINE_EXTENSION, MAX_REQUEST_BYTES, PROJECT_ROOT
 from server.engine import GameEngine
 from server.routes import register_socket_events, routes
 
@@ -22,6 +22,8 @@ def create_app(engine: GameEngine) -> tuple[Flask, SocketIO]:
     """Serve ``engine`` over HTTP and Socket.IO; starts no thread."""
     app = Flask(__name__, root_path=str(PROJECT_ROOT), static_folder="static")
     app.extensions[ENGINE_EXTENSION] = engine
+    # Werkzeug refuses a larger body with 413 before reading it.
+    app.config["MAX_CONTENT_LENGTH"] = MAX_REQUEST_BYTES
     CORS(app)
     app.register_blueprint(routes)
     socketio = SocketIO(app, cors_allowed_origins="*", async_mode="threading")

@@ -17,8 +17,8 @@ def make_npcs(build_map: MapBuilder) -> list[NPC]:
     pawn_x, pawn_y = game_map.tile_center(0, 0)
     archer_x, archer_y = game_map.tile_center(5, 3)
     npcs: list[NPC] = []
-    npcs.append(NPC(pawn_x, pawn_y, game_map, [], storage, all_npcs=npcs, name="Bob"))
-    npcs.append(Archer(archer_x, archer_y, game_map, [], storage, all_npcs=npcs, name="Robin"))
+    npcs.append(NPC(pawn_x, pawn_y, game_map, [], storage, name="Bob"))
+    npcs.append(Archer(archer_x, archer_y, game_map, [], storage, name="Robin"))
     return npcs
 
 

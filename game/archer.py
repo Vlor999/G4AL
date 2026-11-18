@@ -41,7 +41,6 @@ class Archer(NPC):
         game_map: GameMap,
         resources: list[Resource],
         storage: ResourceStorage,
-        all_npcs: list[NPC] | None = None,
         name: str | None = None,
         all_fauna: list[Fauna] | None = None,
     ):
@@ -51,7 +50,6 @@ class Archer(NPC):
             game_map,
             resources,
             storage,
-            all_npcs=all_npcs,
             name=name or pick_archer_name(),
         )
         self.speed = NPC_SPEED * 1.1

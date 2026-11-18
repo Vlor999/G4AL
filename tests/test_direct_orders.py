@@ -16,8 +16,8 @@ def make_world(build_map: MapBuilder) -> tuple[GameMap, list[NPC]]:
     game_map = build_map(OPEN_FIELD)
     storage = ResourceStorage()
     npcs: list[NPC] = []
-    npcs.append(NPC(*game_map.tile_center(0, 0), game_map, [], storage, all_npcs=npcs))
-    npcs.append(Archer(*game_map.tile_center(5, 3), game_map, [], storage, all_npcs=npcs))
+    npcs.append(NPC(*game_map.tile_center(0, 0), game_map, [], storage))
+    npcs.append(Archer(*game_map.tile_center(5, 3), game_map, [], storage))
     for npc in npcs:
         # A busy NPC only queues the action, so the test reads it before it starts.
         npc.state = State.MOVING

@@ -91,7 +91,6 @@ def _spawn_pawns_near_center(
                     game_map,
                     world.resources,
                     world.storage,
-                    all_npcs=world.npcs,
                     hut=world.storage_hut,
                 )
             )
@@ -109,9 +108,7 @@ def _spawn_archers_near_hut(
         if not game_map.is_walkable(col, row) or (col, row) in entity_tiles:
             continue
         x, y = game_map.tile_center(col, row)
-        world.npcs.append(
-            Archer(x, y, game_map, world.resources, world.storage, all_npcs=world.npcs)
-        )
+        world.npcs.append(Archer(x, y, game_map, world.resources, world.storage))
         entity_tiles.add((col, row))
         placed += 1
         if placed >= INITIAL_ARCHER_COUNT:

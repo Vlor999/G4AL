@@ -4,6 +4,7 @@ import pytest
 from flask.testing import FlaskClient
 
 from server.app import create_app
+from server.constants import SERVER_PORT
 from server.engine import GameEngine
 from tests.fakes import RecordingSpeaker, ScriptedOrderInterpreter
 
@@ -18,5 +19,7 @@ def engine() -> GameEngine:
 def client(engine: GameEngine) -> Iterator[FlaskClient]:
     """Serve ``engine`` through Flask's test client."""
     app, _ = create_app(engine)
+    # The test client sends SERVER_NAME as Host: the address a browser on this machine uses.
+    app.config["SERVER_NAME"] = f"localhost:{SERVER_PORT}"
     with app.test_client() as test_client:
         yield test_client

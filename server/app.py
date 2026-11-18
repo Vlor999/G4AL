@@ -12,28 +12,49 @@ from flask_socketio import SocketIO
 
 from api.interpreter import VoxtralOrderInterpreter
 from api.tts import TTSEngine
-from server.constants import ENGINE_EXTENSION, MAX_REQUEST_BYTES, PROJECT_ROOT
+from server.constants import (
+    DEFAULT_SERVED_HOST,
+    ENGINE_EXTENSION,
+    MAX_REQUEST_BYTES,
+    PROJECT_ROOT,
+    SERVER_PORT,
+)
 from server.engine import GameEngine
+from server.host_allowlist import (
+    HostAllowlistMiddleware,
+    UnsupportedServedHostError,
+    allowed_hosts,
+    browser_url,
+    normalise_served_host,
+)
 from server.routes import register_socket_events, routes
 
 
-def create_app(engine: GameEngine) -> tuple[Flask, SocketIO]:
-    """Serve ``engine`` over HTTP and Socket.IO; starts no thread."""
+def create_app(
+    engine: GameEngine, *, served_host: str = DEFAULT_SERVED_HOST
+) -> tuple[Flask, SocketIO]:
+    """Serve ``engine`` over HTTP and Socket.IO at ``served_host``; starts no thread."""
     app = Flask(__name__, root_path=str(PROJECT_ROOT), static_folder="static")
     app.extensions[ENGINE_EXTENSION] = engine
     # Werkzeug refuses a larger body with 413 before reading it.
     app.config["MAX_CONTENT_LENGTH"] = MAX_REQUEST_BYTES
     app.register_blueprint(routes)
     # No CORS headers on the routes and Socket.IO's default origin check: only pages
-    # served by this server, on whichever host and port G4AL_HOST exposes, connect.
+    # served by this server connect.
     socketio = SocketIO(app, async_mode="threading")
     register_socket_events(socketio, engine)
+    # Outermost, after SocketIO wrapped wsgi_app: the Host check covers /socket.io too.
+    app.wsgi_app = HostAllowlistMiddleware(  # type: ignore[method-assign]
+        app.wsgi_app, allowed_hosts(served_host)
+    )
     return app, socketio
 
 
 def main() -> None:
     # Before the adapters: TTSEngine reads its API key from the environment.
     load_dotenv(PROJECT_ROOT / ".env")
+    # Before any side effect: a G4AL_HOST no browser can reach exits here.
+    host = served_host_from_environment()
 
     os.environ["SDL_VIDEODRIVER"] = "dummy"
     pygame.init()
@@ -44,18 +65,17 @@ def main() -> None:
     speaker = TTSEngine()
     engine = GameEngine(interpreter=interpreter, speaker=speaker)
     interpreter.register_roster(engine.npcs)
-    app, socketio = create_app(engine)
+    app, socketio = create_app(engine, served_host=host)
 
     game_thread = threading.Thread(target=engine.run_loop, args=(socketio,), daemon=True)
     game_thread.start()
 
-    host = os.environ.get("G4AL_HOST", "127.0.0.1")
-    print(f"\n  G4AL Web UI → http://{host}:8000\n")
+    print(f"\n  G4AL Web UI → {browser_url(host)}\n")
     try:
         socketio.run(
             app,
             host=host,
-            port=8000,
+            port=SERVER_PORT,
             debug=False,
             use_reloader=False,
             allow_unsafe_werkzeug=True,
@@ -65,3 +85,11 @@ def main() -> None:
     finally:
         engine.stop()
         speaker.close()
+
+
+def served_host_from_environment() -> str:
+    """`G4AL_HOST`, normalised; exits with the reason when no browser could reach it."""
+    try:
+        return normalise_served_host(os.environ.get("G4AL_HOST", ""))
+    except UnsupportedServedHostError as error:
+        raise SystemExit(str(error)) from error

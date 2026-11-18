@@ -20,9 +20,12 @@ import sys
 import time
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from loguru import logger
+
+if TYPE_CHECKING:
+    from loguru import Record
 
 # ── Pricing (USD per 1 M tokens / per character) ─────────────────────
 # Update these when Mistral changes pricing.
@@ -39,49 +42,62 @@ TTS_COST_PER_CHAR = 0.30 / 1_000  # ~$0.30 per 1 000 characters
 LOG_DIR = Path(__file__).resolve().parent.parent / "logs"
 
 
-def _setup_loguru(log_dir: Path) -> None:
-    """Configure loguru sinks, one file pair per session."""
+def has_event(record: Record) -> bool:
+    """Whether a log record names its ``event``: the filter of every pipeline sink."""
+    return "event" in record["extra"]
+
+
+def configure_sinks(log_dir: Path) -> list[int]:
+    """Add the pipeline sinks (console, one file pair per session under ``log_dir``);
+    returns their handler ids. Other sinks are left as they are."""
     log_dir.mkdir(parents=True, exist_ok=True)
     session_ts = datetime.now(UTC).strftime("%Y%m%d_%H%M%S")
 
-    # Remove default stderr sink to avoid duplicate prints
-    logger.remove()
+    handler_ids = []
 
     # Console sink – concise colored output
-    logger.add(
-        sys.stderr,
-        level="INFO",
-        format="<green>{time:HH:mm:ss}</green> | <level>{level: <8}</level> | <cyan>{extra[event]: <18}</cyan> | {message}",
-        filter=lambda record: "event" in record["extra"],
+    handler_ids.append(
+        logger.add(
+            sys.stderr,
+            level="INFO",
+            format="<green>{time:HH:mm:ss}</green> | <level>{level: <8}</level> | <cyan>{extra[event]: <18}</cyan> | {message}",
+            filter=has_event,
+        )
     )
 
     # Human-readable file sink
-    logger.add(
-        str(log_dir / f"pipeline_{session_ts}.log"),
-        level="DEBUG",
-        format="{time:YYYY-MM-DD HH:mm:ss.SSS} | {level: <8} | {extra[event]: <18} | {message}",
-        filter=lambda record: "event" in record["extra"],
-        rotation="50 MB",
-        encoding="utf-8",
+    handler_ids.append(
+        logger.add(
+            str(log_dir / f"pipeline_{session_ts}.log"),
+            level="DEBUG",
+            format="{time:YYYY-MM-DD HH:mm:ss.SSS} | {level: <8} | {extra[event]: <18} | {message}",
+            filter=has_event,
+            rotation="50 MB",
+            encoding="utf-8",
+        )
     )
 
     # Structured JSON-lines sink for programmatic analysis
-    logger.add(
-        str(log_dir / f"pipeline_{session_ts}.jsonl"),
-        level="DEBUG",
-        format="{message}",
-        serialize=True,
-        filter=lambda record: "event" in record["extra"],
-        rotation="50 MB",
-        encoding="utf-8",
+    handler_ids.append(
+        logger.add(
+            str(log_dir / f"pipeline_{session_ts}.jsonl"),
+            level="DEBUG",
+            format="{message}",
+            serialize=True,
+            filter=has_event,
+            rotation="50 MB",
+            encoding="utf-8",
+        )
     )
+    return handler_ids
 
 
 class PipelineLogger:
     """Thread-safe structured logger for Voxtral, TTS and session summary events."""
 
     def __init__(self, log_dir: Path = LOG_DIR) -> None:
-        _setup_loguru(log_dir)
+        logger.remove()  # the default stderr sink would print every record twice
+        configure_sinks(log_dir)
 
         # running totals
         self._total_voice_cost = 0.0

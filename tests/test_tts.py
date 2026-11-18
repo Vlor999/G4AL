@@ -9,6 +9,7 @@ import pytest
 from elevenlabs import ElevenLabs
 from loguru import logger
 
+from api.logger import has_event
 from api.roster import NPC_VOICE_MAP
 from api.tts import TTSEngine
 
@@ -105,10 +106,11 @@ def tts_end_events() -> Iterator[list[dict[str, Any]]]:
 
 @pytest.fixture
 def log_lines() -> Iterator[list[tuple[str, str]]]:
-    """The level and message of every log record emitted during the test."""
+    """The level and message of every record that passes the pipeline sinks' filter."""
     lines: list[tuple[str, str]] = []
     handler_id = logger.add(
-        lambda message: lines.append((message.record["level"].name, message.record["message"]))
+        lambda message: lines.append((message.record["level"].name, message.record["message"])),
+        filter=has_event,
     )
     yield lines
     logger.remove(handler_id)
@@ -188,3 +190,35 @@ def test_a_client_that_fails_to_build_disables_tts(
     assert create_client.api_keys == [api_key]
     assert ("ERROR", "Failed to init ElevenLabs client: bad key") in log_lines
     assert playback.clips == []
+
+
+@pytest.mark.parametrize("configured_key", [API_KEY, f" {API_KEY}\n"])
+def test_a_client_build_error_masks_the_api_key(
+    monkeypatch: pytest.MonkeyPatch, log_lines: list[tuple[str, str]], configured_key: str
+) -> None:
+    monkeypatch.setenv("ELEVENLABS_API_KEY", configured_key)
+    create_client = ClientFactory(error=ValueError(f"invalid key {API_KEY}"))
+
+    TTSEngine(create_client=create_client, play_audio=RecordingPlayback()).close()
+
+    assert ("ERROR", "Failed to init ElevenLabs client: invalid key <ELEVENLABS_API_KEY>") in (
+        log_lines
+    )
+    assert not any(API_KEY in message for _, message in log_lines)
+
+
+def test_a_failed_line_masks_the_api_key(
+    api_key: str, tts_end_events: list[dict[str, Any]]
+) -> None:
+    playback = RecordingPlayback()
+    speaker, _ = speaker_answering([RuntimeError(f"401 for key {api_key}"), CLIP], playback)
+
+    speaker.speak("First", "Unknown")
+    speaker.speak("Second", "Unknown")
+
+    assert playback.finished.wait(WAIT_SECONDS)
+    speaker.close()
+    assert [event["error"] for event in tts_end_events] == [
+        "401 for key <ELEVENLABS_API_KEY>",
+        None,
+    ]

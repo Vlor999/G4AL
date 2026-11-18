@@ -14,6 +14,9 @@ import threading
 from collections.abc import Callable
 from typing import TYPE_CHECKING
 
+from loguru import logger
+
+from api.constants import ELEVENLABS_API_KEY_MASK
 from api.logger import pipeline_logger
 from api.roster import NPC_VOICE_MAP, ElevenLabsVoice
 
@@ -48,7 +51,8 @@ class TTSEngine:
         self._queue: queue.Queue[tuple[str, str] | None] = queue.Queue()
         self._play_audio = play_audio or _play_through_mixer
         self._running = True
-        self._client = _create_client_from_environment(create_client or _create_elevenlabs_client)
+        self._api_key = os.getenv("ELEVENLABS_API_KEY", "")
+        self._client = _build_client(self._api_key, create_client or _create_elevenlabs_client)
         if self._client is None:
             return
 
@@ -118,27 +122,32 @@ class TTSEngine:
                 pipeline_logger.tts_end(
                     npc_name=npc_name,
                     char_count=len(text),
-                    error=str(exc),
+                    error=mask_api_key(str(exc), self._api_key),
                 )
 
 
-def _create_client_from_environment(
-    create_client: Callable[[str], ElevenLabs],
-) -> ElevenLabs | None:
-    """Build the client from ``ELEVENLABS_API_KEY``; None, logged, when it cannot."""
-    api_key = os.getenv("ELEVENLABS_API_KEY", "")
-    if not api_key:
-        from loguru import logger as _log
+def mask_api_key(text: str, api_key: str) -> str:
+    """``text`` with ``api_key``, as given and stripped, replaced by a mask.
 
-        _log.warning("No ELEVENLABS_API_KEY – TTS disabled")
+    Covers only these two plain forms: an encoded key (URL, base64) stays as it is.
+    """
+    for secret in (api_key, api_key.strip()):
+        if secret:
+            text = text.replace(secret, ELEVENLABS_API_KEY_MASK)
+    return text
+
+
+def _build_client(api_key: str, create_client: Callable[[str], ElevenLabs]) -> ElevenLabs | None:
+    """Build the client from ``api_key``; None, logged, when it cannot."""
+    log = logger.bind(event="tts_disabled")
+    if not api_key:
+        log.warning("No ELEVENLABS_API_KEY – TTS disabled")
         return None
 
     try:
         return create_client(api_key)
     except Exception as exc:  # noqa: BLE001 - client init failure disables TTS instead of crashing
-        from loguru import logger as _log
-
-        _log.error(f"Failed to init ElevenLabs client: {exc}")
+        log.error(f"Failed to init ElevenLabs client: {mask_api_key(str(exc), api_key)}")
         return None
 
 

@@ -20,7 +20,7 @@ import sys
 import time
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, TypedDict
 
 from loguru import logger
 
@@ -92,6 +92,23 @@ def configure_sinks(log_dir: Path) -> list[int]:
     return handler_ids
 
 
+class LoggedOrder(TypedDict):
+    """One order of the ``{"orders": [...]}`` answer ``llm_end`` receives."""
+
+    npc_id: int
+    npc_name: str
+    action: str
+    voice_line: str
+
+
+def _describe_orders(order: dict[str, Any] | None) -> str:
+    """``npc→action`` for each order of an ``{"orders": [...]}`` answer, comma-separated."""
+    orders: list[LoggedOrder] = order.get("orders", []) if order else []
+    if not orders:
+        return "no orders"
+    return ", ".join(f"{entry['npc_name']}→{entry['action']}" for entry in orders)
+
+
 class PipelineLogger:
     """Thread-safe structured logger for Voxtral, TTS and session summary events."""
 
@@ -151,10 +168,8 @@ class PipelineLogger:
         if error:
             log.error(f"LLM error: {error} ({elapsed:.2f}s)")
         else:
-            action = order.get("action", "?") if order else "?"
-            npc = order.get("npc_name", "?") if order else "?"
             log.info(
-                f"LLM response: {npc}→{action} | "
+                f"LLM response: {_describe_orders(order)} | "
                 f"tokens={prompt_tokens}+{completion_tokens} | "
                 f"elapsed={elapsed:.2f}s | cost=${cost:.4f}"
             )

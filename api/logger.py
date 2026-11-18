@@ -100,10 +100,8 @@ class PipelineLogger:
         configure_sinks(log_dir)
 
         # running totals
-        self._total_voice_cost = 0.0
         self._total_llm_cost = 0.0
         self._total_tts_cost = 0.0
-        self._total_voice_time = 0.0
         self._total_llm_time = 0.0
         self._total_tts_time = 0.0
         self._total_tts_chars = 0
@@ -211,19 +209,17 @@ class PipelineLogger:
 
     def pipeline_summary(self, voice_text: str, order: dict[str, Any] | None) -> None:
         """Log an end-to-end summary for one voice→LLM→TTS cycle."""
-        total_time = self._total_voice_time + self._total_llm_time + self._total_tts_time
-        total_cost = self._total_voice_cost + self._total_llm_cost + self._total_tts_cost
+        total_time = self._total_llm_time + self._total_tts_time
+        total_cost = self._total_llm_cost + self._total_tts_cost
 
         logger.bind(
             event="pipeline_summary",
             voice_text=voice_text,
             order=order,
             cumulative_calls=self._call_count,
-            cumulative_voice_time_s=round(self._total_voice_time, 3),
             cumulative_llm_time_s=round(self._total_llm_time, 3),
             cumulative_tts_time_s=round(self._total_tts_time, 3),
             cumulative_total_time_s=round(total_time, 3),
-            cumulative_voice_cost_usd=round(self._total_voice_cost, 6),
             cumulative_llm_cost_usd=round(self._total_llm_cost, 6),
             cumulative_tts_cost_usd=round(self._total_tts_cost, 6),
             cumulative_total_cost_usd=round(total_cost, 6),
@@ -232,29 +228,26 @@ class PipelineLogger:
         ).info(
             f"Pipeline #{self._call_count} done | "
             f"total_time={total_time:.2f}s | total_cost=${total_cost:.4f} "
-            f"(voice=${self._total_voice_cost:.4f} llm=${self._total_llm_cost:.4f} "
+            f"(llm=${self._total_llm_cost:.4f} "
             f"tts=${self._total_tts_cost:.4f})"
         )
 
     # ── session close ────────────────────────────────────────────────────
 
     def close(self) -> None:
-        total_cost = self._total_voice_cost + self._total_llm_cost + self._total_tts_cost
+        total_cost = self._total_llm_cost + self._total_tts_cost
         logger.bind(
             event="session_end",
             total_calls=self._call_count,
-            total_voice_cost_usd=round(self._total_voice_cost, 6),
             total_llm_cost_usd=round(self._total_llm_cost, 6),
             total_tts_cost_usd=round(self._total_tts_cost, 6),
             total_cost_usd=round(total_cost, 6),
-            total_voice_time_s=round(self._total_voice_time, 3),
             total_llm_time_s=round(self._total_llm_time, 3),
             total_tts_time_s=round(self._total_tts_time, 3),
             total_tts_chars=self._total_tts_chars,
             total_tts_calls=self._tts_call_count,
         ).info(
             f"Session ended | calls={self._call_count} | "
-            f"voice=${self._total_voice_cost:.4f} | "
             f"llm=${self._total_llm_cost:.4f} | "
             f"tts=${self._total_tts_cost:.4f} ({self._total_tts_chars} chars) | "
             f"total=${total_cost:.4f}"

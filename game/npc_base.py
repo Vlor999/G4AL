@@ -20,7 +20,6 @@ from game.settings import (
 
 if TYPE_CHECKING:
     from game.map import GameMap
-    from game.npc import NPC
     from game.storage import ResourceStorage
 
 
@@ -41,7 +40,6 @@ class NPCBase:
         game_map: GameMap,
         resources: list[Resource],
         storage: ResourceStorage,
-        all_npcs: list[NPC] | None = None,
         name: str | None = None,
         hut: Structure | None = None,
     ):
@@ -55,7 +53,6 @@ class NPCBase:
         self._map = game_map
         self._resources = resources
         self._storage = storage
-        self._all_npcs: list[NPC] = all_npcs if all_npcs is not None else []
         self._hut: Structure | None = hut
 
         self.health: float = NPC_MAX_HEALTH

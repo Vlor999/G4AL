@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:af4ee2d3755022ec9fb57ac08aa72323269ea9cf42cc2feb47ba079ff8a45e5c",
+  "claims": [
+    {
+      "id": "claim_fd2fcf7b8ce741d5b6a21f677fb488c7",
+      "statement": "Fauna ids start above 10000 and sheep and the cat are autonomous or stationary fauna; the Cat's update does nothing.",
+      "evidence": [
+        {
+          "resource": "repo://game/creatures.py#L239-L300",
+          "version": "repo-lines-v1:sha256:44ad363a8806af735f927f3c1395282c6198e97e4f846e4b32c10b653b8d0aef:eyJzZWxlY3RlZExpbmVDb3VudCI6NjIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJlZWZkMDM5YjlmYmY4ZGRjYzMzOTA2YTZhYjliYzg3MDQ0YTBjMWQwNWRmZTE2MWQ0MGMwMjlkZjExY2U4NzAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjhkMzlkNjdiOTVmYzk1NjIwNjRmYjUyM2U1YzNiMjM2N2JkOTA4MTU3YWU2NTkxMjI4YTUwMzVhMmIxZWY1ZjMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImYwMzQyZGM2NWI3MjAyZTdkYTFiY2Y0NTc1ZGMxYjBjODJjNmU4NWQ5YjA0YWJkMjg5M2MyODRjZDRhNGYyNGYifQ"
+        },
+        {
+          "resource": "repo://game/creatures.py#L56-L135",
+          "version": "repo-lines-v1:sha256:841fbbaf4f34f346f77ebf38853eecb484039a6953b3505075bfac85cb3eb335:eyJzZWxlY3RlZExpbmVDb3VudCI6ODAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNjMWM3YjdmN2MyOGFlNmUwYmQyMmNkMzUzNzViMTk1OGYyNzg2MTg2YTgzMTZkY2JmNWU5YmE5OTk1YWYxN2QiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQzNjM5ODA1MTFhODRhMjJmZmFlNjVmNzY3NTFkODI3YWVjMmFiZmU4NWZmMjRjNjU3OTA0NjAxNmIyODAzYTAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImE5YWNjMThlN2ZiZDQzMDk2ZTQ5YWZkMzVhOGQ3Zjg2Yjk2YjU2YTJmZDhjYzAyNjY5ZjY4M2RjZGQyNWZmNzMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjM3ZjQwMTI3YjFlYjUyODJiOGVhY2RjYjcwMzUwNDYxYjc2ZTFkYWNmNWM0MGZlMDFhNzFmYWZlODBlOWQ4OWEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_556a65aa13314fe8bb1f2ba073702530",
+      "statement": "A WildArcher shoots the nearest living NPC within range, chases within six tiles, patrols otherwise, applies damage and appends a red arrow at the fire phase of its shoot cycle unless the target left range.",
+      "evidence": [
+        {
+          "resource": "repo://game/creatures.py#L463-L492",
+          "version": "repo-lines-v1:sha256:151073633d3fac71c2b78fe6dacd1a282be154b226c73901b9b6c03ed8a0decc:eyJzZWxlY3RlZExpbmVDb3VudCI6MzAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjIxYjc0Nzk0MzUyMzAwN2ZiOWUwZTlkNmM0MTRmMzY3NTAxNzEwN2VlOGFlZWRhYmQ2MzA0OThiOWM2MjliY2QiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjhkYzdhN2FhMDliMzAxYWUzNjE4YjdhNzcwOWE3NjM0OGZkZjI4ZWFjZjZiYjlhN2ZjYjRjNDkzMTc3ZTIzOGMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImU1Njc3ZTY2MGRmNDI1NDlhZjJmMDgwYmM2ZTBhNjdhNWE1M2Y4ZTVmNjVkMmFhZjEzODRiOTA2NmQ0MDQ3NWUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjJiNWExYzYwYjkzYzk3MGRiYWNjYTNmODE1MTVkODZjYTZmMmIwYTFmMmYzMTA5ZGU5YTU0OTMzYmFkYzMyNDQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_422d4bf080374243b35662d05762b0a5",
+      "statement": "Archer.enqueue cancels defend mode, and a defending idle archer rescans for enemies within ARCHER_DEFEND_SCAN_RADIUS every update.",
+      "evidence": [
+        {
+          "resource": "repo://game/archer.py#L181-L193",
+          "version": "repo-lines-v1:sha256:1535fd976ce2bb6ab1edd7a83512b7ce4e3f2c25f942a7aff685d2fb27bfe273:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjgxNTcwY2Q5ZDIyMzhiZTBmYjYyODQzODZjZDU5ZjdiMWNkMmY0NDg2Mjk1NTI4NmNjNjM1YjhkNWExZWI2YWQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjhkNmM3ZDA2NmU5Y2I0ZmVjNTJhYTlkZTY0OGNiOTRjODkwMzVkYTFkYWE3ZDc4ZGFhM2NlY2ExZTAxMzE0MWQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImZkMzNhZDNiYTA2ZDM5M2RhZmJmY2VjZjNiOWNkZjViOGI3ZDQ3MjUyZTMxOTc1NTlmOGViODUzOWYyYmRkNzIifQ"
+        },
+        {
+          "resource": "repo://game/archer.py#L96-L156",
+          "version": "repo-lines-v1:sha256:d49a518b990a364d452ab0efa6d03f4724154b485c52fef9855a0c79bdd8b283:eyJzZWxlY3RlZExpbmVDb3VudCI6NjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVkMjM3NmU4ZTRjYzNjMDliNmE3MGI4OTRkMjdkOTU2ZGUwN2M4ODc2MTAyNmRmNDljM2FlNjg4OWY1NTQ2NDUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRjY2NlOTQ2ZGQ0NGMxODc3YzM3MTJjNTY1OGI3MjEyMjhjMWRmY2JkZmYxNWFhOWI3ZGU1ZjVhYTcyOWFmOTgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImIwMmQ1ZDY4ODc3ZDllN2IwMDY2YzE2ODgyZDQ3NTEzOTE4ODkzZDJkMWZlZGNhZWQ5MTk3Y2MyYTdkMTFmZWIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijk1OTRiMDkzNzhkZTU5MWVkYWU4N2Y0MzM4MjM4YmQ2MWZhYTQxNDQ2NmM0YzRjMzE4NDM0NTYzZGFiYWRiZTgifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_7159615c54e749f095579c11e59de0ef",
+      "statement": "An archer's shot applies ARCHER_ARROW_DAMAGE and appends a blue arrow when the fire phase starts, ARCHER_FIRE_ANIM_TIME frames before the end of the ARCHER_SHOOT_TIME cycle, and it keeps shooting while the enemy lives and stays in range.",
+      "evidence": [
+        {
+          "resource": "repo://game/archer.py#L257-L274",
+          "version": "repo-lines-v1:sha256:cd270debb81e8c43c112eb063b20501f691f70a4f0fb5e87e4b4fc56f710188a:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI3MjNjMGRkMDA0MjdkMjZhNjE5ZTU0NDUwZGVlZWEwMGYyNzZjZjJkNTM2ZDU0ZTRjNDgxZGMwOWY4MGRkZTkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQwMDEwNWUwYTY4NTIxYzNkMzMyNjE1MzkwZTg1OWUzOWNmMjQxMjc0YTdkNzgxZDE5NmEzYWRhMDdiMTBmZDciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjFlZTBhNzI3MmY5NTM4ZDcwMjdlZmFiZGUwNjRlYWUyNDgxMTRlNjUxMDZmNDkxOTdlODEwNmQyZWEwYjlkZDQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjM1OWEyN2IxMTVhZjI4ZDMzOGQxNzE3YmExODg0MGM4MDhhMDQ5MWE4ODhmNWUwNzYyNzU2YTI5NjBiN2JjYTIifQ"
+        },
+        {
+          "resource": "repo://game/settings.py#L34-L35",
+          "version": "repo-lines-v1:sha256:fd74c8c1feb0451d1919f5f01a5c8cc953bf2193376bcebef5063194b09c2b15:eyJzZWxlY3RlZExpbmVDb3VudCI6MiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMzIyN2JjNzJhMmFlZTUxNGVmMjQ1ZTdhMWE1M2FjYzE5ZjQ0ZWZjYWU0YWFmNDNjOThkM2ZhNWZjZmFkZWUxYyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYWY2ZjA3MGE3YjA5YTA4NDFlYjEwMTUxYWI5N2ZmMTFkMzA2ZDEzYWY3ZWRiNzI4ZDY1ZWM1MzVkZjE3NjIyNiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiY2UzYjMzYTQ1NDRlYThhMDZiMGQ0ZjU0NjJmZmFmOWM5ZDVlZjAwNGY5MTY5YWY1NjFlMzM0Y2UyODNlZTgzMCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiY2MzNTRhMjgwYWVjMzc3YmMwZDYyZmE0M2UyMzY0NDM4YWI3ZGFkNDQ4NWIzMmQzMWNiYWQ0MmRiYWI0NGYxZiJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_ef47d1a3987149b6bb35a5d57d637cf5",
+      "statement": "The engine updates the NPC and arrow lists shared with archers and wild archers in place, but rebinds self.fauna to a new list each tick, so archers keep the fauna list they were given at spawn.",
+      "evidence": [
+        {
+          "resource": "repo://game/spawning.py#L130-L157",
+          "version": "repo-lines-v1:sha256:fc8c8641da6b00fbf8e050645a52dd7567e225cf4b6fb02bb5ccb9d7ae3ec37d:eyJzZWxlY3RlZExpbmVDb3VudCI6MjgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjYzM2U2ZmE3YTA4ZDRlNGRkZWVjZjQzYjMwODAyZWQwODE4ZDcwMjFlNTZlZTRiNTE1OGQ4ODQ0NzExY2ExZWIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjVjOGE4NTA2YWFmMDU5MzE2MzExN2UxOGQ0YzZmODQ2ZjM0ZjQzZmM5N2MwNTBiODdmNGUwZjA0ZGY5ZjkyMjUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://server/engine.py#L66-L79",
+          "version": "repo-lines-v1:sha256:5181b75b464cba5e753eb67d255ff37a47eb2197771c2a8560e0e99b36d694e8:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJjZjFiY2UyMmVkNzY1ZGU3MzViNWRhOTJlY2ZlMTVmZDI5Yjc1NmI0MmYwYzc2Yzc3OTVhMTk3NTBmNTQ4OTMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImMzMTIzNGY2ODI3NjA1NGY0NzQ2ZTk5NDdiZmJkZGRlNDg3ZjVjYTU5NmE4MzE3Mjc3ZmZlZmZiZTRmYjgxZGIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjFhNmU5ZmY5MGY5ZGUxMmRhMTYzNjdmYzRiY2VjZmU4ZDZmNzM0MzFmYTY4NWE1YTljMThmNmI0ZmFlMzIwYmIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijk2YmQwNzFlODg1NjJjM2JhODIwZGUzOTNjZjBiYjY0MDUxYTBjZmIxY2I4YjZlYzk1N2JlNDgxYzdiNDNlNjkifQ"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.5.2",
+    "at": "2026-11-18T09:41:00.050Z"
+  }
+}

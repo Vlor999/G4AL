@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:b9f917ed7cb0120c9bdd319f397fe8da35c8446439948658f7992bd3a5bdeb25",
+  "claims": [
+    {
+      "id": "claim_d3b0c3d6eab2425ea88ce8006b9c429b",
+      "statement": "find_path runs four-way A* with a Manhattan heuristic, never treats the goal as blocked, relocates an unwalkable goal to a walkable neighbour and returns an empty list when none exists.",
+      "evidence": [
+        {
+          "resource": "repo://game/pathfinding.py#L14-L75",
+          "version": "repo-lines-v1:sha256:0ecb60b08bea2fb6fc44e2f767943c1068f1b257d238f38085678064a8546068:eyJzZWxlY3RlZExpbmVDb3VudCI6NjIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRhMDE3NGQ4NDM1ZmMwNTFjYzFiYmIzZTk5ZGM3MzQwNzE4NmQ2MDg5NTg2YmY2MmNjOTczZDQ2NWRlZjI3YmYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijg3ODM0YWZiZmJmYmQ3NDMyMGViNzNmMTVmYzQyODg3NzM1OTRiZmFmMGI5ZGQ1NzI2ZjlhNmZhNDY2YTdkYjgiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_dbac783ef9694a81b8e57584335dac85",
+      "statement": "NPCBase._plan_move_to blocks the tiles of non-depleted resources and structures, and an empty path ends the action as DONE.",
+      "evidence": [
+        {
+          "resource": "repo://game/npc_base.py#L178-L188",
+          "version": "repo-lines-v1:sha256:15c382975b96a9a54a1459972865afed56e21339afaefa0fe7f1e79438c0f2d4:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRmYzg5NzZkNWMyZDJkZjFmMmRiZjUzZjUyMzMxMzVjZThjZGRlZjZiMjUxNjM2ODU0MGRiMzYxMTk0Y2UyMzEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjY1ZTAyNjllOGQ2YjZhZmVmMGM0YTI2Mjg0NTM1Y2Y1Njk4NWMyOWZlNDA0NDk1YmU1ZDk1OTdiZDZmYzMwY2EiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImQwZmFkMzg1YjRjMDQzODYwZDMyNjliYzg5ZGUzYWQ5ZThlMDdmMWMwNzY3M2M5ZDkxZTAzMWM3YWNkYTgzNGIifQ"
+        },
+        {
+          "resource": "repo://game/npc_base.py#L271-L283",
+          "version": "repo-lines-v1:sha256:0018d4e3750a75bfa6488011be9fe32e3533bf8172be789a633baec2f6c3bfe1:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQyMWZjYTIzNWM2YWJhNTE0ZDc4NTUwY2E0NDI4ZjlmNGQwYzkzN2UyZDlhZjY5MGNkNzc4M2MyM2YzMGRlZDAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE1N2QyYmZkYWI1ZjI1ZTc5ZTIzZWI0MjlhMjg1N2EwYTcxOTc3NTM3NDA0N2ZiNjViZGM1MDU0ODkzMzQyMDgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImIzYTQ3YzdmMDBlZWRlMDU4NjJlMTZjNGM4MmYyZjc2NzljMjgyZTEwNDA4YWZlZTc1ODM4ZTQxNWVmNzIyOWUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImE0MTAxZGQwMzY5ZWI1YTEwMmI2ODIxZmQ2ZTM2NmI5NGZjM2QwZmI4NmIwMTQyMTBjOGVlOTgxYWMwZWU0ZDgifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_55bf6f702b614618958d6a64c3ccdfa6",
+      "statement": "When no path to the hut exists or the hut is missing, the NPC deposits where it stands.",
+      "evidence": [
+        {
+          "resource": "repo://game/npc_base.py#L189-L226",
+          "version": "repo-lines-v1:sha256:936232662dc68fc61a63d5a77341a2e8b7aa3cf5b1ade9293f34c4846158a89b:eyJzZWxlY3RlZExpbmVDb3VudCI6MzgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImIwOWY4ODc3NzU4YjZkZDUyZDMzYmU5MTMyMjFlOTBjNzg4OWMxYmFjZmUwNTlmYzQ3YjYyYmE0NTdjM2Q5MjIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImI5NzY2MTVmOGMyZjRhNDg0ZDc0MmMxYjNiNDg1Y2UzOTQwZmUyZDVjZDI4MDA0NWVmZTUyZGU3MjY1YWUxYzciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjY3NWE1YWYxZTBhY2QyN2Y3ZWMwYmZhM2IxYTA3MTY5Mzg2N2Y1MDZmMjk2Njg5YjgwNDY1OTYxZmNjMWE5MDkifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_69e7bf13c688458ab577c13ee403fc4d",
+      "statement": "Fauna use a separate lighter A* that has no blocked set and returns an empty path when the goal is not walkable.",
+      "evidence": [
+        {
+          "resource": "repo://game/creatures.py#L169-L233",
+          "version": "repo-lines-v1:sha256:2db3ab191f02ac4c63d32dbc25ecc5796d73b88d4f03809aab50ac852788aaed:eyJzZWxlY3RlZExpbmVDb3VudCI6NjUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImYxNzMyYzQyMzQyZDcxYWFhMDY1ZmU5ZjNmNTRiYTFjMGM5YjNmMWE5NjUwYmQyNTZmMjhlOTZiNDY0NmY5M2IiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImZmYmFkMzI5YzY5ZGVlMmYyNTViZmM5YWZkZGNhZTkzNWI5OGU5MWFiYWQ1YjhjMjI4MWJiYzk2YjY1MjY5ZGMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzODU2OGM2NWViYWIwNGNhN2FlMzZlYjQ5YWViY2JiNGY5YTI4MDJkYWJmNDliODg4YWRlMjYzYzYwNzk4MTcifQ"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.5.2",
+    "at": "2026-11-18T09:30:24.405Z"
+  }
+}

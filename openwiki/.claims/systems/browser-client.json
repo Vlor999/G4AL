@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:ef035734490be33f78fd815e9e04f6f20fdf745d987e4a9e96ed5a9a5e5f9450",
+  "claims": [
+    {
+      "id": "claim_fcbd7fb9499c457c9b80276a2b5d42e7",
+      "statement": "The client loads classic scripts in a fixed order from index.html that share one global namespace window.G4AL, with game.js as the entry point.",
+      "evidence": [
+        {
+          "resource": "repo://static/game.js#L1-L8",
+          "version": "repo-lines-v1:sha256:dbe7da3065359840f3f3ab236b64a78536a874d83ac1fa974ea42fd73e61565f:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNDYzNmFjNDVjZmJiNmVhNGZiY2M1NzVkNDNiZTYxNjVjMWIyNjAyMDNkYWQ2ZjA2OTkzMmJkMDM0Y2I2YTZhZCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMDFiYTQ3MTljODBiNmZlOTExYjA5MWE3YzA1MTI0YjY0ZWVlY2U5NjRlMDljMDU4ZWY4Zjk4MDVkYWNhNTQ2YiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjAsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNWM5NjliNzRhZmZhNzhmZWJlMGYyZjczMDE3NjRjMWNkYzYxOTM0ZTU4NDU5NmZhNTI5YWFhYTJiOGIyZDUxYiJ9"
+        },
+        {
+          "resource": "repo://static/index.html#L299-L306",
+          "version": "repo-lines-v1:sha256:0f280270f8ad3d5a8ef35927bb96b32652a2605ee44c9a12e6def896ddd26239:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNGVkOTI0NTMyY2M1MTgxZjEwOTliNGQ3YzQxMDk0OWFjMDQyYTIwMzdiODdjMTZkZjI4YmI0ZWRiNWE2YjI1NCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYTc1Y2I5ZGI2ZjM4M2FmMTllYTk4YTlkM2Y4ODVlNDZiYjIwNzkxNjM5ZjM5YzhmNzhhMDVjMWI2NzNiMDNiNyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMzBkMWNkMDU3OGNkYjVmM2E2NmVlMDJhMTViMWM5ZWYzNWM0MGUwMDYxNjBjNzJiZTkxNGU4NDc5OTk4YWY1ZiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZWM4ZmIxMTAzMDg1MWM0M2E4OGI2MDc0ZDM4ODRhYzU3MWQwNzJlMjliMzcxNGVkNDJmMDM5NmQxZWFjN2VjNCJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_f07d5bad5c494f88a0792446293f61e6",
+      "statement": "game.js stores each Socket.IO state event in G.gameState and caches the map once from the first state.",
+      "evidence": [
+        {
+          "resource": "repo://static/game.js#L30-L63",
+          "version": "repo-lines-v1:sha256:4bfb0879e4505fbfb98df27b418da3e047500acbc5ff6306c96437461f3c60a7:eyJzZWxlY3RlZExpbmVDb3VudCI6MzQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU3ZjgwZDg2YjRlZTg1OTNhZWM1NzQ2ZTk4ZTRhMzc2Y2E4YTZjMWZjMGRhOWU0OWI2Y2ZiMzI4ZTUwMDAzMjgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJkODVhMzg2NzY4ZTUzOTI4ZDJkOTA0YzQ1MjA4ZjVmNGJmN2E2OGJjMzE4NGQyYTA5YWMxYmVkODRiODYyZmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImE5N2EwNDVmMTVkN2QwMmU3YWY4NzkzZTFkZjhiYjQ1Y2VmOGUzY2RkOWIzZDQ0ZDhlM2FkZDA1MjYxMDc4NWEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_4e88804b381f4b0a97688aad42f53aae",
+      "statement": "Input handlers select NPCs, move the selected NPC and trigger actions by posting to /api/select, /api/move and /api/action, and hold G for push-to-talk.",
+      "evidence": [
+        {
+          "resource": "repo://static/input.js#L8-L89",
+          "version": "repo-lines-v1:sha256:411cebf9a145bb4cafe5540c8a4d457d5f540687c7c286683d10fad720188549:eyJzZWxlY3RlZExpbmVDb3VudCI6ODIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU4NDk3ZmY5MGRkNzE1MTM0MDI1M2JhYWQ5NjA1NmViODdkMDNhZGMxZTAyZDRmMWE2YzZlOWQwYzQyZGE1MWQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJkODVhMzg2NzY4ZTUzOTI4ZDJkOTA0YzQ1MjA4ZjVmNGJmN2E2OGJjMzE4NGQyYTA5YWMxYmVkODRiODYyZmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjVjOTY5Yjc0YWZmYTc4ZmViZTBmMmY3MzAxNzY0YzFjZGM2MTkzNGU1ODQ1OTZmYTUyOWFhYWEyYjhiMmQ1MWIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_0c1c60490d084da1b752461cdb17c440",
+      "statement": "Push-to-talk records with MediaRecorder, converts to 16 kHz mono 16-bit WAV and uploads it as multipart field audio to /api/audio, falling back to the raw blob when decoding fails.",
+      "evidence": [
+        {
+          "resource": "repo://static/ptt.js#L28-L129",
+          "version": "repo-lines-v1:sha256:a643bf9b27870746dd35fe54b7d185ae0f5f400e28c0386f6432ccb6d4b009dd:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAyLCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiI0ZWEyMWYyNzY1YmY0MzYwOTdjMTM5NTgyYTc4NzI2OTEyYTc5YmYxMTJmYmMwM2Y1N2EzNWUyMTA5MmE5YjFiIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiJiZDg1YTM4Njc2OGU1MzkyOGQyZDkwNGM0NTIwOGY1ZjRiZjdhNjhiYzMxODRkMmEwOWFjMWJlZDg0Yjg2MmZiIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiIzMWMyYjNkYjkwN2U1MGNjNmJjNjJjYzEzZDllNDcyNmY1NmE1ZTk5M2NhZjAyYTM0OGJkZDgyNmVlZWEzNDYwIiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MCwiZm9sbG93aW5nQ29udGV4dEhhc2giOiJlM2IwYzQ0Mjk4ZmMxYzE0OWFmYmY0Yzg5OTZmYjkyNDI3YWU0MWU0NjQ5YjkzNGNhNDk1OTkxYjc4NTJiODU1In0"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.5.2",
+    "at": "2026-11-18T09:30:24.405Z"
+  }
+}

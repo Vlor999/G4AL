@@ -1,0 +1,96 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:06d193783e20fde3812e52f179806563646ebe4172b115c1ee75b33f92769038",
+  "claims": [
+    {
+      "id": "claim_19c9cb6f814b41b1a71eda9f3ad31674",
+      "statement": "VoxtralOrderInterpreter makes one multimodal call to voxtral-small-latest with tool_choice=any, forcing the give_npc_orders function whose schema takes actions from ActionType and forbids additional properties.",
+      "evidence": [
+        {
+          "resource": "repo://api/constants.py#L3-L7",
+          "version": "repo-lines-v1:sha256:5a45ce5c0ed26990b844a773be7d838246bcde397c8397ae36739914186d92af:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZmNkZGZkYzk3MzNmYTdkMTcxMDE1MmJmODZiOWJiNzhlNGFjZDZhNDIyYzE4NWI5MzgyOTg2NGE0Njg1NDc0ZiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYjVjYTY5YzVlYjk4MzdjNTQ1NzU2MGYxM2YxOWFiOGZlZWUzYmQ2Y2QyODkwOWM2YWVjYzBiZWFmNGYwNGQ2MiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjIsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNmVmNTE2NGJjODI5NjI1OTk4NDRmNmJiZWRlY2JiZmY5YzA4M2Q4OTdjOWRmNDAwYTNkYzBhMTc0NTNiZTZiMyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjAsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSJ9"
+        },
+        {
+          "resource": "repo://api/interpreter.py#L250-L274",
+          "version": "repo-lines-v1:sha256:19735f4a178568b04a50bd315bdf69e9576a110fbff5a8220dd527acf094af58:eyJzZWxlY3RlZExpbmVDb3VudCI6MjUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU3M2RjMGZkMTkwZTE2OGE1ZDYwNTllZjI0M2NiNmJlZDcwMDYwNDYxNjc1ZTE1NmQ1YmQ4OTc5NzY4ZmU5OGYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU5OWE3YTg1OGU2ZWU1NWM0ZWYxZGIwZWE5YzM2NmIyZTA3NjI5ZTI2OWY4N2Y5NDgxYzAxZmUxNDk5MDcxODciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjExNzM4ZGNiYjBkN2ZiM2FlMmExMmM4MGI0NTFmMDA2NWI0YTVjMmE4N2U4Y2UxYmZmZGFiYzEzYjQzZjQ3MTciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjVkNTI5ZDBhNDViYjQyNTA3ODI3NWM4ZTY5NThlMWI3ZjZlYWRiMGM2YzMzZGI3ZGNiNTc0MDc3YTcwYTdiOGIifQ"
+        },
+        {
+          "resource": "repo://api/interpreter.py#L38-L66",
+          "version": "repo-lines-v1:sha256:2057c3064e77141f41dd09bfd3f87a21fed9ff298efc48aab80c3dc9ee4df4d9:eyJzZWxlY3RlZExpbmVDb3VudCI6MjksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU4MWIyNzhkMjY3ZWJhOTRmYmQ3NmE4MTVjMDc3MjllZjI1MjgxMDE1YTdiMDk0NTExOTdkNGUxNTZmNjdlNGYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQwNjhjMjFiNzFmYWFkMWYzMjExNDBjOWVjNGU1ZDU3NGFhZDM0ZjFlNmU1MzA0NDdlNGYwMzBmNzE2OGI2MmEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjM3ZWMxMGUwMDE1Zjk1ODAzOTczOTU1MjVmMzIyM2YxYmQ2YzgwYzI0M2Y5ZjAyNTY4YTE3OTU4MTc4MDc2NjkifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_6628ead5ae3c4ee899ea612862f5c565",
+      "statement": "An answer without the orders call, with a malformed shape, an unknown action or an unknown NPC id becomes a CommandRefused with a specific RefusalReason, and one bad order refuses the whole command.",
+      "evidence": [
+        {
+          "resource": "repo://api/interpreter.py#L140-L193",
+          "version": "repo-lines-v1:sha256:5ff12f2eeeb9d6fb0c08da705d24831a9e0dfdd0952da6d81193a7625a495a91:eyJzZWxlY3RlZExpbmVDb3VudCI6NTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU1NTIwOGQ0MDVmMjU1YmM4OWQyMmY2ZTMxZDE2MmVhMzlhNzY5NDVmOTk2YjkwYzZmYTBlOGZlZGI3NTRlNDIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjY1ZTIzNWFhNDZkYTJjNzQyOTRhYzg2MGNiMjNhMTI4NzQ5OGQ0MzU0ZTg5MDJlZDFiY2Y0NDc0ZmZhZDE4YmEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImJjMmY2OTM5YTgwYzM3MGJlMTcyZDc2ZTEwMDY0MmEzZjYyMjIzM2I5OGIxY2YzMjlhODc1M2QwNDg3ZTk1NGIifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_b87e9dd1540f4073a627142eb780475f",
+      "statement": "interpret translates every exception other than OrderInterpretationError into OrderInterpretationError whose message names only the failure type, logging the details.",
+      "evidence": [
+        {
+          "resource": "repo://api/interpreter.py#L250-L268",
+          "version": "repo-lines-v1:sha256:d81ec0c926af434d4df378a03dd73f329fbdae18c61e511260d75906122235bc:eyJzZWxlY3RlZExpbmVDb3VudCI6MTksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU3M2RjMGZkMTkwZTE2OGE1ZDYwNTllZjI0M2NiNmJlZDcwMDYwNDYxNjc1ZTE1NmQ1YmQ4OTc5NzY4ZmU5OGYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjExZGFhZmMzNmQyYzJjZWViNjFlODRkYWQ1OTk0ZWE4MDA0NjdjMWYxMjM3ZmRmYjY3ZjEwNTYxY2NlNWQxYzIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjExNzM4ZGNiYjBkN2ZiM2FlMmExMmM4MGI0NTFmMDA2NWI0YTVjMmE4N2U4Y2UxYmZmZGFiYzEzYjQzZjQ3MTciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjU4ZmVhNWVjN2MyMDY1MDExYzM3NGRjYzRkZDExNzQ3MGMyZTUyYjNmNGJiOTFlNDg1NDcyYjkyNzUwZWJjMDcifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_1c7654296a7d4b71965062185d775d13",
+      "statement": "TTSEngine accepts an injectable client factory and playback function and becomes a silent no-op when the API key is missing or client creation fails.",
+      "evidence": [
+        {
+          "resource": "repo://api/tts.py#L120-L161",
+          "version": "repo-lines-v1:sha256:9ea3df355350d3dac10d13a99a1a4d26ed18ea4f99abc0fff87ef9e0b0c69a6d:eyJzZWxlY3RlZExpbmVDb3VudCI6NDIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRmZjUzYTQ0N2QzYjU2ZmNkZDhmMTgzZjFlZjczNmExN2Y2NjI1NjBjNjFkMDNmM2QzYjA1OGQwNGFkNDE2ZjQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImNjNTM2Y2RkNjIwMjcyN2ZiNzk4NmM2YmZhMmM1MmZhNGJhZDVkZTMyMjM0YmM0ZTU0ODhjZThmZWJiZDk5YjMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImMwOGQwZDQ4NmE3ODkzNDM3OTg1MmUxNmE2MjI5MzFkY2VlYmU5ZWM3MmYwMDk0YTJiOGM5MDg0NDFkOGMxMDYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://api/tts.py#L35-L58",
+          "version": "repo-lines-v1:sha256:cca362e3fe52a07e317d15247b78d56647fcd25812d3c29bf0044196b7126792:eyJzZWxlY3RlZExpbmVDb3VudCI6MjQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRkNWI2MGFiNDg2OGMwMjBiZmNjM2JmM2QxZjNjYzhhNTk0YzZmYTBlY2U0MmQzNjVlMmFhYzkwYWY0ZWEzNmYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImU2M2IxZjAyMWU3ZmJlMWIyYjRmYmNmODhlYzJhMmQyMTk0Y2Q0YTc1MjgyZThkZDI2ZjQ0ZjU2MDUyY2YyZTEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjVlOGJmNmVkMWM5N2Y3YTJhM2JjZTg5YTI5ODkxNWMyZThmMjBhZmJjYmRhNWMyYjIzNjM5NmY5NWFmMTEzOTAifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_2d424794529c4b3c873b6f772c7c67ca",
+      "statement": "TTSEngine plays lines from one daemon worker thread in FIFO order, picks the voice by NPC name with a default fallback, and survives any exception in the worker.",
+      "evidence": [
+        {
+          "resource": "repo://api/tts.py#L60-L120",
+          "version": "repo-lines-v1:sha256:9d0eeb1c99445f456065314e45ce95d24b86ffd7785c915bc3ab6308321e0b85:eyJzZWxlY3RlZExpbmVDb3VudCI6NjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjBiYzZmNWE1NjViNTA5ODgzZDUyYTE1NWZlYjRhY2U2OTE3MGQ4YTg5OWY4ZmJjNWRlNmU3MzQ3NTNmZWVkNDEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRmZjUzYTQ0N2QzYjU2ZmNkZDhmMTgzZjFlZjczNmExN2Y2NjI1NjBjNjFkMDNmM2QzYjA1OGQwNGFkNDE2ZjQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjRiNWQ2YmFmNmQxYWQ0ZGJjZTFkOGViODk3MmJkYjM2NWY2NzIwMjQwZTQ0YTRmMGUwY2QyYjgyYWJmMjc1MmQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjExMmY4OTExYWZlMTFjZjE4MTNhNjVjMmNlNmE1OTU3NTg2NTlkOWQwMzMzNjYxN2NiNWIyZWRmZmVlOGVmMDYifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_6e4459dcba7b47f29139e47c78718db9",
+      "statement": "NPC_PROFILES in api/roster.py is the single registry from which the personality and voice lookups are derived.",
+      "evidence": [
+        {
+          "resource": "repo://api/roster.py#L60-L126",
+          "version": "repo-lines-v1:sha256:3dc68cd41a35308f556e95e4cbb8331b39936796b0edf55b387a5bfa0d4036b9:eyJzZWxlY3RlZExpbmVDb3VudCI6NjcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjYwOGI3MWE1MWQ4NjI4NjI4MmI5OTM5YjMxYjVkYTc4ZjE5ZDM5YzYwOGVkNzRmN2YyNWUxNzUxOTA0YTU4NGIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMwYzFmMTg4ZjE0MmVkN2E4MjQ2ODBiMjA3MTcyYzU1MTliYzYxNGE0OGZkYTdjZjE2N2VkYjhkZGY3OTk1NmMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjAwZTEwZjUwMWRhNDdlZGIxMDFjMGEwMDM4N2U1NmU4ZGI1NGQxZjUzMjdlZTExYmJmYzM0MzA4YzdkMzE4NjciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_42ca7858cf3d49978fa834d6ca58c6a3",
+      "statement": "pipeline_logger is a module-level singleton that configures loguru sinks at import and tracks cost, timing and token totals for LLM and TTS calls.",
+      "evidence": [
+        {
+          "resource": "repo://api/logger.py#L249-L249",
+          "version": "repo-lines-v1:sha256:a1ec24a3b3e129da7e3616a2007a3923730ec1b5d87be1ceb643002b39352f79:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYTFlYzI0YTNiM2UxMjlkYTdlMzYxNmEyMDA3YTM5MjM3MzBlYzFiNWQ4N2JlMWNlYjY0MzAwMmIzOTM1MmY3OSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYTFlYzI0YTNiM2UxMjlkYTdlMzYxNmEyMDA3YTM5MjM3MzBlYzFiNWQ4N2JlMWNlYjY0MzAwMmIzOTM1MmY3OSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMTVkZmEzYzVhMDQ3ZGFhM2NkOGU2MTY0NmUxYzExNmU4NGFjMTgyOTZiNGM0ZThmZmYyNjYyMTE5ZDJhOGVmMCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjAsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSJ9"
+        },
+        {
+          "resource": "repo://api/logger.py#L42-L106",
+          "version": "repo-lines-v1:sha256:57bcb72ca2b2bfe852b30d66d913bb93e3072ea810bf342bbb5747e926c091d2:eyJzZWxlY3RlZExpbmVDb3VudCI6NjUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjFlZjhlM2FjNzU0MTM4MjRiNjAxN2Q2N2Q3NjE1NGI4ZWUzOWNjYzUwZTc2ZTlhMDFkNzNjZGJjZjMzNWRiMmEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQzMTc3NmI4ZDMzYWU1MjE1MjQ3MjJkMTgwMjc0NWY4NGEzOWI2YjM0YzQ5ZjliMGEwZmQ0N2I0MTM2YmYxN2IiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImZiMGQ1YmY4N2U5Y2JlZGZkMTFhMDJkZWZhMTI4ZjVhNzI4YjViMzY1MmIyNTUzYjk0MDI0ZTUxMWI3NmQ4ODMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjkxMzA2NmRhMTcyYWY2MzQ0MTdlOGQzMjM3OGMwNGIzNjdlODRjYzJhYzc5ZDVmZjg0YTMwMmNiMjI2NDI4YTMifQ"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.5.2",
+    "at": "2026-11-18T09:41:00.050Z"
+  }
+}

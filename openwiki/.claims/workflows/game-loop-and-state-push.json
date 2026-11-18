@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:ada1de1762d36bb42f6b86288bddc6a66df76426745003c72f24531d4bd5b7eb",
+  "claims": [
+    {
+      "id": "claim_a963e1bcd66a4cfe98de1a0e4d001799",
+      "statement": "tick holds the engine lock and applies pending orders, then updates NPCs, creatures and wheat fields, advances and expires arrows, and removes dead fauna and NPCs, mutating shared lists in place.",
+      "evidence": [
+        {
+          "resource": "repo://server/engine.py#L51-L80",
+          "version": "repo-lines-v1:sha256:e3bd5dd50bae8d23cfb52fb779654e8bfb582f7a9593f1f746e0f67ffa31fba0:eyJzZWxlY3RlZExpbmVDb3VudCI6MzAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjUzOGViY2Q3NjQ4MGRlYzVmOTU4ZmMzNGI1NjJjMWEzMWM4OTY3NTA4OWZmNzAzYmZkMWZiZjJlNjQ4ODM4ZDQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE4ZmJlMmYzY2M5OGQ4MWRjMmMzNDY0OTBhNDkwNjI5MjU5OWU2ZjI0NDQ3NDA3ZTM1N2Y4Y2FjMjI1NmY5NjEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjhhYjM1MDUxNzViODZjM2FhN2MzMzNlN2U0Njk5NmI5NjE5OGJiNWI3ZDU1MWIyZWJhMDM5YmUyYzJlN2ZjYTgifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_a6a0d2deb3234be4b171b04026605b9b",
+      "statement": "Direct orders, selection, discard, deposit release and state reads each take the engine lock, so request threads reach the game only through GameEngine.",
+      "evidence": [
+        {
+          "resource": "repo://server/engine.py#L81-L143",
+          "version": "repo-lines-v1:sha256:0cff7aedbf8e996e6d9983a4b163c362ac712e6c98d5ba97d95ba3ac7a3ad96b:eyJzZWxlY3RlZExpbmVDb3VudCI6NjMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY1NWEzMjdmMmVhZGY1OGI1NTI4MTFhMWQ4YmZkNjhkYTJmZGI4ZDE0OGYzYjRkMjgxNjM4ZjVjYTExNGNkM2EiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjIxNGMxNTVlZjIyYTUxM2Q0ZTZhYzZiNTFiOWNiNzBkZmM2MTdlMTc5NDRhYzQ1ZTdhYmQ2ZjhhYmE1MTUxZGQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImQ5MmFkMDhlZjdjMjQxODZmNTE4ZTUzNmUzMzFmM2ZjZDE0Y2Y4OGY4YTgyYjQwMDBiNTNjZDMxOTAzOTJmZWIifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_e0ba3455fbf448e0a75eac7a03b5f244",
+      "statement": "run_loop sleeps the remainder of a 1/FPS frame and emits the state every third frame, catching push errors and logging once per failure streak and once on recovery.",
+      "evidence": [
+        {
+          "resource": "repo://server/engine.py#L167-L200",
+          "version": "repo-lines-v1:sha256:1be0d9ed95caca761238a3fab32bd7a64b963e167859ee3539012b3ce8362828:eyJzZWxlY3RlZExpbmVDb3VudCI6MzQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY4Nzk0OWYzNGNkZGU1MTEyZTdjYTZkZjhhMzBjNmY2MGYwY2RmNDI2NjFjMGJiOWQ5OGUyM2Y5MjRlYWE3YTkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRhMTQxZDc1Nzg3ZmZlZDcyNmNlNDFlNDlhZGVlMGJkMTkxZjI2MTMxMmUyNTlkNzE1NjRjYWIzMTI0NmI1YzIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjI4MDExNTA3YjUxOTYwNWI2MjMwZmZhM2E4ZmRkZDNkN2E2MmE3ZmIyNjdmMmUzMzM1ZWNiYWVkMzk3MmVlM2UiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_c20d076fe3b242a09ac2242a65b288a1",
+      "statement": "serialize_state builds map, non-depleted resources, npcs, fauna, arrows, a storage snapshot, a storage full alert and the last 20 log messages.",
+      "evidence": [
+        {
+          "resource": "repo://server/serialization.py#L15-L40",
+          "version": "repo-lines-v1:sha256:cae74dc03bcea391939d35bae53be5feee564e5ffdcd31aa2b7bb0b1d8d8ee86:eyJzZWxlY3RlZExpbmVDb3VudCI6MjYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImNkNDQxMDdiMTdmYzdlZDlkNzU1ZWI4MGNhYzA1YzFiNjMzNzQwMmNjZGQyZjMzYmQ0OWVlZWJjYzMzNGIyN2QiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjA2Yjk3ZGIyZjQxN2IwNWVkNjkxMWI5YTE0MDY1MjYwMmYyYjA1OGYzODg1YzBmYWRjNTg0OGQ0MmQ3ZmYwN2UifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_b8e583003bcb4e728803c00d7ee509fb",
+      "statement": "The engine keeps at most 50 log messages and the serializer sends the latest 20.",
+      "evidence": [
+        {
+          "resource": "repo://server/engine.py#L46-L50",
+          "version": "repo-lines-v1:sha256:8f2d6157c7bc4e662085dea9f5aef88dc6b48818c00c5981c19627c311268842:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMzE5YjQ0YzE4MGM0YjUzNTQ1OWMwYzIxZmQzYThiYTM2OGRiNTRkNTkxZjBjZTRlM2YxZTkwMjk2YzY2OGY5ZiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMDFiYTQ3MTljODBiNmZlOTExYjA5MWE3YzA1MTI0YjY0ZWVlY2U5NjRlMDljMDU4ZWY4Zjk4MDVkYWNhNTQ2YiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZGI1ZjVkZWQ2NzFiNjA0ZTE5M2U3MzY3NzlkNGY2YWQ2NzhhYjIzZDU5YWVhZTEyN2QxMDhjNDg0MThhNmVmNyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYmEyY2IzYzViMzNlOGYxYjdlZmQ3YTQ0ZGU0MDc1NDc1YTg3MWQ4ZWYxMjgyYTY0ODVlOTc1ZTE4YjQwMGFiZCJ9"
+        },
+        {
+          "resource": "repo://server/serialization.py#L33-L40",
+          "version": "repo-lines-v1:sha256:3e1eeb08a42613cbb3fca61f32ca7d13e0733edb9839ed14a2f3967eda0a6f84:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMGE4MzhjOWU1MTZjMmRiNDY0YTA4NzdjMzEzOGIwMWY2NTliZjk3NzEyZDY4NGYyZmY0MTEyOGZmYjc1NmUyYiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMDFiYTQ3MTljODBiNmZlOTExYjA5MWE3YzA1MTI0YjY0ZWVlY2U5NjRlMDljMDU4ZWY4Zjk4MDVkYWNhNTQ2YiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYTEyMjY3M2I0Mzk5ZTM5ZGQ0NTJjNzQ3YzZiN2JlYTFjOGMwMmZjOTZlYWVhMDJkN2Q1Y2MyYmVjMjYwMDY2ZCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMDZiOTdkYjJmNDE3YjA1ZWQ2OTExYjlhMTQwNjUyNjAyZjJiMDU4ZjM4ODVjMGZhZGM1ODQ4ZDQyZDdmZjA3ZSJ9"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.5.2",
+    "at": "2026-11-18T09:30:24.405Z"
+  }
+}

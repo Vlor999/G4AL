@@ -1,0 +1,110 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:23b7c7fc164d7a85733bf67cf6c9cebf45cbb5106cb6fcb618a7623a19b3336e",
+  "claims": [
+    {
+      "id": "claim_726671f359094f969bdf9cb15e65a7e9",
+      "statement": "Each HTTP route parses its body at the boundary and calls one public GameEngine method; InvalidRequestError becomes a 400 JSON error.",
+      "evidence": [
+        {
+          "resource": "repo://server/routes.py#L111-L114",
+          "version": "repo-lines-v1:sha256:35b46115bbdd55bea335dea1187857e1f43acaa21ec92704fa25a27d9ae62b90:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYzdiNmI1YTMzOGQwM2Y3OWE1MjU4MzJiZjc5MmRjZjUyNmVmMmY5MTQxMDU2YjA2ZmFlZmE2ZGM3MTdmY2MwNSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMDFiYTQ3MTljODBiNmZlOTExYjA5MWE3YzA1MTI0YjY0ZWVlY2U5NjRlMDljMDU4ZWY4Zjk4MDVkYWNhNTQ2YiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZDcwMTQ5ZTA2OWFkNjdlY2NmNDczNjQ2ZmYxYzc1MDA1MGQzMjlkMTEwMDE4ZGM1NzY2ODc4ZWFmYTFkNjA3ZCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiM2U1MmM3ZDg1MjA5ZDFlNTMxZmFiODk3MGRiMjVkMTA5NDRmNjg3YTVlYWI0YTY5N2MzNjVjNTI2ZDBkMmQyYyJ9"
+        },
+        {
+          "resource": "repo://server/routes.py#L33-L95",
+          "version": "repo-lines-v1:sha256:9950d6d98d1c40def23e9db1684e85abb6866ab223f6d6dd4cd2594595aef087:eyJzZWxlY3RlZExpbmVDb3VudCI6NjMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjBlNDk0MTRiMWM3YzRiZWJiMGJjODNmYzU4NWMzMGE1ODkxODVhZGRlNjk5MjNmYjczMDFhYTE0MjQxNjY3NzYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImZhZjk1YjE2MTcwYjI5YzBmMDNkZmVmY2RlNGM0NmIyNjk2NGIxYWYwN2EwMWQ1MTMyZTQ5NGJlODMyMjQxMmMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_eded71620b3f4bcda2e392e9c992fa13",
+      "statement": "A before_request hook answers 403 when the Origin header differs from the request host URL, and requests without Origin pass.",
+      "evidence": [
+        {
+          "resource": "repo://server/routes.py#L97-L109",
+          "version": "repo-lines-v1:sha256:f431fe256349860f686a4106ea656ef5e8c947e7345362e062dca4413ae9aa34:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjdhZjA4MjVhNjhlMWQwZDg1NTE4NmVjNTdhZThjZWQ2NDQ0MDA5NmE3ZWYwNTFhMDhjNTA4MWJiYWNiZjlmMGYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjRiNWI1ZmIyNzM1NDAxZGQ2ZGMzZTZmMTk1YTZmNmE0OGM5YmQwNWY2YzVhYWNmZDVlNjE0OGI4YWJjOThhMzUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjNkMjIyYTRkMmExYjQ1NzIwNWFkNjg0OGE5OTg3MDUwYWQ1ODhlYjI2MTZkNGNhYjVlZDExZGViNDgyNDhkZmEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_b12046ac28014a0c8702dd0caf910ace",
+      "statement": "Request bodies are capped at 4 MiB through MAX_CONTENT_LENGTH and a larger body gets 413.",
+      "evidence": [
+        {
+          "resource": "repo://server/app.py#L24-L25",
+          "version": "repo-lines-v1:sha256:c27b5286bcf7ca070d9c3af2d70b049b564544eff36ed049786a22c181d0c12d:eyJzZWxlY3RlZExpbmVDb3VudCI6MiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYzBmZDM4NGVjOTk3NTliMDljMWYyYTEzYmQ3ZjY2OGY2ZjljZjEyODg5NjExMDIwMThiMGY4ZDhjN2VlZGU5MyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDZhNjUxMDg4ZGE4NmY2ZDg3NjliMjM1NGI4NTYyNzcwMWE2MjgzMTU1MjAyOGJkZmZiM2RmZGMwYjMxZDlkMSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiODkzN2NlMDU3Yjk5MTBiZjI3Njg2NWU3YTQyMzBiNjQ1MTA4ZTc2ZTIyODUxYzMwNzYyNDEyMjE0ZTQ4Y2JlMSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNGIyMDFiM2JlNjEyNTYyYjVkNzk5YmI3MDg4ZGIxNWFmNzc2ZDczOGI5NGE2MTcyNjY5YjQzYmI1ZTZlM2E4OCJ9"
+        },
+        {
+          "resource": "repo://server/constants.py#L7-L9",
+          "version": "repo-lines-v1:sha256:85f80b659e2430f0c24c6e8ddd674553d764ab9b59a9e022e2584ac6199fac43:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiOGY5MWM3NmJlZGFlZmU0ODZhZWFmODllYWU1Njc1OWMwMjhlM2U5Y2NjMGFiM2QwYWVmNThkZTMyNWZjOWIwYSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMTI2MDM4MTAzMDkyYTAyOWJjMGVmMDk1YTNhZTJkMWY4NGU1NGMwMzA5ZTcwZWQ3ZWMwOTFkN2I3YTAzYWNhNCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMTJjNGE5MWY3Y2Q2ODc2MjVmN2ZkZGJlYzZlZTQxZmY0YjM4M2RhYmI4ZDI2NThmZmQ2OTI5ZWQ2YmM4MWQ3ZiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjIsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYzA2ZmIwOTQwN2I0ZDE0Y2VhMWY1MDk0NjZmODc2MDAzNWM0M2U2ODA1NGI2YzhmYWM5NDc1NjI2MTNlZjA4YSJ9"
+        },
+        {
+          "resource": "repo://server/routes.py#L116-L119",
+          "version": "repo-lines-v1:sha256:3b31bf2b433ff8845dfddca5d902f86f24d578de684070ccc468fe7ddba43853:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiOTU0ZDg2YTczMDk2MDM0NGYzNDUzYTg4ZTRhYzFmM2Y0Mjg2NjFiOGEyZTNlN2U1MzU3OTgzOTgyZmI1OTFiMyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMDFiYTQ3MTljODBiNmZlOTExYjA5MWE3YzA1MTI0YjY0ZWVlY2U5NjRlMDljMDU4ZWY4Zjk4MDVkYWNhNTQ2YiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNDdmNTFlYmVlZDgzMWI0NDdhZjEyNjc5ZjI4YTEwYmRmMWI0MDFhZmMwZWQ4YmRmNWUzMjcwNGIzY2RlNTcxNyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNDc2Mjk3NWQyMmUzMmQ1YTIzOGM2NTQwMjJiNDYyNDhhNjU3ZTZhZjBhMDU1MGRjOGZkMWQ3ZThmYWQ5YjU3ZSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_f18858ffce82445e9d87763f6bef8875",
+      "statement": "JSON is read with get_json(silent=True), so bodies not sent as application/json are refused rather than accepted by force.",
+      "evidence": [
+        {
+          "resource": "repo://server/routes.py#L121-L125",
+          "version": "repo-lines-v1:sha256:fa82456e416de178709f038aa68c2ccd7a6690d23575d242e3be7c982e266bcb:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZTBmNWFiYjFhMzQxYjQyNDVhZDY0YjkzZjVkMjI4ZTEwMzNhYTVmZTkyMTdjNTExNmY2MWExOTQ2NGRkNzBjOCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMDFiYTQ3MTljODBiNmZlOTExYjA5MWE3YzA1MTI0YjY0ZWVlY2U5NjRlMDljMDU4ZWY4Zjk4MDVkYWNhNTQ2YiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiM2Y5NTgzYTE2MzgwNjMxZjdmMmMyM2ZhZDJhZGM1MzljYmM4ZTcyODMzNWVhMTlhYjdhNDMzZmZkMjhkMWMwZCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMDkzM2I3M2Y0ODc1NDlhMGRhZTM0ODFjMzNmZTUxMTk5NjRjNDdmYTgwMzIzODkwZGRlZGZlMTA2ODMyOTExNCJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_b0adf8f9efde44d596c5d12b5d36ac69",
+      "statement": "Body parsers reject booleans as integers, unknown actions, malformed targets, unknown or negative discard amounts and invalid base64.",
+      "evidence": [
+        {
+          "resource": "repo://server/request_bodies.py#L22-L106",
+          "version": "repo-lines-v1:sha256:0a4384302b2718f46bae41999484e5c9cfd35c39f1aff8bedcd3fd4d4b62020c:eyJzZWxlY3RlZExpbmVDb3VudCI6ODUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFkYTVjNjZlMTdiMTQ1Mzk3ODM0YjhjODU0ZGM0MTkzZTIxMjUxODBhODk5NmExNGMzMTg4MzMyNmIyZWZiY2YiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFhMTU4MWFjZmY4YTdhYzE4MTcwMTlkMmI2YjZmMTdkMDVkY2MzMWM0Y2E3ZTFiMmUyMzA3NWI5NGM4OWQxOGQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjNjMzY5NDhhY2JiMjYwOWI3ZTZlODUxNzFjYzI4NjUwZmRiNjBhZjFlMWIzMTc2Mzc4NTRiOGZiYTAxZjIyMDMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_5ae51037e1cb470c9ac05899d9cdd40c",
+      "statement": "An unknown NPC id or a target outside the map answers 400, while an NPC refusing an action still answers 200.",
+      "evidence": [
+        {
+          "resource": "repo://game/direct_orders.py#L40-L55",
+          "version": "repo-lines-v1:sha256:228ad53f198bc19d0096cb967c63a489ba43b7b9c762373b7e312c9c4464d2e1:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImEzMzE3MTJhN2VmMWY1MWY2NWJiNmNjYzJkMTg0ODY0YzljOTEwZGE3OGEwODM2ODE1M2Q5OTI0OTEzNDhmNmYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImZhMzllMzNlZWY3NmU2YzlkNzE2MGIzYjNmOGJmOGFjYWU1MDI3ZmUzMjI5NDY4ZmUwMjI2YWMyMmJiNDA2ZjUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjkyYzZhYzgxMmZlOGE2ZWM4ZGRmMjQ2MGFlYzU4OWQ3YzRhYTgxZWM0NjRkMmViZGY3ODEwYTE4N2U2NzRkZjIifQ"
+        },
+        {
+          "resource": "repo://server/routes.py#L127-L145",
+          "version": "repo-lines-v1:sha256:cfe9075782be5cddc55652fa949bebfc096aab6c815bde4caa8abf10e708d2c7:eyJzZWxlY3RlZExpbmVDb3VudCI6MTksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY0ZWM4YmVlZDcwZGJhNDZiOTA4M2YzMTlmYzNkNjM2OTg1ZTdhOTU5NTEzN2IyMGMyZGUzYjU5MTIwMDczYTMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQyY2ZjMmZjYzUxMWM3YjgyN2MwMmUwM2QyYzQ0YzM4ZDE0M2JmOGEwZWUxMGU5ZTM1ZGNhMThjMjQxYmU5ZWUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImY2NjE5OWMzODc5MDFkOThjNTg2OTBiZGViMTY2NzNiNTI2NDZkMTg0ZTkzNGNhNzA2OGFlM2FmMTZjODljZTciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_650162a6a1bf43469b7e8c786ee25148",
+      "statement": "/api/audio refuses audio shorter than MIN_AUDIO_BYTES with 400.",
+      "evidence": [
+        {
+          "resource": "repo://server/constants.py#L10-L11",
+          "version": "repo-lines-v1:sha256:c06fb09407b4d14cea1f509466f8760035c43e68054b6c8fac947562613ef08a:eyJzZWxlY3RlZExpbmVDb3VudCI6MiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYmRjNzg0NGI2ZmNkYzk2NzhjNzBmMjE2YjQ0MDgwOThkZjMyMGE4Njk2YTgzMzkxYjQzOWI1ODZkZWE4OGU1OCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiOWQ1YWMwZWU0MjM5YjJmM2IyNjIwOTc5ODU0MDRhMGMzNmY0OTM1NWYwZjZiN2EyYjdiZGE5NzZlMjQ3YmE1NSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiODVmODBiNjU5ZTI0MzBmMGMyNGM2ZThkZGQ2NzQ1NTNkNzY0YWI5YjU5YTllMDIyZTI1ODRhYzYxOTlmYWM0MyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjAsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSJ9"
+        },
+        {
+          "resource": "repo://server/routes.py#L86-L95",
+          "version": "repo-lines-v1:sha256:557deca5672bee8afd0b31c9339ce8e6bfcb949c0c93ccd0cd8206c2ffd42fca:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQyMTE0MDQ4NzJmYWExOWFkOGUxYzViYTBjMWE2YzE0NjllZjJiNDY3ZjE1MzIxNWM2NmNkMDM2N2U5MWE3YzQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQ5OWZhODEzZjUwYWI3OThhNWZiOWJmMDU1Y2MyOTUyNDg2ZmE1NTk4ODVhMzE2MGQ2YjUxYWZjNzgzYmI0YWMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImZhZjk1YjE2MTcwYjI5YzBmMDNkZmVmY2RlNGM0NmIyNjk2NGIxYWYwN2EwMWQ1MTMyZTQ5NGJlODMyMjQxMmMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_80380c265d214c89ac3ac264087db376",
+      "statement": "The origin checks do not support reverse proxies and do not cover DNS rebinding.",
+      "evidence": [
+        {
+          "resource": "repo://docs/api.md#L44-L55",
+          "version": "repo-lines-v1:sha256:2735d0f545721dbdd5f15865004a973f9f8742ae4d5e64d9796ff50b845cda94:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjczNzllM2EzYjA1MDE1ODk2NzI5NmIwYWQ2MDY4MTRjOTc3ODljZGY4YTYxMDhiMjIzNzM3MGMzNDczNjg3NTMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZhZGZiZDk3YzgyNTBiYWUzYmJjYTA4MWIyZjE2MDMxYzkxMWExZGUyZjgyMzU3YzNhZmM1ODQxN2EzNmM5NjUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjYyNjVhZWY4MzBiMGFlZTM4OWIwYjM0OWU3N2UwMjlhYzQ1ZWExYTUwNjAwYWQxMGFiMTU4MmMzNzAzMWNiOTMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.5.2",
+    "at": "2026-11-18T09:30:24.405Z"
+  }
+}

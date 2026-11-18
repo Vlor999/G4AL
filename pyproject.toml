@@ -39,7 +39,7 @@ source = ["game", "api", "server"]
 branch = true
 
 [tool.coverage.report]
-fail_under = 53
+fail_under = 83
 show_missing = true
 skip_covered = true
 

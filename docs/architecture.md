@@ -24,9 +24,14 @@ server/: app.py (create_app, main), routes.py (Flask + Socket.IO),
    injected `OrderInterpreter` port (`game/ports.py`). Its adapter,
    `api.interpreter.VoxtralOrderInterpreter`, makes one multimodal Voxtral call with
    the system prompt and the NPC roster. Voxtral must answer by calling the
-   `give_npc_orders` function (`tool_choice="any"`), whose JSON schema takes its
-   actions from `ActionType`; the adapter validates the arguments into
-   `game.orders.NpcOrder` values. An answer that breaks this contract is returned as
+   `give_npc_orders` function once (`tool_choice="any"`,
+   `parallel_tool_calls=False`), whose JSON schema takes its actions from
+   `ActionType`; the adapter validates the arguments into `game.orders.NpcOrder`
+   values. Mistral documents audio input with a forced tool call, but not with
+   `parallel_tool_calls=False`; that combination is untested against the live API.
+   The safety net is the adapter: an answer that still holds several
+   `give_npc_orders` calls has their orders merged in call order, duplicates
+   included. An answer that breaks this contract is returned as
    `CommandRefused` with a `RefusalReason`, and the game log shows
    `Order refused: <reason>`. One bad order refuses the whole answer: no order of
    that command is applied. A service failure is raised as

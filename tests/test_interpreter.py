@@ -6,110 +6,157 @@ from typing import Any, cast
 import pytest
 from mistralai import Mistral
 
-from api.interpreter import (
-    CommandResponse,
-    NPCOrder,
-    Roster,
-    VoxtralOrderInterpreter,
-    _parse_response,
-)
+from api.constants import ORDERS_TOOL_NAME
+from api.interpreter import ORDERS_SCHEMA, VoxtralOrderInterpreter
 from game.actions import ActionType
-from game.orders import NpcOrder
+from game.orders import CommandRefused, NpcOrder, RefusalReason
 from game.ports import OrderInterpretationError
-
-ROSTER: Roster = {
-    "bob": {"id": 1, "name": "Bob", "kind": "pawn", "allowed_actions": ["chop_wood"]},
-    "robin": {"id": 2, "name": "Robin", "kind": "archer", "allowed_actions": ["shoot"]},
-}
+from tests.conftest import MapBuilder
+from tests.test_orders import make_npcs
 
 
-def test_parse_response_reads_every_action() -> None:
-    raw = json.dumps(
-        {
-            "n": 2,
-            "actions": [
-                {"npc_name": "bob", "npc_id": 9, "action": "MINE_ROCK", "voice_line": "Fine."},
-                {"npc_name": "Robin", "npc_id": 2, "action": "shoot", "voice_line": "Aim!"},
-            ],
-        }
-    )
-    assert _parse_response(raw, ROSTER) == CommandResponse(
-        n=2,
-        actions=[
-            NPCOrder(npc_name="Bob", npc_id=1, action="mine_rock", voice_line="Fine."),
-            NPCOrder(npc_name="Robin", npc_id=2, action="shoot", voice_line="Aim!"),
-        ],
-    )
+def tool_call(arguments: dict[str, Any] | str, name: str = ORDERS_TOOL_NAME) -> SimpleNamespace:
+    return SimpleNamespace(function=SimpleNamespace(name=name, arguments=arguments))
 
 
-@pytest.mark.parametrize(
-    ("item", "expected"),
-    [
-        (
-            {"npc_name": "Bob", "action": "dance", "voice_line": "No."},
-            NPCOrder(npc_name="Bob", npc_id=1, action="chop_wood", voice_line="No."),
-        ),
-        (
-            {"npc_name": "Nobody", "action": "eat"},
-            NPCOrder(npc_name="Bob", npc_id=1, action="eat", voice_line="..."),
-        ),
-    ],
-    ids=["invalid-action-falls-back-to-chop-wood", "unknown-npc-falls-back-to-first"],
-)
-def test_parse_response_falls_back(item: dict[str, str], expected: NPCOrder) -> None:
-    assert _parse_response(json.dumps(item), ROSTER).actions == [expected]
-
-
-def test_parse_response_strips_markdown_fences() -> None:
-    raw = '```json\n{"npc_name": "Robin", "action": "defend", "voice_line": "On guard."}\n```'
-    assert _parse_response(raw, ROSTER).actions[0].action == "defend"
-
-
-def test_parse_response_rejects_malformed_json() -> None:
-    with pytest.raises(json.JSONDecodeError):
-        _parse_response("{not json", ROSTER)
+def answer_with(tool_calls: list[SimpleNamespace] | None, content: str = "") -> SimpleNamespace:
+    message = SimpleNamespace(content=content, tool_calls=tool_calls)
+    return SimpleNamespace(choices=[SimpleNamespace(message=message)], usage=None)
 
 
 class FakeChat:
-    def __init__(self, answer: str | Exception) -> None:
+    def __init__(self, answer: SimpleNamespace | Exception) -> None:
         self.answer = answer
+        self.calls: list[dict[str, Any]] = []
 
-    def complete(self, **_: Any) -> SimpleNamespace:
+    def complete(self, **kwargs: Any) -> SimpleNamespace:
+        self.calls.append(kwargs)
         if isinstance(self.answer, Exception):
             raise self.answer
-        message = SimpleNamespace(content=self.answer)
-        return SimpleNamespace(choices=[SimpleNamespace(message=message)], usage=None)
+        return self.answer
 
 
-def interpreter_answering(answer: str | Exception) -> VoxtralOrderInterpreter:
-    return VoxtralOrderInterpreter(cast(Mistral, SimpleNamespace(chat=FakeChat(answer))))
+def interpreter_answering(
+    answer: SimpleNamespace | Exception, build_map: MapBuilder | None = None
+) -> tuple[VoxtralOrderInterpreter, FakeChat]:
+    chat = FakeChat(answer)
+    interpreter = VoxtralOrderInterpreter(cast(Mistral, SimpleNamespace(chat=chat)))
+    if build_map is not None:
+        interpreter.register_roster(make_npcs(build_map))
+    return interpreter, chat
 
 
-def test_interpret_returns_one_npc_order_per_answered_action() -> None:
-    answer = json.dumps({"npc_name": "Robin", "npc_id": 2, "action": "shoot", "voice_line": "Aim!"})
+def test_schema_actions_are_the_action_types() -> None:
+    action_schema = ORDERS_SCHEMA["properties"]["orders"]["items"]["properties"]["action"]
 
-    orders = interpreter_answering(answer).interpret(b"RIFF")
+    assert action_schema["enum"] == [action_type.value for action_type in ActionType]
+
+
+def test_interpret_forces_the_orders_tool_call() -> None:
+    interpreter, chat = interpreter_answering(answer_with([tool_call({"orders": []})]))
+
+    interpreter.interpret(b"RIFF")
+
+    [call] = chat.calls
+    assert call["tool_choice"] == "any"
+    assert [tool["function"]["name"] for tool in call["tools"]] == [ORDERS_TOOL_NAME]
+    assert call["tools"][0]["function"]["parameters"] is ORDERS_SCHEMA
+
+
+@pytest.mark.parametrize("encode", [lambda args: args, json.dumps], ids=["dict", "json-string"])
+def test_interpret_maps_each_called_order_to_an_npc_order(
+    build_map: MapBuilder, encode: Callable[[dict[str, Any]], Any]
+) -> None:
+    npcs = make_npcs(build_map)
+    pawn, archer = npcs
+    arguments = {
+        "orders": [
+            {"npc_id": pawn.id, "action": "mine_rock", "voice_line": "Fine."},
+            {"npc_id": archer.id, "action": "shoot", "voice_line": "Aim!"},
+        ]
+    }
+    interpreter, _ = interpreter_answering(answer_with([tool_call(encode(arguments))]))
+    interpreter.register_roster(npcs)
+
+    orders = interpreter.interpret(b"RIFF")
 
     assert orders == [
-        NpcOrder(npc_id=2, npc_name="Robin", action_type=ActionType.SHOOT, voice_line="Aim!")
+        NpcOrder(pawn.id, pawn.name, ActionType.MINE_ROCK, "Fine."),
+        NpcOrder(archer.id, archer.name, ActionType.SHOOT, "Aim!"),
     ]
 
 
 @pytest.mark.parametrize(
-    "build_interpreter",
+    ("answer", "reason"),
     [
-        lambda: interpreter_answering(ConnectionError("network down")),
-        lambda: interpreter_answering("{not json"),
-        VoxtralOrderInterpreter,
+        (answer_with(None, content="Bob, chop wood!"), RefusalReason.NO_ORDERS_GIVEN),
+        (answer_with([tool_call({}, name="other_tool")]), RefusalReason.NO_ORDERS_GIVEN),
+        (answer_with([tool_call("{not json")]), RefusalReason.MALFORMED_ANSWER),
+        (answer_with([tool_call({"npc_id": 1})]), RefusalReason.MALFORMED_ANSWER),
+        (answer_with([tool_call({"orders": "chop"})]), RefusalReason.MALFORMED_ANSWER),
+        (answer_with([tool_call({"orders": ["chop"]})]), RefusalReason.MALFORMED_ANSWER),
+        (
+            answer_with(
+                [tool_call({"orders": [{"npc_id": "1", "action": "eat", "voice_line": ""}]})]
+            ),
+            RefusalReason.MALFORMED_ANSWER,
+        ),
+        (
+            answer_with(
+                [tool_call({"orders": [{"npc_id": 1, "action": "dance", "voice_line": ""}]})]
+            ),
+            RefusalReason.UNKNOWN_ACTION,
+        ),
+        (
+            answer_with(
+                [tool_call({"orders": [{"npc_id": -1, "action": "eat", "voice_line": ""}]})]
+            ),
+            RefusalReason.UNKNOWN_NPC,
+        ),
     ],
-    ids=["client-failure", "unparsable-answer", "missing-api-key"],
+    ids=[
+        "prose-without-call",
+        "other-tool",
+        "arguments-not-json",
+        "orders-missing",
+        "orders-not-a-list",
+        "order-not-an-object",
+        "npc-id-not-an-integer",
+        "unknown-action",
+        "unknown-npc",
+    ],
+)
+def test_interpret_refuses_an_answer_that_breaks_the_order_contract(
+    build_map: MapBuilder, answer: SimpleNamespace, reason: RefusalReason
+) -> None:
+    interpreter, _ = interpreter_answering(answer, build_map)
+
+    assert interpreter.interpret(b"RIFF") == CommandRefused(reason)
+
+
+@pytest.mark.parametrize(
+    ("build_interpreter", "expected_message"),
+    [
+        (
+            lambda: interpreter_answering(ConnectionError("network down"))[0],
+            "Voxtral could not interpret the command (ConnectionError)",
+        ),
+        (
+            lambda: interpreter_answering(SimpleNamespace(choices=[], usage=None))[0],
+            "Voxtral could not interpret the command (IndexError)",
+        ),
+        (VoxtralOrderInterpreter, "MISTRAL_API_KEY is not set"),
+    ],
+    ids=["client-failure", "answer-without-choice", "missing-api-key"],
 )
 def test_interpret_raises_only_the_port_error_without_the_vendor_text(
-    build_interpreter: Callable[[], VoxtralOrderInterpreter], monkeypatch: pytest.MonkeyPatch
+    build_interpreter: Callable[[], VoxtralOrderInterpreter],
+    expected_message: str,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monkeypatch.delenv("MISTRAL_API_KEY", raising=False)
 
     with pytest.raises(OrderInterpretationError) as raised:
         build_interpreter().interpret(b"RIFF")
 
-    assert "network down" not in str(raised.value)
+    assert str(raised.value) == expected_message

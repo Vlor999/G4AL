@@ -52,32 +52,25 @@ class OrderOutcome:
 
 
 def apply_orders(npcs: Sequence[NPC], orders: Sequence[NpcOrder]) -> list[OrderOutcome]:
-    """Enqueue each order's action on its NPC and return one outcome per handled order.
+    """Enqueue each order's action on its NPC and return one outcome per order.
 
-    An order whose NPC id is unknown goes to the first NPC; with no NPC at all, it is
-    dropped and has no outcome. Build and plant orders target the NPC's own tile.
+    An order whose NPC id is unknown (an NPC that died since the roster was built) is
+    not accepted: nothing is enqueued or spoken. Build and plant orders target the
+    NPC's own tile.
     """
+    npcs_by_id = {npc.id: npc for npc in npcs}
     outcomes: list[OrderOutcome] = []
     spoken_count = 0
     for order in orders:
-        npc = _find_npc_or_first(npcs, order.npc_id)
-        if npc is None:
-            continue
-        is_accepted = _enqueue_order(npc, order.action_type)
+        npc = npcs_by_id.get(order.npc_id)
+        is_accepted = npc is not None and _enqueue_order(npc, order.action_type)
         is_spoken = is_accepted and spoken_count < TTS_MAX_SPEAKERS
-        if is_accepted:
+        if npc is not None and is_accepted:
             npc.say(order.voice_line, duration_frames=ORDER_SPEECH_DURATION_FRAMES)
         if is_spoken:
             spoken_count += 1
         outcomes.append(OrderOutcome(order, is_accepted=is_accepted, is_spoken=is_spoken))
     return outcomes
-
-
-def _find_npc_or_first(npcs: Sequence[NPC], npc_id: int) -> NPC | None:
-    for npc in npcs:
-        if npc.id == npc_id:
-            return npc
-    return npcs[0] if npcs else None
 
 
 def _enqueue_order(npc: NPC, action_type: ActionType | None) -> bool:

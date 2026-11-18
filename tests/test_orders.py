@@ -3,7 +3,7 @@ import pytest
 from game.actions import ActionType, State
 from game.archer import Archer
 from game.npc import NPC
-from game.orders import NpcOrder, apply_orders
+from game.orders import NpcOrder, OrderOutcome, apply_orders
 from game.settings import TTS_MAX_SPEAKERS
 from game.storage import ResourceStorage
 from tests.conftest import MapBuilder
@@ -56,20 +56,17 @@ def test_apply_orders_targets_the_npc_tile_for_build_and_plant(
     assert queued.target == pawn.tile_pos
 
 
-def test_apply_orders_sends_an_unknown_npc_id_to_the_first_npc(build_map: MapBuilder) -> None:
-    npcs = make_npcs(build_map)
+@pytest.mark.parametrize("has_npcs", [True, False], ids=["other-npcs", "no-npc"])
+def test_apply_orders_does_not_accept_an_order_for_an_unknown_npc_id(
+    build_map: MapBuilder, has_npcs: bool
+) -> None:
+    npcs = make_npcs(build_map) if has_npcs else []
     order = NpcOrder(npc_id=-1, npc_name="Ghost", action_type=ActionType.EAT, voice_line="Hm")
 
-    [outcome] = apply_orders(npcs, [order])
+    outcomes = apply_orders(npcs, [order])
 
-    assert outcome.is_accepted
-    assert npcs[0]._speech_text == "Hm"
-
-
-def test_apply_orders_drops_orders_when_there_is_no_npc() -> None:
-    order = NpcOrder(npc_id=1, npc_name="Bob", action_type=ActionType.EAT, voice_line="Hm")
-
-    assert apply_orders([], [order]) == []
+    assert outcomes == [OrderOutcome(order, is_accepted=False, is_spoken=False)]
+    assert all(npc.queue_size == 0 and npc._speech_text != "Hm" for npc in npcs)
 
 
 def test_apply_orders_speaks_at_most_the_allowed_number_of_accepted_lines(

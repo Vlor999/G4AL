@@ -56,8 +56,6 @@ class NPCBase:
         self._resources = resources
         self._storage = storage
         self._all_npcs: list[NPC] = all_npcs if all_npcs is not None else []
-        self._wait_counter = 0
-        self._repath_attempts = 0
         self._hut: Structure | None = hut
 
         self.health: float = NPC_MAX_HEALTH
@@ -83,8 +81,6 @@ class NPCBase:
 
         self._speech_text: str = ""
         self._speech_timer: int = 0  # frames
-
-        self._radius = 14
 
     def say(self, text: str, duration_frames: int = 300) -> None:
         """Show a speech bubble above this NPC for *duration_frames* frames."""
@@ -208,7 +204,6 @@ class NPCBase:
         if dist < self.speed:
             self.x, self.y = tx, ty
             self._path_index += 1
-            self._repath_attempts = 0
         else:
             self.x += dx / dist * self.speed
             self.y += dy / dist * self.speed
@@ -276,10 +271,6 @@ class NPCBase:
             if target.reserved_by == self.id:
                 target.reserved_by = None
 
-    def _occupied_by_npcs(self) -> set[tuple[int, int]]:
-        """Return set of tiles currently occupied by *other* NPCs."""
-        return {n.tile_pos for n in self._all_npcs if n.id != self.id}
-
     def _occupied_by_structures(self) -> set[tuple[int, int]]:
         """Return set of tiles occupied by non-depleted multi-tile structures."""
         tiles: set[tuple[int, int]] = set()
@@ -311,24 +302,3 @@ class NPCBase:
             return None
         mc, mr = self.tile_pos
         return min(candidates, key=lambda p: abs(p[0] - mc) + abs(p[1] - mr))
-
-    def _push_npc_off_tile(self, tile: tuple[int, int]) -> bool:
-        """If another NPC is standing on *tile*, nudge them to an adjacent
-        free walkable tile.  Returns True if the tile is now clear."""
-        blocker: NPC | None = None
-        for n in self._all_npcs:
-            if n.id != self.id and n.tile_pos == tile:
-                blocker = n
-                break
-        if blocker is None:
-            return True
-
-        occupied = self._occupied_by_npcs()
-        for dc, dr in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
-            nc, nr = tile[0] + dc, tile[1] + dr
-            if self._map.is_walkable(nc, nr) and (nc, nr) not in occupied:
-                bx, by = self._map.tile_center(nc, nr)
-                blocker.x, blocker.y = bx, by
-                blocker.say("Excuse me!", 60)
-                return True
-        return False

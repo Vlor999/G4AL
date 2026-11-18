@@ -1,4 +1,5 @@
-"""Actions an NPC can queue and the states of its action machine."""
+"""Actions an NPC can queue, the states of its action machine, and the rule that
+turns a player order into an action (``create_order_action``)."""
 
 from __future__ import annotations
 
@@ -47,6 +48,9 @@ ARCHER_ACTIONS = [
     ActionType.EAT,
 ]
 
+TILE_TARGETED_ACTIONS = (ActionType.BUILD, ActionType.PLANT_WHEAT)
+"""Actions that work on a tile: without a target they aim at the NPC's own tile."""
+
 
 class Action:
     """One unit of work for an NPC."""
@@ -58,3 +62,21 @@ class Action:
     ):
         self.action_type = action_type
         self.target = target
+
+
+def create_order_action(
+    action_type: ActionType,
+    *,
+    target: tuple[int, int] | None,
+    own_tile: tuple[int, int],
+) -> Action:
+    """Build the action a player order gives an NPC standing on ``own_tile``.
+
+    ``build`` and ``plant_wheat`` aim at ``target``, or at ``own_tile`` without one.
+    ``move_to`` aims at ``target``. The other actions ignore it.
+    """
+    if action_type in TILE_TARGETED_ACTIONS:
+        return Action(action_type, target=own_tile if target is None else target)
+    if action_type is ActionType.MOVE_TO:
+        return Action(action_type, target=target)
+    return Action(action_type)

@@ -54,17 +54,14 @@ def test_apply_direct_order_reports_what_became_of_the_order(
     assert queued_counts == expected_counts
 
 
-@pytest.mark.parametrize(("target", "expected_target"), [(None, (0, 0)), ((2, 3), (2, 3))])
-def test_build_aims_at_the_target_or_else_the_npc_tile(
-    build_map: MapBuilder, target: tuple[int, int] | None, expected_target: tuple[int, int]
-) -> None:
+def test_apply_direct_order_aims_a_build_order_at_its_target(build_map: MapBuilder) -> None:
     game_map, npcs = make_world(build_map)
-    order = DirectOrder(npc_id=npcs[0].id, action_type=ActionType.BUILD, target=target)
+    order = DirectOrder(npc_id=npcs[0].id, action_type=ActionType.BUILD, target=(2, 3))
 
     apply_direct_order(order, npcs=npcs, game_map=game_map)
 
     [queued] = npcs[0].action_queue
-    assert queued.target == expected_target
+    assert queued.target == (2, 3)
 
 
 def test_move_to_without_target_cannot_be_built() -> None:

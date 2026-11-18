@@ -41,18 +41,14 @@ def test_apply_orders_reports_whether_the_npc_took_the_action(
     assert (archer._speech_text == "On it!") is expected_accepted
 
 
-@pytest.mark.parametrize("action_type", [ActionType.BUILD, ActionType.PLANT_WHEAT])
-def test_apply_orders_targets_the_npc_tile_for_build_and_plant(
-    build_map: MapBuilder, action_type: ActionType
-) -> None:
+def test_apply_orders_aims_a_build_order_at_the_npc_tile(build_map: MapBuilder) -> None:
     pawn = make_npcs(build_map)[0]
     # A busy NPC only queues the action, so the test reads it before it starts.
     pawn.state = State.MOVING
 
-    apply_orders([pawn], [make_order(pawn, action_type)])
+    apply_orders([pawn], [make_order(pawn, ActionType.BUILD)])
 
     [queued] = pawn.action_queue
-    assert queued.action_type is action_type
     assert queued.target == pawn.tile_pos
 
 

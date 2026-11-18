@@ -11,9 +11,14 @@ import io
 import os
 import queue
 import threading
+from collections.abc import Callable
+from typing import TYPE_CHECKING
 
 from api.logger import pipeline_logger
 from api.roster import NPC_VOICE_MAP, ElevenLabsVoice
+
+if TYPE_CHECKING:
+    from elevenlabs import ElevenLabs
 
 # Default fallback voice ID
 _DEFAULT_VOICE_ID = ElevenLabsVoice.RACHEL.value
@@ -28,30 +33,23 @@ _MODEL_ID = "eleven_turbo_v2_5"
 class TTSEngine:
     """``VoiceLineSpeaker`` backed by ElevenLabs and the pygame mixer.
 
-    ``speak`` returns at once and the line plays in the background. Without
-    ``ELEVENLABS_API_KEY`` every line is dropped silently.
+    ``speak`` returns at once and the line plays in the background. ``create_client``
+    builds the ElevenLabs client from ``ELEVENLABS_API_KEY``; without that key, or when
+    it raises, every line is dropped silently. ``play_audio`` plays one mp3 clip and
+    blocks until it ends (default: the pygame mixer, initialised by the entry point).
     """
 
-    def __init__(self) -> None:
+    def __init__(
+        self,
+        *,
+        create_client: Callable[[str], ElevenLabs] | None = None,
+        play_audio: Callable[[bytes], None] | None = None,
+    ) -> None:
         self._queue: queue.Queue[tuple[str, str] | None] = queue.Queue()
-        self._client = None
+        self._play_audio = play_audio or _play_through_mixer
         self._running = True
-
-        api_key = os.getenv("ELEVENLABS_API_KEY", "")
-        if not api_key:
-            from loguru import logger as _log
-
-            _log.warning("No ELEVENLABS_API_KEY – TTS disabled")
-            return
-
-        try:
-            from elevenlabs import ElevenLabs
-
-            self._client = ElevenLabs(api_key=api_key)
-        except Exception as exc:  # noqa: BLE001 - client init failure disables TTS instead of crashing
-            from loguru import logger as _log
-
-            _log.error(f"Failed to init ElevenLabs client: {exc}")
+        self._client = _create_client_from_environment(create_client or _create_elevenlabs_client)
+        if self._client is None:
             return
 
         self._thread = threading.Thread(target=self._worker, daemon=True)
@@ -77,9 +75,7 @@ class TTSEngine:
         return NPC_VOICE_MAP.get(npc_name, _DEFAULT_VOICE_ID)
 
     def _worker(self) -> None:
-        """Background loop: generate TTS audio and play via pygame.mixer."""
-        import pygame.mixer  # already initialised by Game.__init__
-
+        """Background loop: generate TTS audio and play it with ``play_audio``."""
         if self._client is None:
             return
         while self._running:
@@ -116,14 +112,7 @@ class TTSEngine:
                     tts_latency_ms=tts_latency_ms,
                 )
 
-                # Play through pygame.mixer.music (supports mp3 via SDL_mixer)
-                buf = io.BytesIO(audio_bytes)
-                pygame.mixer.music.load(buf)
-                pygame.mixer.music.play()
-
-                # Block until playback finishes so lines don't overlap
-                while pygame.mixer.music.get_busy():
-                    pygame.time.wait(50)
+                self._play_audio(audio_bytes)
 
             except Exception as exc:  # noqa: BLE001 - worker thread must survive any API or playback error
                 pipeline_logger.tts_end(
@@ -131,3 +120,42 @@ class TTSEngine:
                     char_count=len(text),
                     error=str(exc),
                 )
+
+
+def _create_client_from_environment(
+    create_client: Callable[[str], ElevenLabs],
+) -> ElevenLabs | None:
+    """Build the client from ``ELEVENLABS_API_KEY``; None, logged, when it cannot."""
+    api_key = os.getenv("ELEVENLABS_API_KEY", "")
+    if not api_key:
+        from loguru import logger as _log
+
+        _log.warning("No ELEVENLABS_API_KEY – TTS disabled")
+        return None
+
+    try:
+        return create_client(api_key)
+    except Exception as exc:  # noqa: BLE001 - client init failure disables TTS instead of crashing
+        from loguru import logger as _log
+
+        _log.error(f"Failed to init ElevenLabs client: {exc}")
+        return None
+
+
+def _create_elevenlabs_client(api_key: str) -> ElevenLabs:
+    from elevenlabs import ElevenLabs
+
+    return ElevenLabs(api_key=api_key)
+
+
+def _play_through_mixer(audio_bytes: bytes) -> None:
+    import pygame.mixer  # already initialised by the entry point
+
+    # Play through pygame.mixer.music (supports mp3 via SDL_mixer)
+    buf = io.BytesIO(audio_bytes)
+    pygame.mixer.music.load(buf)
+    pygame.mixer.music.play()
+
+    # Block until playback finishes so lines don't overlap
+    while pygame.mixer.music.get_busy():
+        pygame.time.wait(50)

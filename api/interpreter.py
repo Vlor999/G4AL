@@ -192,7 +192,7 @@ def _orders_for_log(orders: Sequence[NpcOrder]) -> dict[str, Any]:
             {
                 "npc_id": order.npc_id,
                 "npc_name": order.npc_name,
-                "action": order.action_type.value if order.action_type else None,
+                "action": order.action_type.value,
                 "voice_line": order.voice_line,
             }
             for order in orders

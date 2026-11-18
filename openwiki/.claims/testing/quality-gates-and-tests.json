@@ -1,0 +1,96 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:f0f30edbaef9551347edfa9862541b4e88a734a7d5d714006ace2254686ad8da",
+  "claims": [
+    {
+      "id": "claim_775cfa4179f045b7928b2801d27368ee",
+      "statement": "make check runs format check, lint with the import contract, mypy, vulture and pytest with coverage, and the CI quality job runs the same make targets.",
+      "evidence": [
+        {
+          "resource": "repo://.github/workflows/ci.yml#L15-L35",
+          "version": "repo-lines-v1:sha256:6a01c8fb2c1ccfce9fd3f5337c36bc7e23626012022fa5bf784f5df0f6c92ff1:eyJzZWxlY3RlZExpbmVDb3VudCI6MjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU5ZDgwMTU0ZWQ0MmZjNWM3NzliMTMzMTU3OGI1OGI4OWM4MDFlYWNlNzRmMjRjZDQ4ZWI0YTIzNTc5NDBhOTUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjM1MzA5OGEyNjYwZGFkN2I3YzgxYjg1MmYyYzk2YWExMjIxNzMzNWVlZTgyZDI4NDFmZTI1YWUwZWI0NTZlZDEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijk4Njc3MGQxZjVmOGY0N2Y4ODkzOWQ1NmMxYmI5MjdjNzQwNjhmODRmYjUzNjg0NmFiYWJlZGJjMjQxYmNmMDUifQ"
+        },
+        {
+          "resource": "repo://Makefile#L24-L46",
+          "version": "repo-lines-v1:sha256:289929ffbde2854d90a5464aa472a1218943b9183fb4eeddd3d74fc8dc1d0836:eyJzZWxlY3RlZExpbmVDb3VudCI6MjMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk1YjJiNGE3NmFlZTBiYTM3MmU1NGM5Nzg2YmQwYmE1NzFjY2IwYjNlNzdmYzc1Y2I3ZTYzN2E4MzlmY2VhNzUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZhMDdlMzJiMjczZmQ5ZTEzMmQwYTFiYmJkMjg5YzI3YzA2ZmVjYTRhNDlkNTg3ODMwOTdhNTJhMmY0NjdlOGUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjRlNzU4MGMzNzVjMWYwOTgzYWE5NzM5ZTJhYmI0OWM5NzFjMDk2MjcyYTFlNTE1NjdkYjMxMzE4MDQ3NmUxY2EiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_98801938893d48f29ee173f7390649a8",
+      "statement": "Coverage is measured with branches over game, api and server and fails below 83 percent.",
+      "evidence": [
+        {
+          "resource": "repo://pyproject.toml#L34-L44",
+          "version": "repo-lines-v1:sha256:8272d1fe4712fbbb8c20eb60bef030fce004c006b8e5fd352f562f87331624a8:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxMDg1YWQwOTA0MjU3MTFhZGI0ZjE1ZjI4ZTI1YzE3MTA3OTJjMWQ0NWRhNzM5NGVlOTEyZTAzODE5MDQ1OTEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAzZmZkOWQ4M2RhNWFiODg5YTIzN2EzZDBiZjAxMzM4M2QwYWQ4Njc3YzQ4MWQ4NzVhOThkNmQ2NjQ3NGE0MTQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImU3NzY3NGIyYjFkZTliNGM5NDgwNTdjMDAwMTc2ZGEwMTk2NDk4ZDA4NjA0NTI2OWRhN2Y5ODlkMTg2YjgxODIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImY0NmE4NjYxYTkxMmRiZjNjNGUwMTI0ZGEzNjUyMDZmNTQ1ODFkZTkyNjhhMWVjOTE2YjNlMDMzMjAzNjNiZTkifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_714b8bb74d704fdfbd9cd3de2df892a0",
+      "statement": "mypy runs in strict mode over game, api, server and main.py.",
+      "evidence": [
+        {
+          "resource": "repo://mypy.ini#L1-L9",
+          "version": "repo-lines-v1:sha256:a4b1e7f16b9c7f493adf369b00fa47bc95a8f1ce4b39fe075ffae514a82e1731:eyJzZWxlY3RlZExpbmVDb3VudCI6OSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZTk2YjM5MzNjMTE5NGE3YTc1YjBiZmEwMTRiOGY2NjNjMDczOWNjMDZmYTMzYWI0MDc3N2FhZTNjMTMyZDZhOCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZDc4NDIxM2Y0OWRlOGNiMmQ5NDViMDkwODliZGYzNGRhZDBmNzljZDA0MGNjY2M2MDNlMzhhNDM5OGRmZTE1MCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjAsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjAsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_1534a4ce21434e1cb3855f972827c006",
+      "statement": "vulture_allowlist.py whitelists Arrow keys and the houseCount snapshot key that are read by subscription or by the client, and route and Socket.IO decorators are ignored.",
+      "evidence": [
+        {
+          "resource": "repo://pyproject.toml#L48-L55",
+          "version": "repo-lines-v1:sha256:9f1c442bcddf1c905e2d4f2adfda82a82265839b442a47a62d018006f8a7a97d:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZmVlMTAzODQyMDE4NGY0NzFkN2JkNWMyZjEyMmNhOGY4ODFjNmY3Mjk1Yjk3YmJhNDE0ZDY3MDdiM2IxMDIyYyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMDFiYTQ3MTljODBiNmZlOTExYjA5MWE3YzA1MTI0YjY0ZWVlY2U5NjRlMDljMDU4ZWY4Zjk4MDVkYWNhNTQ2YiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZjQ2YTg2NjFhOTEyZGJmM2M0ZTAxMjRkYTM2NTIwNmY1NDU4MWRlOTI2OGExZWM5MTZiM2UwMzMyMDM2M2JlOSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNDMzYWJmYTI0ZDk3NjAyN2RiY2NkNmI0M2EwOGIwOTUxNWEyNjI4MDI4MmQ0NmY3Mjg4YjI3YmI5OWY0YzYwMCJ9"
+        },
+        {
+          "resource": "repo://vulture_allowlist.py#L1-L23",
+          "version": "repo-lines-v1:sha256:252dd17c436f00a2e23d155ad8672a9a23c66afa7cbd03d9facaf1db663c64a0:eyJzZWxlY3RlZExpbmVDb3VudCI6MjMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAwZDBmNzA2MmNhYWYwY2IyNTkyMGJkNjRkMTU5MzJjYmE1NWMwMDk3NGQwNDA1N2Y3NGE5OGFmZWQ5ODdjZmQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNiMzVjNTk3NTEwNjEwY2UzMjcwYWM5NTZhYmM4NTQ3YmJhMWE3MTdiODQ4N2M0MDI3MTI4NzEyYjNjNDRkNmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_e393ee9e755d461d8daa17f5e8ff5d36",
+      "statement": "End-to-end tests build a GameEngine with fake ports and serve it through create_app and Flask's test client without network, audio or a running server.",
+      "evidence": [
+        {
+          "resource": "repo://tests/e2e/conftest.py#L1-L22",
+          "version": "repo-lines-v1:sha256:8a36c5bea48fb68cd8dbf4b18d1824797440196849e0876c429ceb0265b4e325:eyJzZWxlY3RlZExpbmVDb3VudCI6MjIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjIxNTYyODJjNmVkYmE3YjQyOTRiMWYwYTVlMmQ2NGIzZTYxZTQxMDk1NWJlNTA3YmEwNDYwY2YzNTczM2M1Y2QiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjhmMTk4YzFkNGVlMTBmOWVmMDYwNzZhODViZDAzZGVmMzE3OTc2NzNhYjMxZDVjZmYzOGRhZmNmNThjOGVlNDAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://tests/fakes.py#L1-L33",
+          "version": "repo-lines-v1:sha256:bf11cc3851be2da8029b176b30e1569131404ed03fefef69b76492ca1f3cb1c8:eyJzZWxlY3RlZExpbmVDb3VudCI6MzMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJhYWIzNGY1ZTA2MTFiY2NhNGIxMDNiMDdjNWY5MzVkOTMwMDQ0OTRiMzBlMTUyMTdjMTM5MDQ3NTkyMGE3MTgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM5Y2ZkMTM4NjZiNjVmMzdjZTcwOWVlMTA1YWU2MGY4OTczZTRjZjgxNWQyZDZkNWY3YmE2NzQ4M2FjODg0NzkiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_a20882a6f8b64383a8a5ef378fda2c6a",
+      "statement": "Domain tests build maps from ASCII rows with the build_map fixture.",
+      "evidence": [
+        {
+          "resource": "repo://tests/conftest.py#L1-L28",
+          "version": "repo-lines-v1:sha256:25ede15a4efd4ca204299251790a42398a8dda5a78bd58fc222cfa2fc6dec80c:eyJzZWxlY3RlZExpbmVDb3VudCI6MjgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImUzNjU4NDNjZDkxNDczMmI5MjdlYWE2ZjZjODI0NDA2NWM0ZmU4MmIyMTYwMzU2YzQwMDBlMmJkOGFlN2MzY2QiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxMzQxZDg0Y2RhYTJjMzY1NjFlM2ViZWY1ZTI0ZDU4MGE5MWNhZTkyYjBkNTU3OGFhN2Q3MTQ4Njk1NzNjODkiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_de7e88479e6946fba9861c82e8fee32f",
+      "statement": "A CI security job runs gitleaks and pip-audit, and pre-commit runs ruff, gitleaks, mypy and vulture.",
+      "evidence": [
+        {
+          "resource": "repo://.github/workflows/ci.yml#L37-L48",
+          "version": "repo-lines-v1:sha256:4c2e92c62dc540a80cf64fc1be5053dd05b28759105b8856e251d8b36946e3b1:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjlkMTE0Njc1NDc4OWQ5ZDlhNzc0ZDQ0NTU5YmQ0YjZmZDU3ZDg1NjA5NDA2OWFjYTdjZGUxYzNkOWNmZTNmOGUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjYzNWM5MGE2Y2FmNTJlNDEyZjE0MjZiZThlNmY2NjYyZjJiMDQ0Njg2YzA1ZTA2ZDg5MDFjY2YzMDVmNzFkMGIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjY1MTM5NGY2MDIyYjIyNTViNzkzY2RiMGNiMzNiMjM1M2M4ZTM4N2ZjYjBkMGUzZjQ3NmI1MGFiMTdhZTAxY2UiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://.pre-commit-config.yaml#L1-L39",
+          "version": "repo-lines-v1:sha256:2785261a99bfe4cda14da7c15c11b3a7e6f1e84ef33978f775c156914216b21a:eyJzZWxlY3RlZExpbmVDb3VudCI6MzksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjVhMTEwZGI1YTkzNTdjZGExZDc4MjE2Y2RjMGJmOGIyNTVlMzM4Y2JjMWYzMjdlMGRmMDhjZmM3NzM5MWRkZWYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjkxNzg2YmQzZDQ5YmE5M2IyNmM0NDY4MzUyZDVlYjA3OWI1ZmNlNGZkZmQ2MzY4Mzg2NDIxZGVmYzI2NzA0ZTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.5.2",
+    "at": "2026-11-18T09:30:24.405Z"
+  }
+}

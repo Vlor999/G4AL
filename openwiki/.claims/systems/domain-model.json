@@ -1,0 +1,104 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:2f80074d2e2234d1a54b5f7a9d7919b8ef126b107127ba284d6562e8c404ab5b",
+  "claims": [
+    {
+      "id": "claim_6fdd7f9ad9ea493ba2e360bd7a2a7040",
+      "statement": "enqueue refuses an action outside the NPC's allowed_actions, with the NPC saying it cannot, and pawns and archers have distinct allowed action lists.",
+      "evidence": [
+        {
+          "resource": "repo://game/actions.py#L9-L48",
+          "version": "repo-lines-v1:sha256:914e3292bdcbac1151745b0b56e0d700dbb908420c675c3cee9188399b8a5b3d:eyJzZWxlY3RlZExpbmVDb3VudCI6NDAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg5MjE4OGFhZDdhYzU1ZWE3YjUyODJjYzdlY2QxMjhlOWM1YmMwYjFjMzI0YTU5MjkyZDdhN2MzOWFjZDU4ZDgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY5NDE2ZTA5Zjc4YmEzMTZjMDMyNTY4MjEzYjg1NWVlNzU2ZTQxNTY1ZDkxOGYwOTUxOWM4MWZkNjIwZjQwNjAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImRjNzExZTM0NjNjMjcwMmYzM2MwYzk3NTliMGYyNzdhYjA3NzI3NTJiMTUzNDVmYzA3NGZmZjIwMDUxZTkzOWMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImM2Mjg4NjE4OTA4YzlmMDA4NzFlOGYwNjhmMDFkZTc5Y2FkYjNjODYwODdjMWYyYjVkMWIyMTZlYjI1NjM2OGEifQ"
+        },
+        {
+          "resource": "repo://game/npc_base.py#L74-L104",
+          "version": "repo-lines-v1:sha256:c5d2f91fd5d9f1738622f267a75d523e4c82fa62132aec711c94d51c418f8139:eyJzZWxlY3RlZExpbmVDb3VudCI6MzEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQ1MTcxNjI4YjFkMGJhNmQ1ZmViODA5ZDE3MjNmNzk4NzlkMjMxZTc2NWIwOTYxYjE1ZjcwNzA2NGU2YTdiMWYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImU0OWExNWFkZjAxYzYyZTAwNjAyNjQyMjUwNmRiNzI5MTk2Nzk3NTk0MmJlNzAzMTYwYjJjNjM4ODIzZGVjNDYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjkyOTRjZDk0NTdmODM1NWU2NmQyNTllODMxODU1ZGRlMGQ5ZDUzNjFiOTljYzY4NTQ0ZWUxMmQ1M2E2OWU1YzgifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_ce09055bbb2848ad8668dfb601d2eb0c",
+      "statement": "NPCBase.update dispatches on State each frame: idle NPCs start queued actions, moving NPCs follow paths, performing NPCs run the action timer, and DONE releases the reservation and starts the next action or goes idle.",
+      "evidence": [
+        {
+          "resource": "repo://game/npc_base.py#L120-L158",
+          "version": "repo-lines-v1:sha256:651bf22b4b6ead7b461997f05c2dcb28811e2cd6d4fa1fc0c7303878e2c1fde0:eyJzZWxlY3RlZExpbmVDb3VudCI6MzksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImUyNWU4ZTcyMTVmYjI2M2UzYWE2NTE5ZDg2YmVmNWIzMTc4ZjhhNmY0MDhhYTQ4ODk2OWQ1MzJmY2UyY2FlMDEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY1MWJiZGUyZjQ2MDUxZGRmZWRkNTdhNWFjNzAzMTUyZmJmMGRhODY4Y2ZhYTBlZWU5OWMxODhjYWE4ZGQ2ZDYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQ1YmM1MTAyMDNmMTBhMzM1NDViOTMwYjM3ZmU2MTQwYWQwMTRkMGM4ZDczMTBjYmQ4ODQzMDhhNzgzMDBiMDMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjM2ODZjOTE5ODJiOWVkODllOWU0NzJjYzA4Y2U0ZTU4NGRkNzMxODYyODk4YzYxYWI1MzUxODllZGM3ZGY1YzAifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_6c6004461cf5455485dfffeba4c83b4e",
+      "statement": "After depositing at the hut with an empty queue, an NPC with a harvest in progress returns to the same target until depleted; if storage is full it enters WAITING_DEPOSIT.",
+      "evidence": [
+        {
+          "resource": "repo://game/npc_base.py#L224-L260",
+          "version": "repo-lines-v1:sha256:13d4316d90205607bcd0611b28b17522c7fe8374f9170802ae31c6ca1cacde00:eyJzZWxlY3RlZExpbmVDb3VudCI6MzcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjFlNjM4MDljODE5MTkzOTBiOGU1ZjExZmFkZDlmNTBhZTM3NmQ0OWIxMDcxZDUwMzQwNDhiNTEwMTcxMGQxNmQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJkYmU4N2FmYzE0NTQ1YTZhZGEwZDA0MjU5NGJmOWExZTIxZWFmOWVlNWRiYzIzODMwYjExOTc0OTA2OTAzNDkiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImViNzU2OTliZmFlMTg1NTQ1MmM3NmYwMWIzNDcxMDc5OWYyZGJlNzczZjI1ZTM2Y2JkYjJlZmYwY2M2MTNjY2EiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjE1ZDM5NDE1Yzk4YTE2ZjRmZTMwYzgwYmUyMjhiY2E1NDk4ZjRkZGFhMDUzZDU3Njk2YzdjYTA1NDhkOWNmMzEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_a9c2cc6784494fe59771d23e8ee3a820",
+      "statement": "Placing a new house spends 5 wood and 3 stone from storage and is refused with a spoken message when resources or space are missing.",
+      "evidence": [
+        {
+          "resource": "repo://game/npc.py#L79-L108",
+          "version": "repo-lines-v1:sha256:005895075b4f4c8dae4ba9e691ada24fc4620907cea183f21c890a1fcc1e6127:eyJzZWxlY3RlZExpbmVDb3VudCI6MzAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY3YmYyMjE4NGVmZTZjYzhkOTlkMjEwNzk3OTA3OWM5ODk0ZjZkNGJhMDg4OTZhZjVjMjJiNDM5NjQ4ZmViNjEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJlZDZjOTc2ZDllYmVmMDQ4NTE3ZTY5OGZhOWEwNGNkZjViNmVjMmFjZWE4Y2FkNzE0ZWM1Zjg5MmU1OWFkZTciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjRlYjRkY2U5ZTM1N2U2OTA5OTQxOTljYWIxNTljZDEwZGU1OGYwOTNiNzAwZDk5ZmEwY2ViYTllMjVhODMzNmUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjJkN2E5ZTdmOTFhZjFkNDEyMjUzZmUyZjE3MDBlNzExMmU0ZTRlZTg3MmY3ODcwMDhlN2I5Yzk4YzBlM2RkMTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_ae48e8b759f74c049d5bae8f66bd863c",
+      "statement": "ResourceStorage is one global stockpile whose capacity is a base plus a bonus per completed house; add stores only what fits.",
+      "evidence": [
+        {
+          "resource": "repo://game/storage.py#L29-L82",
+          "version": "repo-lines-v1:sha256:b1748e7f3ff0aa481216bf7448419362674fd6cf321782f1cfa02b50c81fc8ec:eyJzZWxlY3RlZExpbmVDb3VudCI6NTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjViOWE1MzI1YjYzN2I5MjJjMDVlZWVlNmI3YWYxNDUzZTQ1M2NiZTNkZmIyMjJhN2UyMTc4OTA4MWE0OWM4ZmUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZkMTkzYjg1NDRiNTViYTQ4M2RiNmFmMjAwNmY5ZGU4Mjg0MTAxZDdhYTNkYjBjNjViZDc4NTg1NThmN2NkYzIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImY1NmQyMzM2OGI3ZDQ4YzI4NWZmYWZkOTk4Y2JhNzZhNTZlNjBhNGIxYWI1ZmI4MGM5NjQzMzM1OGI1MGNjYWUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijk2MzYwYTY5YjQ3ZjJjZTBiMzRhODVjMTRhMWIzYzdlOTliZTI0ODFjNzc5MTA4NzA5NDZiMjM3M2Q1NTBkYjYifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_871ac8f5845b4a2f949719d57c31af87",
+      "statement": "apply_orders returns one OrderOutcome per order, does not accept orders for unknown NPC ids, and marks at most TTS_MAX_SPEAKERS accepted orders as spoken.",
+      "evidence": [
+        {
+          "resource": "repo://game/orders.py#L50-L75",
+          "version": "repo-lines-v1:sha256:b824c990a5f9d3440c9e7b7ad4fd368d838e26cd23e0df043462637986b21a51:eyJzZWxlY3RlZExpbmVDb3VudCI6MjYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRjYzIzOTBjZTRiOWZkMzBhNDYxMmRmMmQzYWRiZWVmNGNjZmY4NzNkNjVhYzZhMjZhNjU0NjNiOGU3OTdiNjkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRhYTM2MjQ1ZGU4YzIzYzRmNWVmOWJhM2E2NDIxZGFmMGUwYjMzNDQyYmQ4NTJlNWExMWIyNzM0OGMyNmNiZDYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImE4YzM0OGE0NjUwMmRjZWI3OGVkYzNmYTA4NTZiODAzM2M0ZjM3NjJlODdjZjM1MDQ3YmViNzI0M2M4YzhhYWUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_a2c6797a64d34ec4b46347099d6e7a6e",
+      "statement": "apply_direct_order returns a DirectOrderOutcome value (accepted, refused by NPC, unknown NPC, target outside map); a move_to DirectOrder without a target raises at construction.",
+      "evidence": [
+        {
+          "resource": "repo://game/direct_orders.py#L14-L62",
+          "version": "repo-lines-v1:sha256:830eb6734cc2c2ccbb166eace95479eeb4cab9c11b0cf54f9a85fe0d777289ec:eyJzZWxlY3RlZExpbmVDb3VudCI6NDksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijc1NDg5MDE5NzJjZDQ4M2FkMjAxNzMxMjQ2Y2ZiNmFkYTExODIwNTljOGIwYjdjY2FjOGM0ODliNzgyNWIwYzgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImYxZjY3MTQzZTUyNGQxOGVmMDRlZTE5Y2E3YTUwNmMxY2Y4NDA1MzVkY2Q0ZmI0NTZjN2IyMDZmMzRiZjJmMmQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQyM2U5Nzk2NDE0M2UzN2VkNmNhYzk0MjEwNGUwMjlmMjZjNjQzZjIxODcyMzY2MTU1NzI1Mjc1ZGY1NDU0MjciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_275547cee18b45528c90bd592feb58ee",
+      "statement": "spawn_world builds resources, a built storage hut, pawns, archers, sheep, a cat and wild archers, and links combatants through lists shared by reference.",
+      "evidence": [
+        {
+          "resource": "repo://game/spawning.py#L26-L77",
+          "version": "repo-lines-v1:sha256:f095602055f61e04e91008a2cd7163beaf00f092696ac39b6232da1097bde274:eyJzZWxlY3RlZExpbmVDb3VudCI6NTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjM2NjQzMDA1N2UwNTNhNzVjZjQyYjNiNWYwMjNkMTA2MjEzZDk3ODA5NWNhYTFhZmQ2Mzk5ZjhjODdiODRkZjIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQwYTk3YzZmMjFkNDFkOTE2ZTgzNWQzYmM0ZDQwMWYyMGY3MjczNWQ0ZTBkNDdjZTI4ODNmMjA4NTA2ZTg3ZWUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImQ3MWQ2ZjVkZTk4OGQ1NzQ0MzUwNzM3OWY2YzkyNDc2ZjAzOWE3OWY0ZGU0NjZjNjY4ZGUwZmM1MTA0OWVhNDAifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_d6763cd5423f42dda2f76f0f7c99c227",
+      "statement": "GameMap generates terrain from a seed and treats grass, dirt and sand as walkable and water as blocked.",
+      "evidence": [
+        {
+          "resource": "repo://game/map.py#L11-L79",
+          "version": "repo-lines-v1:sha256:7332149ee6e5940b2c1e176c5aa66970d6c8a03ce428e2c05606c60d0ad7f1b2:eyJzZWxlY3RlZExpbmVDb3VudCI6NjksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRlNDY0NjAzNWYxYzM2YTJjOWY5ZGRkMGEzMjFkOWUzMGI4ZTBiMTAyMGVhZjJhZWI5NzY2YTk5ZWVlNWZlNGUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjhiOWViNTY0OWRhZjA1ZTQxN2U0ZmFkZTU4M2I4ZjNkMTVhNTY1YWRjM2E4YjA3ZDI5YTY5YjM5NWUxOTkxODQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjU5M2NlZTNhYTU3NTBjYzlmZDNlMjdhYTFlYWU1NTA2NjQwODgxMzhiYzhkNGZlMTE1M2E0Y2VkNDdhOWQ2OWMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.5.2",
+    "at": "2026-11-18T09:41:00.050Z"
+  }
+}

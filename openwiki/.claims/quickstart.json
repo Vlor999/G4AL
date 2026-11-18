@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:587bd14c73aaad722c9a5bc8c9a9ecf63011fc727eb7d2b62d6c6f2497db3506",
+  "claims": [
+    {
+      "id": "claim_500f06df7b894a8286776c8703b17b92",
+      "statement": "make run starts the server through main.py, and make check runs format, lint with import contract, type check, dead code and tests.",
+      "evidence": [
+        {
+          "resource": "repo://Makefile#L1-L46",
+          "version": "repo-lines-v1:sha256:c0b23eddbb4a6a08bf1b9d8403da33368bc8ea725ea6881f2a61eb021f61484c:eyJzZWxlY3RlZExpbmVDb3VudCI6NDYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZlZTEwMzg0MjAxODRmNDcxZDdiZDVjMmYxMjJjYThmODgxYzZmNzI5NWI5N2JiYTQxNGQ2NzA3YjNiMTAyMmMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZhMDdlMzJiMjczZmQ5ZTEzMmQwYTFiYmJkMjg5YzI3YzA2ZmVjYTRhNDlkNTg3ODMwOTdhNTJhMmY0NjdlOGUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://main.py#L1-L12",
+          "version": "repo-lines-v1:sha256:c058fdbd8562c2a7f9981ee411169c6445010584ee36b3358da1165b96831eb7:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZmNjg3MDUzMjUwNThiNTAxY2ZkMWIxYmM2OGRiYTYwZTcxMzA4YmU3YWNkZmQ2ZjhjYzhkN2MyYzFhNGY3YTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoyLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjlhNmE3ZmZlZWQxYWY4M2NlZDgzNzA1NDk0OWUwYjJmZGYwZTU2OGZlM2Q0YzJlMjBjMjI5ZWMwYTk3MDdjYzMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_0962389d32ef4122b04f3c7b1ec2b704",
+      "statement": "The simulation runs at 60 FPS in its own thread and the state is pushed every third tick.",
+      "evidence": [
+        {
+          "resource": "repo://server/engine.py#L167-L200",
+          "version": "repo-lines-v1:sha256:1be0d9ed95caca761238a3fab32bd7a64b963e167859ee3539012b3ce8362828:eyJzZWxlY3RlZExpbmVDb3VudCI6MzQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjY4Nzk0OWYzNGNkZGU1MTEyZTdjYTZkZjhhMzBjNmY2MGYwY2RmNDI2NjFjMGJiOWQ5OGUyM2Y5MjRlYWE3YTkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRhMTQxZDc1Nzg3ZmZlZDcyNmNlNDFlNDlhZGVlMGJkMTkxZjI2MTMxMmUyNTlkNzE1NjRjYWIzMTI0NmI1YzIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjI4MDExNTA3YjUxOTYwNWI2MjMwZmZhM2E4ZmRkZDNkN2E2MmE3ZmIyNjdmMmUzMzM1ZWNiYWVkMzk3MmVlM2UiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://server/engine.py#L51-L80",
+          "version": "repo-lines-v1:sha256:e3bd5dd50bae8d23cfb52fb779654e8bfb582f7a9593f1f746e0f67ffa31fba0:eyJzZWxlY3RlZExpbmVDb3VudCI6MzAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjUzOGViY2Q3NjQ4MGRlYzVmOTU4ZmMzNGI1NjJjMWEzMWM4OTY3NTA4OWZmNzAzYmZkMWZiZjJlNjQ4ODM4ZDQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjE4ZmJlMmYzY2M5OGQ4MWRjMmMzNDY0OTBhNDkwNjI5MjU5OWU2ZjI0NDQ3NDA3ZTM1N2Y4Y2FjMjI1NmY5NjEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjhhYjM1MDUxNzViODZjM2FhN2MzMzNlN2U0Njk5NmI5NjE5OGJiNWI3ZDU1MWIyZWJhMDM5YmUyYzJlN2ZjYTgifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_428bd5bfde7d4df0b5eb40631c08d54b",
+      "statement": "The domain reaches the outside world through two ports, an order interpreter and a voice line speaker.",
+      "evidence": [
+        {
+          "resource": "repo://game/ports.py#L14-L43",
+          "version": "repo-lines-v1:sha256:50bdb803f6da07a1c82818bf5e271a21ccbcb2f56468572ebfe80e393f35f0e2:eyJzZWxlY3RlZExpbmVDb3VudCI6MzAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU2MjBkODVkZTRlZDdhYjgwMjFiNGE4ZGQ0ZmExNWVjNTE5MjVjZGZjY2RlMTgwNTg5NWE0YzhhM2MzYmE0OGMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjIxODk2MzkwNGVkOWFiZjBmNmM0YTdhZjE3NTFkOTk3MjFkY2ExMTg5NzdhYjY5YTQ3Y2Q5ZmFmZGUxYmQwZTkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.5.2",
+    "at": "2026-11-18T09:30:24.405Z"
+  }
+}

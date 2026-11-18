@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:0409a71ca92ded78665db1fef8307e1830de9088a109fa4cd96bea546f6140a1",
+  "claims": [
+    {
+      "id": "claim_3e15c584ccf14d30b4560758bec57e87",
+      "statement": "The Mistral client is built lazily from MISTRAL_API_KEY on the first command; a missing key raises OrderInterpretationError.",
+      "evidence": [
+        {
+          "resource": "repo://api/interpreter.py#L282-L295",
+          "version": "repo-lines-v1:sha256:485228d36e3ba2c2a3a23e658a1880accc5744c0a83573ae874daf4313e13b48:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQ1MjBmNWVhNmRmNmFlZWJiZDQ1ZTEyNTkwMmQxOGE0OGNlNmQwZjhhOWNkNThlN2FjMjFlYjI2NWYyN2U5MzQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImNlZjhmNjliMTU4ZDQwZTBjNTNhNWNhMDUwM2NlNTM3MjY5NjU1ZTk3OWZiOWRjN2FiYmI2NTY2OTI5MDVhYjkiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjgwYTgzNzU4ZWQxOTk3ZjU1OTZlNzY4Mjg3Y2QwMzBjZTU1YzQwMWUzNTkwMTE2OWRhZjg5Y2JlZDA3NjhlYWIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_b22e448936c4481bb88a2e412e27d10a",
+      "statement": "Without ELEVENLABS_API_KEY, TTSEngine starts no worker thread and drops every voice line.",
+      "evidence": [
+        {
+          "resource": "repo://api/tts.py#L52-L53",
+          "version": "repo-lines-v1:sha256:7fc2f69c58b8d1bea7add9ec37d51eee7b32ccf6b5d1396f1442e6e192c23f87:eyJzZWxlY3RlZExpbmVDb3VudCI6MiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMjc2N2JlOGFlYWUyNWQyZGJkYWEyZTQwNGY3M2E0MDYxZGU4NTdiMWJhMGM2ZjQzMDE3YTcyNzlhNmE2YmE3YyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNWU3YmNkMzZlZjUzYjQ0NTIzZTY1ZTk4ZDE5NDQ5OTNlMGZmMTc0NmY1NTM2YzFhNTExNzQ2ZjNlMDFlNzU2ZiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiOTQxZDk3Njk3ZjE2M2IxNWRkZDdkMGU1ODcwNDY5Mjc2NzM1ZmU5M2ZhMzJkNWIxNTBkOWNjNDZiNGM0MDJiMSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiOTkxMmY5NDNlOGQ4Y2JjZmJiOTVmZWQ4NzhmM2FhZWMwNzBmOWQ1ODVjNWU1NDM5M2FmZjg3NDZkMGRhZGIyYyJ9"
+        },
+        {
+          "resource": "repo://api/tts.py#L60-L64",
+          "version": "repo-lines-v1:sha256:c51037d37e88027beb93113848dd1cf0535fcf4944696b83a03dbf9f0fd48a5f:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMGJjNmY1YTU2NWI1MDk4ODNkNTJhMTU1ZmViNGFjZTY5MTcwZDhhODk5ZjhmYmM1ZGU2ZTczNDc1M2ZlZWQ0MSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYjgwMzZhZTE5OTlhMmMxZjYyMWJkMzlkYjE3MTI3ODc3YjNjNDczMGI2MzJlZGRiNDJhMDcyOTE3NTg4YWJhZCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNGI1ZDZiYWY2ZDFhZDRkYmNlMWQ4ZWI4OTcyYmRiMzY1ZjY3MjAyNDBlNDRhNGYwZTBjZDJiODJhYmYyNzUyZCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNTkyZWZlOWQ0NTljZGM1M2NjZDY3YjAyYmFmY2Y5YmM2YTQ3OWY5OTBiMTMyNTdkZWUzZGM4MmQxN2ZkNzZhMCJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_5412ace54a424230a3dde1a6bbbe50e2",
+      "statement": "main() loads .env before building adapters, sets SDL_VIDEODRIVER=dummy, initialises the pygame mixer, binds G4AL_HOST (default 127.0.0.1) and on exit stops the engine and closes the speaker.",
+      "evidence": [
+        {
+          "resource": "repo://server/app.py#L34-L67",
+          "version": "repo-lines-v1:sha256:c83a6f277cd4210af03930439ac71693e1ae29c90d5276517b7b3c0295934df9:eyJzZWxlY3RlZExpbmVDb3VudCI6MzQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjcwYmM1MTI2NWRhM2M0OTRiZGQyOTQwOGMwZTE3NzY2NWJmZWFkNmZkMjc5MzZmMDU5ZDJjNTU3YjE5YTNjZTEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFlYzQ1OTIyNzJkMjdlZmY3NDQ4ZTU0ZDNlY2EwZDVjYjI3MjEyOTI3M2MxMGIyOTE1M2VmZjVlY2QxNjM5N2UiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImY4ZjFhMTlkOTBhNTQ0MzE4ZjUzYjFiMDI4MzI5MmMxM2RkOTBiYmVmOTBlNDZlZjQzYWU5MTc2Yzk1ZmQxODAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_2dc7f079ba864272b93704d2988b7692",
+      "statement": "The pipeline logger writes per-session .log and .jsonl files in logs/, rotated at 50 MB, only for records carrying an event extra.",
+      "evidence": [
+        {
+          "resource": "repo://api/logger.py#L42-L78",
+          "version": "repo-lines-v1:sha256:c8a82309dda30c2e8eba4354359d01ac719764aeb98cadbeb6afa7ad7a87e811:eyJzZWxlY3RlZExpbmVDb3VudCI6MzcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjFlZjhlM2FjNzU0MTM4MjRiNjAxN2Q2N2Q3NjE1NGI4ZWUzOWNjYzUwZTc2ZTlhMDFkNzNjZGJjZjMzNWRiMmEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImZiMGQ1YmY4N2U5Y2JlZGZkMTFhMDJkZWZhMTI4ZjVhNzI4YjViMzY1MmIyNTUzYjk0MDI0ZTUxMWI3NmQ4ODMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjE3MzhjYzNmN2JlMzY0YzRiMjkyYTRkMTA5ODM2MTk5ODFiOGExNWFkYzI1ODUxNGEyY2NlZTM0NDZlNjE2M2MifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_38619a3a99444ecbae70528278d63501",
+      "statement": "Default playback loads each mp3 into pygame.mixer.music and blocks until it finishes so lines do not overlap.",
+      "evidence": [
+        {
+          "resource": "repo://api/tts.py#L139-L161",
+          "version": "repo-lines-v1:sha256:4c9f8612a9f8cc8799b50ad811aafd884b9bd87eaa435e557c48327fdb544c3f:eyJzZWxlY3RlZExpbmVDb3VudCI6MjMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImEzMWM1ODk0YTQ4ZjkyZGMyZjZkYzI5YjY2MWMyMWM1MmRmOWYzZjJlN2I1NjdiMTAxMjdiODcxN2Y5NDVjNjEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImNjNTM2Y2RkNjIwMjcyN2ZiNzk4NmM2YmZhMmM1MmZhNGJhZDVkZTMyMjM0YmM0ZTU0ODhjZThmZWJiZDk5YjMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjgzMmFkZGVmMTAwYzIxMzZjMDRiZjk0MTk0ZjA0NjBkZWFlN2QyNTRlYjI5MGRlMTYxMDg0MjM5YmRlNzcyYzQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_9fd4075065984eadba7b40efe7186fa1",
+      "statement": "The missing-key warning is logged through loguru without an event extra, while the pipeline logger's sinks keep only records carrying an event extra, so the warning is not written to them.",
+      "evidence": [
+        {
+          "resource": "repo://api/logger.py#L42-L78",
+          "version": "repo-lines-v1:sha256:c8a82309dda30c2e8eba4354359d01ac719764aeb98cadbeb6afa7ad7a87e811:eyJzZWxlY3RlZExpbmVDb3VudCI6MzcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjFlZjhlM2FjNzU0MTM4MjRiNjAxN2Q2N2Q3NjE1NGI4ZWUzOWNjYzUwZTc2ZTlhMDFkNzNjZGJjZjMzNWRiMmEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImZiMGQ1YmY4N2U5Y2JlZGZkMTFhMDJkZWZhMTI4ZjVhNzI4YjViMzY1MmIyNTUzYjk0MDI0ZTUxMWI3NmQ4ODMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjE3MzhjYzNmN2JlMzY0YzRiMjkyYTRkMTA5ODM2MTk5ODFiOGExNWFkYzI1ODUxNGEyY2NlZTM0NDZlNjE2M2MifQ"
+        },
+        {
+          "resource": "repo://api/tts.py#L129-L133",
+          "version": "repo-lines-v1:sha256:fe1c28bf4e5c1bb07a37defbea549a83e1d0a320142f858904ce2672a7e1828d:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYzlkOTc1M2VmNTg4MjJlZDM0N2Q3YzcyZWM0NjkxYjVkMWY5ZDMxNTMzM2Q2ZTk2MGY1ZDZiYTA1MTAzZWNkZCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZTE5NmE2OTk5ZjkwNGRiNWUwNmM2NmVjNjYyZGIxNGJjOGM3ZDllMmUxM2M3YmZlNGRmNDdlZGExMWIxZjFiMyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiOTA5N2M3MjYxMjBjM2UzZGE2NmRhZDViNWE5NDZhMGMyNGM2MTk3NjU2MTcwZWE4OTc5NGVlMmUwMmYwYjhkYyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMWExY2QyZDA0NzlmMzg5NTVkYTA2YmNmNTcxYzVhNjNiMTMzMTg0MDBmNjBiNmVhZDc5MWUxOTFkNTIzYTJkMCJ9"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.5.2",
+    "at": "2026-11-18T09:41:00.050Z"
+  }
+}

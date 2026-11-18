@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:0c098b5e58f65693df9a7c4060383b0de89ae839445de1a04636fb90dd5b3561",
+  "claims": [
+    {
+      "id": "claim_01922ab1fcfe410a8a5f0ff8bfee174b",
+      "statement": "The import-linter contract forbids the game package from importing api, server, main, flask, flask_socketio, mistralai, elevenlabs, pygame, loguru and dotenv.",
+      "evidence": [
+        {
+          "resource": "repo://pyproject.toml#L62-L81",
+          "version": "repo-lines-v1:sha256:44fe5b25e1c18f84d1f7fc037592f979bd13602c91858e58fffc05e6962dfbb1:eyJzZWxlY3RlZExpbmVDb3VudCI6MjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxOWZmYjYwMDExYThjYjBkZTRkNjI4NjhjZWYxMWJjZWU2MGMzMTQ1NWYzNzQxZDFiNDNkNjA0NDdmMzI4ZWMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY5NDE2ZTA5Zjc4YmEzMTZjMDMyNTY4MjEzYjg1NWVlNzU2ZTQxNTY1ZDkxOGYwOTUxOWM4MWZkNjIwZjQwNjAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjBkOTU4ZTU4YTUwNTRjMmY2NWU2MTkxZDM2ODI0ZmRjYTE5ZWRlOGY5NzA5YTFiM2FlZmEzOWE1MjRlNDM5MzMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_2995045eb8ac486caf43e537ca9cab94",
+      "statement": "game/ports.py declares two Protocols, OrderInterpreter (interpret) and VoiceLineSpeaker (speak); only the interpreter port has an error, OrderInterpretationError.",
+      "evidence": [
+        {
+          "resource": "repo://game/ports.py#L14-L43",
+          "version": "repo-lines-v1:sha256:50bdb803f6da07a1c82818bf5e271a21ccbcb2f56468572ebfe80e393f35f0e2:eyJzZWxlY3RlZExpbmVDb3VudCI6MzAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU2MjBkODVkZTRlZDdhYjgwMjFiNGE4ZGQ0ZmExNWVjNTE5MjVjZGZjY2RlMTgwNTg5NWE0YzhhM2MzYmE0OGMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjIxODk2MzkwNGVkOWFiZjBmNmM0YTdhZjE3NTFkOTk3MjFkY2ExMTg5NzdhYjY5YTQ3Y2Q5ZmFmZGUxYmQwZTkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_48c1cb99d0074f6c89a977622d80d26c",
+      "statement": "GameEngine takes the interpreter and speaker as keyword-only constructor arguments, so adapters are injected rather than imported.",
+      "evidence": [
+        {
+          "resource": "repo://server/engine.py#L30-L44",
+          "version": "repo-lines-v1:sha256:df467b5b63265cf46208a7215f2b6d4a8e729737b8d7b790d03cb3a80ae57f7c:eyJzZWxlY3RlZExpbmVDb3VudCI6MTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI1MTk1ODI3YjBmYTIwYzMxM2EwMmI5NDVkMjJhMjJjZmM3NWJhNTQxNGM0ZmQ5OWE3NmVhZjRkNWY3YjU1YTIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJiZjMxMzA1YjBlMmFkNDJlNDYxMGFjZjQ1ZmI5OGY4ODkwODFiNzk1Yjc4NjM1NDc1ZTEwZWQ5YWUyZDI2MTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQ5ZTg2MWJmZThiYThkN2ZmYTFlOGJhMDhiNTViOTIxYjdlYWIzNmM3NDU3MDMxYTc0M2NjMjFhNjkxOTA4YTYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImYwZmQ5ZjhmYzQxYzZhOTQ0ZjQzMmIyMDdkNmNmMWNmZGJkNWE3NDE1YWRiMzViYzA3NzNiMmM1YTMxMjc2NTAifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_6d31ae563fb241998814fac30f1be14d",
+      "statement": "server/app.py main() loads .env, builds the Voxtral interpreter and TTS engine, injects them into GameEngine, starts the game loop in a daemon thread and serves on port 8000 of G4AL_HOST, default 127.0.0.1; create_app starts no thread.",
+      "evidence": [
+        {
+          "resource": "repo://server/app.py#L21-L67",
+          "version": "repo-lines-v1:sha256:f0c8808dd2c93a08536b0ae4bc75903f7700de19aaff9578fdaf30646221022a:eyJzZWxlY3RlZExpbmVDb3VudCI6NDcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImIxZWVmNTNiNGYyNDgxNmQ5YWY5MjIxYzRlYzRiZmVlZDEzOWQ4NmI2NjBjZWUzZjA4NDUyYjA1MGIyN2YzZjQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFlYzQ1OTIyNzJkMjdlZmY3NDQ4ZTU0ZDNlY2EwZDVjYjI3MjEyOTI3M2MxMGIyOTE1M2VmZjVlY2QxNjM5N2UiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImVlMzZkOTBlZjA4YmJhZmNlMTdiMmYzNjg1NzBiM2ZmNGZkMDY5Y2E1Y2MwMTIxNDhjMDEwZTI3Yjg3YWUxYzIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_a6882e69fdfa4725bab0fa69a1fac8a1",
+      "statement": "Socket.IO runs with async_mode threading, and each voice command is interpreted in its own daemon worker thread.",
+      "evidence": [
+        {
+          "resource": "repo://server/app.py#L29-L29",
+          "version": "repo-lines-v1:sha256:092b3f8be5e3b17a2b8fd526ac62c451a796bf5c6253c7565e2809c128862f02:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMDkyYjNmOGJlNWUzYjE3YTJiOGZkNTI2YWM2MmM0NTFhNzk2YmY1YzYyNTNjNzU2NWUyODA5YzEyODg2MmYwMiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMDkyYjNmOGJlNWUzYjE3YTJiOGZkNTI2YWM2MmM0NTFhNzk2YmY1YzYyNTNjNzU2NWUyODA5YzEyODg2MmYwMiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNGIyMDFiM2JlNjEyNTYyYjVkNzk5YmI3MDg4ZGIxNWFmNzc2ZDczOGI5NGE2MTcyNjY5YjQzYmI1ZTZlM2E4OCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNjUxNmQyNTVlZGM0M2FjZDYwYmJmNDRiODQxNmM3ZjIyNjM4Y2E3OWRlZTM5YjlkNmNkYjM5M2EzNjZjNDZiYiJ9"
+        },
+        {
+          "resource": "repo://server/engine.py#L143-L150",
+          "version": "repo-lines-v1:sha256:c4a08c2d7b650eecc06f9a7b363c7c03f3add6cdd3c7b8c8dee8657c677db914:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMDFiYTQ3MTljODBiNmZlOTExYjA5MWE3YzA1MTI0YjY0ZWVlY2U5NjRlMDljMDU4ZWY4Zjk4MDVkYWNhNTQ2YiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMDFiYTQ3MTljODBiNmZlOTExYjA5MWE3YzA1MTI0YjY0ZWVlY2U5NjRlMDljMDU4ZWY4Zjk4MDVkYWNhNTQ2YiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZTYzMDdkYWM4MmFkMDY2ZDBjY2Y2OGI0ZDQyYzExN2M3NWNlNTQ2ZTk4MjhhYjgwNTc3ZDQyZjYzMjRkNWRiNSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMDhhNDA3NDdkNDc0ODIxNDgxMzQxMzZlZTY0NDQyZmQ3NTI3OWRhYjQ1NTQyYzFhYTA2M2E4OTM2NTY1ZTJhNSJ9"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.5.2",
+    "at": "2026-11-18T09:41:00.050Z"
+  }
+}

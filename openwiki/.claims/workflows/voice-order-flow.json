@@ -1,0 +1,74 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:7b8d481ec628d4eb60cca319cf4f30285552cf146ad79a704c0b0f7a2746456c",
+  "claims": [
+    {
+      "id": "claim_ad25e5d4ff5b48a3bd49ee91ca898d57",
+      "statement": "/api/audio returns immediately after starting a daemon worker thread through GameEngine.send_audio_command, which logs Listening.",
+      "evidence": [
+        {
+          "resource": "repo://server/engine.py#L144-L149",
+          "version": "repo-lines-v1:sha256:5fa665cfd6f2e02922d25dac55fe9faaea53fec01b42d776f11c0dbfe55d941d:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNGJlYzEzMzMxMzk5ZjhlZWQxZDU2NWQ3YmRlYTk2MjNmZjE5ZGNlNGY0ZmY5OWNkYjJmMjg0NmQ3OGJhYmQ0MyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNWE0ZGIwOGYyZGZlZmE3MWFiZTY4MzVmZjNiNWU4MjBjOTBiMTYzYjgyMmZjMjU2NmI2YTlhYTU4YzJjOGQ3ZiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNWUwOTczYTQ3MmVkMzliZmU2NzljNzk5ZGMxZDY0ZWU3ZDcxM2EwNmU2MGYyNDQzOTJiZDFhMjcwN2VlNTdhZSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZWNkMjUwZWFjZDc5YTY5MjU3M2FmNDgyY2JkMDk0NTk2NGQ2MDQ1ZWNhMTJkMDZkODJkMDdkOThmNjRmNGJhNCJ9"
+        },
+        {
+          "resource": "repo://server/routes.py#L86-L95",
+          "version": "repo-lines-v1:sha256:557deca5672bee8afd0b31c9339ce8e6bfcb949c0c93ccd0cd8206c2ffd42fca:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQyMTE0MDQ4NzJmYWExOWFkOGUxYzViYTBjMWE2YzE0NjllZjJiNDY3ZjE1MzIxNWM2NmNkMDM2N2U5MWE3YzQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQ5OWZhODEzZjUwYWI3OThhNWZiOWJmMDU1Y2MyOTUyNDg2ZmE1NTk4ODVhMzE2MGQ2YjUxYWZjNzgzYmI0YWMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImZhZjk1YjE2MTcwYjI5YzBmMDNkZmVmY2RlNGM0NmIyNjk2NGIxYWYwN2EwMWQ1MTMyZTQ5NGJlODMyMjQxMmMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_d8841e3b7c304e8babd985471618c6bd",
+      "statement": "The worker stores interpreter results in _pending_orders under the lock, replacing any unapplied result, and logs a warning and leaves the game unchanged on OrderInterpretationError.",
+      "evidence": [
+        {
+          "resource": "repo://server/engine.py#L151-L165",
+          "version": "repo-lines-v1:sha256:c9fc2ce4c60a29e22f87fdb2bd723659d95669960463b9a9dcd72e72ee776277:eyJzZWxlY3RlZExpbmVDb3VudCI6MTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjkyZmIwOTk5MmM3NWQ4NGNkMGZlM2Y5MDU0NWJhNjA1ZDQ1ZWYxMDg0YjkxNzFiYTU4YzNiNzc4ZjhjMmMzMzQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQ1MWYzNDBmYzY2YzA2YjMzOGU2OTUwODA4NWNlNGYyODI5Zjc4NTE4MjlhOGU2Y2JjNGVkMDY5YmNlZDMxYjMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQ0YWUyNTExMmVjM2U1MmY1MjllZjBhYzhjYzA4MmMzNThhZTU1NWMyZjZkOWZjMGNiM2JjMjc5NGY5ZTBmZjIifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_b4f7c9df80524012ad482d905051db74",
+      "statement": "Pending orders are applied on the game loop thread: a refusal logs the reason, an empty list logs no actions understood, and each outcome that is spoken goes to the VoiceLineSpeaker before being logged.",
+      "evidence": [
+        {
+          "resource": "repo://server/engine.py#L99-L114",
+          "version": "repo-lines-v1:sha256:cdbacdb7e819531127a7175f3be554b71b581bb15fb02e9e6ff3163236443f7d:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI2ZWI3YzExMjU4MzAxODMzNDA1MWIzYzU4YTEzODhmMzY2MzVhZjc1M2RhMzM1MzMzN2NlMjM5YWViYzE2NWMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQ5ODBlMjE4NDJiMjcwNDA1ZWU3N2UwMzY1NGI2ZGI0ZWZlZjVhNmU5MmYzNGU5NDFjNzJiY2VjMjNmZWVjNDYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjJhNWI3ZjYwYzk5NmY3YjI0MGM5OTE3Y2NlYmQ4ZWI4NmY4YzZjZTRhNTM5YjVjNWZkMDFiZmRhMjFmYjk4OWEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_26b5aa900f3d4a65be732d54f427d7d9",
+      "statement": "apply_orders gives at most TTS_MAX_SPEAKERS accepted orders a spoken reply and sets a speech bubble on accepted orders.",
+      "evidence": [
+        {
+          "resource": "repo://game/orders.py#L50-L75",
+          "version": "repo-lines-v1:sha256:b824c990a5f9d3440c9e7b7ad4fd368d838e26cd23e0df043462637986b21a51:eyJzZWxlY3RlZExpbmVDb3VudCI6MjYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRjYzIzOTBjZTRiOWZkMzBhNDYxMmRmMmQzYWRiZWVmNGNjZmY4NzNkNjVhYzZhMjZhNjU0NjNiOGU3OTdiNjkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRhYTM2MjQ1ZGU4YzIzYzRmNWVmOWJhM2E2NDIxZGFmMGUwYjMzNDQyYmQ4NTJlNWExMWIyNzM0OGMyNmNiZDYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImE4YzM0OGE0NjUwMmRjZWI3OGVkYzNmYTA4NTZiODAzM2M0ZjM3NjJlODdjZjM1MDQ3YmViNzI0M2M4YzhhYWUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_bc22493854154bc6a9085f71628a1c02",
+      "statement": "RefusalReason has four values: no orders given, malformed answer, unknown action and unknown npc.",
+      "evidence": [
+        {
+          "resource": "repo://game/orders.py#L21-L38",
+          "version": "repo-lines-v1:sha256:97a6c9747dcd0e4024ccac8b1cf8f5c6de51c30847c5baf8234940e03d0f66b3:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQyZjBlNWM0NDc2NDM1N2MwNmM5YzcwYzcyNjllMWQ1NzZhZjAyYzUyYzA4ZTMzZmY3OGU0Y2JhN2QzYmZjZDQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjI3ZDI5YTYyZWEyZDU1OTE0ZDcyZmNiOTE4ZTQ1ZjNiYjFjYWY4YWQ3NjNmNGUyMWFiZGZjOGRjNmUwZTYyOTMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImMzOWQ5NGQxOWNlZTRjNmJhZDU2M2Y1ODM1YTA0YzY3YjQ0MDU5ODczMmE2N2FhNDc4OTlkMmU3ZDI4NDBlNTAifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_a23b1460a4b44324aae97fdc20c35097",
+      "statement": "Pending orders are applied on the game loop thread: a refusal logs the reason, an empty list logs no actions understood, and every outcome's voice line is added to the game log, with only the spoken ones also sent to the VoiceLineSpeaker.",
+      "evidence": [
+        {
+          "resource": "repo://server/engine.py#L99-L113",
+          "version": "repo-lines-v1:sha256:798e7ff46271bb7631629839a1461872c0824579811f19e72ed630c23548d01b:eyJzZWxlY3RlZExpbmVDb3VudCI6MTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI2ZWI3YzExMjU4MzAxODMzNDA1MWIzYzU4YTEzODhmMzY2MzVhZjc1M2RhMzM1MzMzN2NlMjM5YWViYzE2NWMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZkMDFlOGIwNjUwMTc5MzM3OTE0ZTMwNjc1MzAwMTJjMmU2NjRiYjEyNGVhYmEzNmRjYWRmYzljNWNiMzgwMjciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQ5ODBlMjE4NDJiMjcwNDA1ZWU3N2UwMzY1NGI2ZGI0ZWZlZjVhNmU5MmYzNGU5NDFjNzJiY2VjMjNmZWVjNDYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjIxMjRlY2UwODdjY2I2M2ExZmI2MDgyOGQxMDdiMTVmZGY5MjU3OGU2MzI3MDk0YjNmYTE5ZGQ2MjkxM2YxZmIifQ"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.5.2",
+    "at": "2026-11-18T09:41:00.050Z"
+  }
+}

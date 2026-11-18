@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import math
 from typing import TYPE_CHECKING
 
 from game.actions import ARCHER_ACTIONS, Action, ActionType, State
@@ -93,9 +92,6 @@ class Archer(NPC):
         mc, mr = self.tile_pos
         ec, er = enemy.tile_pos
         return abs(ec - mc) + abs(er - mr)
-
-    def _pixel_distance(self, enemy: Fauna) -> float:
-        return math.hypot(enemy.x - self.x, enemy.y - self.y)
 
     def enqueue(self, action: Action) -> bool:
         """Override: cancel defend mode when a new action is enqueued."""

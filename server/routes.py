@@ -2,15 +2,21 @@
 
 from __future__ import annotations
 
-import base64
-
 from flask import Blueprint, Response, current_app, jsonify, request, send_from_directory
 from flask.typing import ResponseReturnValue
 from flask_socketio import SocketIO, emit
 
-from game.constants import STORED_RESOURCE_KINDS
-from server.constants import ENGINE_EXTENSION
+from game.direct_orders import DirectOrder, DirectOrderOutcome
+from server.constants import ENGINE_EXTENSION, MIN_AUDIO_BYTES
 from server.engine import GameEngine
+from server.request_bodies import (
+    InvalidRequestError,
+    parse_action_order,
+    parse_audio_base64,
+    parse_discard_amounts,
+    parse_move_order,
+    parse_selected_npc_id,
+)
 
 routes = Blueprint("routes", __name__)
 
@@ -42,52 +48,31 @@ def get_state() -> Response:
 
 @routes.route("/api/action", methods=["POST"])
 def post_action() -> ResponseReturnValue:
-    """Enqueue a direct action. Body: {"npcId": 1, "action": "chop_wood", "target": [col, row]?}."""
-    data = request.get_json(force=True)
-    npc_id = data.get("npcId")
-    action = data.get("action", "")
-    target = data.get("target")
-    if npc_id is None:
-        return jsonify({"error": "npcId required"}), 400
-    _engine().enqueue_action(npc_id, action, target)
-    return jsonify({"ok": True})
+    """Enqueue a direct action. Body: {"npcId": 1, "action": "chop_wood", "target"?: [col, row]}."""
+    return _answer_direct_order(parse_action_order(_json_body()))
 
 
 @routes.route("/api/select", methods=["POST"])
-def post_select() -> Response:
-    """Select an NPC, or deselect all without ``npcId``. Body: {"npcId": 1}."""
-    data = request.get_json(force=True)
-    npc_id = data.get("npcId")
-    if npc_id is not None:
-        _engine().select_npc(npc_id)
-    else:
+def post_select() -> ResponseReturnValue:
+    """Select an NPC, or deselect all with ``{}``. Body: {"npcId": 1}."""
+    npc_id = parse_selected_npc_id(_json_body())
+    if npc_id is None:
         _engine().deselect_all()
+    elif not _engine().select_npc(npc_id):
+        return _refuse(f"unknown npcId: {npc_id}")
     return jsonify({"ok": True})
 
 
 @routes.route("/api/move", methods=["POST"])
 def post_move() -> ResponseReturnValue:
     """Move an NPC. Body: {"npcId": 1, "col": 10, "row": 5}."""
-    data = request.get_json(force=True)
-    npc_id = data.get("npcId")
-    col = data.get("col")
-    row = data.get("row")
-    if npc_id is None or col is None or row is None:
-        return jsonify({"error": "npcId, col, row required"}), 400
-    _engine().enqueue_action(npc_id, "move_to", [col, row])
-    return jsonify({"ok": True})
+    return _answer_direct_order(parse_move_order(_json_body()))
 
 
 @routes.route("/api/discard", methods=["POST"])
 def post_discard() -> Response:
-    """Discard from storage. Body: {"wood": 5, "stone": 3, "gold": 0, "wheat": 2}, each optional."""
-    data = request.get_json(force=True)
-    amounts = {
-        resource: int(amount)
-        for resource in STORED_RESOURCE_KINDS
-        if isinstance(amount := data.get(resource, 0), (int, float)) and amount > 0
-    }
-    discarded = _engine().discard_resources(amounts)
+    """Discard from storage. Body: {"wood": 5, "stone": 3, "gold": 0, "wheat": 2}, each optional, none negative."""
+    discarded = _engine().discard_resources(parse_discard_amounts(_json_body()))
     return jsonify({"ok": True, "discarded": discarded})
 
 
@@ -100,20 +85,37 @@ def post_dismiss_storage() -> Response:
 @routes.route("/api/audio", methods=["POST"])
 def post_audio() -> ResponseReturnValue:
     """Interpret a voice command. Body: multipart field "audio", or JSON {"audio_b64": "<base64 WAV>"}."""
-    wav_bytes = None
-    if "audio" in request.files:
-        wav_bytes = request.files["audio"].read()
-    else:
-        data = request.get_json(force=True, silent=True) or {}
-        b64 = data.get("audio_b64", "")
-        if b64:
-            wav_bytes = base64.b64decode(b64)
-
-    if not wav_bytes or len(wav_bytes) < 100:
-        return jsonify({"error": "no audio data received"}), 400
-
+    upload = request.files.get("audio")
+    wav_bytes = upload.read() if upload is not None else parse_audio_base64(_json_body())
+    if len(wav_bytes) < MIN_AUDIO_BYTES:
+        return _refuse("no audio data received")
     _engine().send_audio_command(wav_bytes)
     return jsonify({"ok": True})
+
+
+@routes.errorhandler(InvalidRequestError)
+def answer_invalid_request(error: InvalidRequestError) -> ResponseReturnValue:
+    return _refuse(str(error))
+
+
+def _json_body() -> object:
+    # silent: a body that is not JSON, or not sent as application/json, reads as None
+    # and is refused by the parser; force=True would accept text/plain cross-site posts.
+    return request.get_json(silent=True)
+
+
+def _answer_direct_order(order: DirectOrder) -> ResponseReturnValue:
+    outcome = _engine().give_direct_order(order)
+    if outcome is DirectOrderOutcome.UNKNOWN_NPC:
+        return _refuse(f"unknown npcId: {order.npc_id}")
+    if outcome is DirectOrderOutcome.TARGET_OUTSIDE_MAP:
+        return _refuse(f"target outside the map: {order.target}")
+    # REFUSED_BY_NPC: the NPC answers "I can't do that!" in the game; the request was valid.
+    return jsonify({"ok": True})
+
+
+def _refuse(message: str) -> ResponseReturnValue:
+    return jsonify({"error": message}), 400
 
 
 def register_socket_events(socketio: SocketIO, engine: GameEngine) -> None:

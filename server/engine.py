@@ -2,14 +2,14 @@ from __future__ import annotations
 
 import threading
 import time
-from collections.abc import Mapping, Sequence
+from collections.abc import Mapping
 from typing import Any
 
 from flask_socketio import SocketIO
 from loguru import logger
 
 from api.logger import pipeline_logger
-from game.actions import Action, ActionType
+from game.direct_orders import DirectOrder, DirectOrderOutcome, apply_direct_order
 from game.entities import WheatField
 from game.map import GameMap
 from game.npc import NPC
@@ -78,31 +78,18 @@ class GameEngine:
                 if selected_died and self.npcs:
                     self.npcs[0].selected = True
 
-    def enqueue_action(
-        self, npc_id: int, action_str: str, target: Sequence[int] | None = None
-    ) -> None:
-        """Enqueue an action on an NPC; an unknown action or NPC is ignored."""
-        try:
-            action_type = ActionType(action_str)
-        except ValueError:
-            return
+    def give_direct_order(self, order: DirectOrder) -> DirectOrderOutcome:
         with self._lock:
-            npc = self._find_npc(npc_id)
-            if not npc:
-                return
-            if action_type in (ActionType.BUILD, ActionType.PLANT_WHEAT):
-                t = (target[0], target[1]) if target else npc.tile_pos
-                npc.enqueue(Action(action_type, target=t))
-            elif action_type == ActionType.MOVE_TO:
-                if target:
-                    npc.enqueue(Action(action_type, target=(target[0], target[1])))
-            else:
-                npc.enqueue(Action(action_type))
+            return apply_direct_order(order, npcs=self.npcs, game_map=self.game_map)
 
-    def select_npc(self, npc_id: int) -> None:
+    def select_npc(self, npc_id: int) -> bool:
+        """Select this NPC alone; returns False, changing nothing, when no NPC has this id."""
         with self._lock:
+            if self._find_npc(npc_id) is None:
+                return False
             for n in self.npcs:
                 n.selected = n.id == npc_id
+            return True
 
     def deselect_all(self) -> None:
         with self._lock:

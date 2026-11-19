@@ -462,3 +462,20 @@ def test_give_up_waiting_deposit_drops_the_load_only_when_waiting(
     assert npc.state == (State.IDLE if expected_released else state)
     assert npc.carrying == ({} if expected_released else {"wood": 3})
     assert npc.is_carrying is not expected_released
+
+
+@pytest.mark.parametrize("npc_class", [NPC, Archer])
+def test_hunger_drains_before_the_meal_that_ends_in_the_same_frame(
+    build_map: MapBuilder, npc_class: type[NPC]
+) -> None:
+    game_map = build_map(OPEN_FIELD)
+    storage = ResourceStorage()
+    storage.add("wheat", EAT_WHEAT_COST)
+    npc = npc_class(*game_map.tile_center(0, 0), game_map, [], storage, name="Bob")
+    npc.enqueue(Action(ActionType.EAT))
+
+    for _ in range(NPC_EAT_TIME):
+        npc.update()
+
+    assert npc.state == State.DONE
+    assert npc.hunger == npc.max_hunger

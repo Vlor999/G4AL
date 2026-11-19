@@ -23,6 +23,22 @@ The `storage` object of the state holds the settlement stockpile:
 
 The client shows `total / capacity` and `houseCount` in the inventory panel.
 
+### Object dimensions
+
+Every entry of `resources`, `npcs` and `fauna` carries the size of its kind
+(`game/dimensions.py`, model in [ADR 0002](adr/0002-object-dimensions-and-height-model.md)).
+All values are in tiles; the client multiplies them by `map.tileSize`.
+
+| Field | Type | Meaning |
+|---|---|---|
+| `footprint` | `{"width": int, "depth": int}` | tiles covered on the grid, from `col`, `row` rightwards and downwards (one tile for anything but a structure) |
+| `height` | number, multiple of 0.5 | how far the object rises above its footprint |
+| `sprite` | `{"width", "height", "anchorX", "anchorY"}` numbers | rectangle the sprite is drawn in; `anchorX`, `anchorY` locate the ground point inside it from its top-left corner |
+
+The ground point is the bottom centre of the footprint for a resource or a structure,
+and `x`, `y` for an NPC or a creature. Structures no longer send `gridWidth` and
+`gridHeight`: `footprint` replaces them.
+
 ## HTTP
 
 All POST bodies are JSON sent as `application/json` unless stated. A route parses its

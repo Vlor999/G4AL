@@ -4,3 +4,6 @@ STORED_RESOURCE_KINDS: tuple[str, ...] = ("wood", "stone", "gold", "wheat")
 
 ARROW_LAUNCH_HEIGHT = 20  # pixels above the shooter's position: the bow
 ARROW_IMPACT_HEIGHT = 10  # pixels above the target's position: the body
+
+# Heights of objects and terrain are counted in half tiles (docs/adr/0002).
+HEIGHT_STEP = 0.5

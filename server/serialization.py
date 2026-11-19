@@ -7,6 +7,7 @@ from typing import Any
 
 from game.actions import State as NpcState
 from game.arrows import Arrow
+from game.dimensions import OBJECT_DIMENSIONS, ObjectDimensions, ObjectKind
 from game.entities import Resource, Rock, Structure, WheatField
 from game.fauna import Fauna
 from game.map import GameMap
@@ -59,6 +60,7 @@ def _serialize_resource(resource: Resource) -> dict[str, Any]:
         "row": resource.row,
         "hp": resource.hp,
         "maxHp": resource.max_hp,
+        **_serialize_dimensions(resource.dimensions),
     }
     if isinstance(resource, Rock):
         payload["hasGold"] = resource.has_gold
@@ -66,8 +68,6 @@ def _serialize_resource(resource: Resource) -> dict[str, Any]:
         payload["built"] = resource.built
         payload["buildProgress"] = resource.build_progress
         payload["buildingType"] = resource.building_type
-        payload["gridWidth"] = resource.grid_width
-        payload["gridHeight"] = resource.grid_height
     elif isinstance(resource, WheatField):
         payload["fullyGrown"] = resource.fully_grown
         payload["growthRatio"] = round(resource.growth_ratio, 2)
@@ -98,6 +98,7 @@ def _serialize_npc(npc: NPC) -> dict[str, Any]:
         "queueSize": npc.queue_size,
         "isCarrying": npc.is_carrying,
         "carrying": dict(npc.carrying),
+        **_serialize_dimensions(OBJECT_DIMENSIONS[ObjectKind(npc.kind)]),
     }
 
 
@@ -115,6 +116,21 @@ def _serialize_creature(creature: Fauna) -> dict[str, Any]:
         "maxHealth": creature.max_health,
         "state": creature.state.name,
         "isFiring": creature.is_firing,
+        **_serialize_dimensions(OBJECT_DIMENSIONS[ObjectKind(creature.kind)]),
+    }
+
+
+def _serialize_dimensions(dimensions: ObjectDimensions) -> dict[str, Any]:
+    sprite = dimensions.sprite
+    return {
+        "footprint": {"width": dimensions.footprint_width, "depth": dimensions.footprint_depth},
+        "height": dimensions.height,
+        "sprite": {
+            "width": sprite.width,
+            "height": sprite.height,
+            "anchorX": sprite.anchor_x,
+            "anchorY": sprite.anchor_y,
+        },
     }
 
 

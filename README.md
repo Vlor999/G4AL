@@ -102,6 +102,7 @@ game/
   npc_names.py      name pools of pawns, archers and wild archers
   ports.py          protocols the domain needs from the outside world
   entities.py       trees, rocks, structures, wheat fields
+  dimensions.py     footprint, height and sprite box of each object kind
   fauna.py          autonomous creatures: idle, graze, wander
   sheep.py          sheep
   cat.py            the cat

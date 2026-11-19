@@ -4,7 +4,7 @@ from types import SimpleNamespace
 from typing import Any, cast
 
 import pytest
-from mistralai import Mistral
+from mistralai.client import Mistral
 
 from api.constants import ORDERS_TOOL_NAME
 from api.interpreter import ORDERS_SCHEMA, VoxtralOrderInterpreter
@@ -123,6 +123,10 @@ def test_interpret_merges_the_orders_of_every_orders_call(build_map: MapBuilder)
     ("answer", "reason"),
     [
         (answer_with(None, content="Bob, chop wood!"), RefusalReason.NO_ORDERS_GIVEN),
+        (
+            SimpleNamespace(choices=[SimpleNamespace(message=None)], usage=None),
+            RefusalReason.NO_ORDERS_GIVEN,
+        ),
         (answer_with([tool_call({}, name="other_tool")]), RefusalReason.NO_ORDERS_GIVEN),
         (answer_with([tool_call("{not json")]), RefusalReason.MALFORMED_ANSWER),
         (answer_with([tool_call({"npc_id": 1})]), RefusalReason.MALFORMED_ANSWER),
@@ -164,6 +168,7 @@ def test_interpret_merges_the_orders_of_every_orders_call(build_map: MapBuilder)
     ],
     ids=[
         "prose-without-call",
+        "choice-without-message",
         "other-tool",
         "arguments-not-json",
         "orders-missing",

@@ -22,12 +22,25 @@ jobs:
       github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    env:
+      # `if:` cannot read `secrets`: expose only whether the key is set.
+      HAS_ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY != '' }}
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      # Without the key the action fails, and it caches a per-PR marker before
+      # failing, so every later run of the PR skips the scan and passes.
+      - name: Skip when ANTHROPIC_API_KEY is not set
+        if: env.HAS_ANTHROPIC_API_KEY != 'true'
+        run: |
+          message="The ANTHROPIC_API_KEY Actions secret is not set: no security review ran on this PR."
+          echo "::warning title=Security review skipped::$message"
+          echo "$message" >> "$GITHUB_STEP_SUMMARY"
+      - if: env.HAS_ANTHROPIC_API_KEY == 'true'
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 2
-      - uses: anthropics/claude-code-security-review@0c6a49f1fa56a1d472575da86a94dbc1edb78eda # main 2026-02-11
+      - if: env.HAS_ANTHROPIC_API_KEY == 'true'
+        uses: anthropics/claude-code-security-review@0c6a49f1fa56a1d472575da86a94dbc1edb78eda # main 2026-02-11
         with:
           claude-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
           claude-model: claude-opus-5-5

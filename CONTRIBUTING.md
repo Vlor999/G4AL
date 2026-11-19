@@ -43,7 +43,10 @@ The `Security review` workflow runs
 [claude-code-security-review](https://github.com/anthropics/claude-code-security-review)
 on every non-draft PR opened from this repository and comments the findings on the
 diff lines. It needs the `ANTHROPIC_API_KEY` repository secret (Settings → Secrets
-and variables → Actions). Project-specific checks live in
+and variables → Actions); without it the job passes with a "Security review skipped"
+warning. The action reviews a PR once: it caches a per-PR marker before the scan, and
+every later run of that PR, re-runs included, skips the scan even when the first one
+failed, until GitHub evicts the cache entry (7 days without access). Project-specific checks live in
 [`.github/security-review/scan-instructions.txt`](.github/security-review/scan-instructions.txt).
 The action is not hardened against prompt injection, so it skips fork PRs; keep
 "Require approval for all external contributors" on for Actions.

@@ -4,7 +4,8 @@ from __future__ import annotations
 
 import math
 from collections import deque
-from typing import TYPE_CHECKING
+from collections.abc import Callable
+from typing import TYPE_CHECKING, ClassVar
 
 from game.actions import Action, ActionType, State
 from game.entities import Resource, Structure
@@ -32,6 +33,15 @@ class NPCBase:
 
     allowed_actions: list[ActionType]
     _next_id = 1
+    # Lambdas, not the base functions, so subclass overrides of each step are called.
+    _STEP_BY_STATE: ClassVar[dict[State, Callable[[NPCBase], None]]] = {
+        State.IDLE: lambda npc: npc._resume_queue(),
+        State.MOVING: lambda npc: npc._follow_path(),
+        State.PERFORMING: lambda npc: npc._perform(),
+        State.RETURNING: lambda npc: npc._follow_path(),
+        State.WAITING_DEPOSIT: lambda npc: npc._retry_deposit(),
+        State.DONE: lambda npc: npc._finish_action(),
+    }
 
     def __init__(
         self,
@@ -141,38 +151,32 @@ class NPCBase:
         return False
 
     def update(self) -> None:
-        """Called every frame."""
+        """Advance speech, hunger and the action machine by one frame."""
+        self._drain_needs()
+        self._STEP_BY_STATE[self.state](self)
+
+    def _drain_needs(self) -> None:
         if self._speech_timer > 0:
             self._speech_timer -= 1
-
         self.hunger = max(0.0, self.hunger - NPC_HUNGER_DRAIN)
         if self.hunger <= 0:
             self.health = max(0, self.health - NPC_HUNGER_DAMAGE)
 
-        if self.state == State.IDLE:
-            if self.action_queue:
-                self._next_action()
+    def _resume_queue(self) -> None:
+        if self.action_queue:
+            self._next_action()
 
-        elif self.state == State.MOVING:
-            self._follow_path()
+    def _retry_deposit(self) -> None:
+        if not self._storage.is_full:
+            self._deposit_at_hut()
 
-        elif self.state == State.PERFORMING:
-            self._perform()
-
-        elif self.state == State.RETURNING:
-            self._follow_path()
-
-        elif self.state == State.WAITING_DEPOSIT:
-            if not self._storage.is_full:
-                self._deposit_at_hut()
-
-        elif self.state == State.DONE:
-            self._release_reservation()
-            self._current_action = None
-            if self.action_queue:
-                self._next_action()
-            else:
-                self.state = State.IDLE
+    def _finish_action(self) -> None:
+        self._release_reservation()
+        self._current_action = None
+        if self.action_queue:
+            self._next_action()
+        else:
+            self.state = State.IDLE
 
     def _next_action(self) -> None:
         """Start the next queued action, or head to the hut first when carrying a load.

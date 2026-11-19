@@ -19,5 +19,5 @@ _.totalFrames
 _.team
 
 # game/storage.py, StorageSnapshot: key of the "storage" object in the state the server
-# sends (GET /api/state, Socket.IO "state"); static/ does not read it today.
+# sends (GET /api/state, Socket.IO "state"), read by static/ui.js.
 _.houseCount

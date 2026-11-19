@@ -10,7 +10,7 @@ dependencies = [
     "flask>=3.0",
     "flask-socketio>=5.6.1",
     "loguru>=0.7.3",
-    "mistralai[realtime]>=1.12.4",
+    "mistralai[realtime]>=3.8.0",
     "pygame>=2.5",
     "python-dotenv>=1.0",
 ]

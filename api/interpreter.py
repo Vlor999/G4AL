@@ -17,8 +17,12 @@ from collections.abc import Mapping, Sequence
 from typing import Any, TypedDict
 
 from loguru import logger
-from mistralai import Mistral
-from mistralai.models import ChatCompletionResponse, MessagesTypedDict, ToolTypedDict
+from mistralai.client import Mistral
+from mistralai.client.models import (
+    ChatCompletionRequestMessageTypedDict,
+    ChatCompletionResponse,
+    ToolTypedDict,
+)
 
 from api.constants import AUDIO_MODEL, ORDERS_TOOL_NAME
 from api.logger import LoggedOrder, pipeline_logger
@@ -124,7 +128,7 @@ def _build_system_prompt(roster: Roster) -> str:
     )
 
 
-def _build_messages(audio: bytes, roster: Roster) -> list[MessagesTypedDict]:
+def _build_messages(audio: bytes, roster: Roster) -> list[ChatCompletionRequestMessageTypedDict]:
     audio_b64 = base64.b64encode(audio).decode("utf-8")
     return [
         {"role": "system", "content": _build_system_prompt(roster)},
@@ -146,8 +150,10 @@ def read_orders_answer(
 
     The request asks for a single call, but an answer that still holds several loses
     none of them: their orders are merged, and one refused call refuses the answer.
+    A choice without a message gives no orders.
     """
-    tool_calls = response.choices[0].message.tool_calls or []
+    message = response.choices[0].message
+    tool_calls = (message.tool_calls if message is not None else None) or []
     orders_calls = [call for call in tool_calls if call.function.name == ORDERS_TOOL_NAME]
     if not orders_calls:
         return CommandRefused(RefusalReason.NO_ORDERS_GIVEN)

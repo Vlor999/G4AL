@@ -120,6 +120,26 @@ class NPCBase:
     def queue_size(self) -> int:
         return len(self.action_queue) + (1 if self._current_action else 0)
 
+    @property
+    def current_action_type(self) -> ActionType | None:
+        """Type of the action under way; None when no action is under way (idle)."""
+        return self._current_action.action_type if self._current_action else None
+
+    @property
+    def visible_speech_text(self) -> str:
+        """The speech bubble text while it shows, else an empty string."""
+        return self._speech_text if self._speech_timer > 0 else ""
+
+    @property
+    def is_firing(self) -> bool:
+        """True while the shot animation is active; this default means the kind never shoots."""
+        return False
+
+    @property
+    def is_defending(self) -> bool:
+        """True while defend mode is on; this default means the kind never defends."""
+        return False
+
     def update(self) -> None:
         """Called every frame."""
         if self._speech_timer > 0:

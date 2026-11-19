@@ -89,11 +89,11 @@ def _serialize_npc(npc: NPC) -> dict[str, Any]:
         "hunger": round(npc.hunger, 1),
         "maxHunger": npc.max_hunger,
         "state": npc.state.name,
-        "actionType": npc._current_action.action_type.value if npc._current_action else "",
+        "actionType": npc.current_action_type.value if npc.current_action_type else "",
         "selected": npc.selected,
-        "speechText": npc._speech_text if npc._speech_timer > 0 else "",
-        "isFiring": getattr(npc, "_is_firing", False),
-        "isDefending": getattr(npc, "_defending", False),
+        "speechText": npc.visible_speech_text,
+        "isFiring": npc.is_firing,
+        "isDefending": npc.is_defending,
         "queueSize": npc.queue_size,
         "isCarrying": npc.is_carrying,
         "carrying": dict(npc.carrying),
@@ -113,7 +113,7 @@ def _serialize_creature(creature: Fauna) -> dict[str, Any]:
         "health": round(creature.health, 1),
         "maxHealth": creature.max_health,
         "state": creature.state.name,
-        "isFiring": getattr(creature, "_is_firing", False),
+        "isFiring": creature.is_firing,
     }
 
 

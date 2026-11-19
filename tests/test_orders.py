@@ -38,7 +38,7 @@ def test_apply_orders_reports_whether_the_npc_took_the_action(
     [outcome] = apply_orders([archer], [make_order(archer, archer_action)])
 
     assert outcome.is_accepted is expected_accepted
-    assert (archer._speech_text == "On it!") is expected_accepted
+    assert (archer.visible_speech_text == "On it!") is expected_accepted
 
 
 def test_apply_orders_aims_a_build_order_at_the_npc_tile(build_map: MapBuilder) -> None:
@@ -67,7 +67,7 @@ def test_apply_orders_does_not_accept_an_order_for_an_unknown_npc_id(
     outcomes = apply_orders(npcs, [order])
 
     assert outcomes == [OrderOutcome(order, is_accepted=False, is_spoken=False)]
-    assert all(npc.queue_size == 0 and npc._speech_text != "Hm" for npc in npcs)
+    assert all(npc.queue_size == 0 and npc.visible_speech_text != "Hm" for npc in npcs)
 
 
 def test_apply_orders_speaks_at_most_the_allowed_number_of_accepted_lines(

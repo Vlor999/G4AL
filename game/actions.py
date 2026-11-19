@@ -26,7 +26,7 @@ class ActionType(Enum):
     MOVE_TO = "move_to"
     EAT = "eat"
     PLANT_WHEAT = "plant_wheat"
-    collect_wheat = "collect_wheat"
+    COLLECT_WHEAT = "collect_wheat"
     SHOOT = "shoot"
     DEFEND = "defend"
 
@@ -38,7 +38,7 @@ PAWN_ACTIONS = [
     ActionType.MOVE_TO,
     ActionType.EAT,
     ActionType.PLANT_WHEAT,
-    ActionType.collect_wheat,
+    ActionType.COLLECT_WHEAT,
 ]
 
 ARCHER_ACTIONS = [

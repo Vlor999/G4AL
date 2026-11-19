@@ -51,7 +51,7 @@ class NPC(NPCBase):
             self._start_eat()
         elif action.action_type == ActionType.PLANT_WHEAT:
             self._start_plant_wheat(action)
-        elif action.action_type == ActionType.collect_wheat:
+        elif action.action_type == ActionType.COLLECT_WHEAT:
             self._start_collect_wheat(action)
 
     def _start_harvest(
@@ -164,7 +164,7 @@ class NPC(NPCBase):
             self._perform_timer = 0
             self._perform_duration = WHEAT_PLANT_TIME
             self.state = State.PERFORMING
-        elif at == ActionType.collect_wheat:
+        elif at == ActionType.COLLECT_WHEAT:
             self._perform_timer = 0
             self._perform_duration = NPC_COLLECT_UNIT_TIME
             self.state = State.PERFORMING
@@ -210,7 +210,7 @@ class NPC(NPCBase):
                 self._advance_construction(target)
             return True
         if (
-            action_type == ActionType.collect_wheat
+            action_type == ActionType.COLLECT_WHEAT
             and isinstance(target, WheatField)
             and target.fully_grown
         ):

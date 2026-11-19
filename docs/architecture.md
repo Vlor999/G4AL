@@ -37,7 +37,9 @@ server/: app.py (create_app, main), routes.py (Flask + Socket.IO),
    `CommandRefused` with a `RefusalReason`, and the game log shows
    `Order refused: <reason>`. One bad order refuses the whole answer: no order of
    that command is applied. A service failure is raised as
-   `OrderInterpretationError`, logged, and leaves the game unchanged.
+   `OrderInterpretationError`, logged on the server, and leaves the game unchanged;
+   the game log shows `Voice command failed, try again.`, without the service's
+   error text.
 3. On its next tick the game loop calls `game.orders.apply_orders`, which enqueues the
    actions and returns one `OrderOutcome` per order (accepted, spoken).
 4. `GameEngine` logs each reply and sends the spoken ones to the injected

@@ -20,14 +20,18 @@ def test_an_empty_answer_is_logged_as_not_understood() -> None:
     assert engine.log_messages[-1] == "No actions understood."
 
 
-def test_a_failed_interpretation_leaves_the_game_unchanged() -> None:
+def test_a_failed_interpretation_tells_the_player_without_the_service_error() -> None:
+    speaker = RecordingSpeaker()
     interpreter = ScriptedOrderInterpreter(error=OrderInterpretationError("network down"))
-    engine = GameEngine(interpreter=interpreter, speaker=RecordingSpeaker())
+    engine = GameEngine(interpreter=interpreter, speaker=speaker)
+    queues_before = [list(npc.action_queue) for npc in engine.npcs]
 
     engine.interpret_audio_command(_AUDIO)
     engine.tick()
 
-    assert engine.log_messages == []
+    assert engine.log_messages == ["Voice command failed, try again."]
+    assert [list(npc.action_queue) for npc in engine.npcs] == queues_before
+    assert speaker.lines == []
 
 
 def test_a_refused_answer_is_shown_in_the_game_log_and_nothing_is_spoken() -> None:

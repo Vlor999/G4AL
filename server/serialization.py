@@ -6,7 +6,8 @@ from collections.abc import Sequence
 from typing import Any
 
 from game.actions import State as NpcState
-from game.creatures import Arrow, Fauna
+from game.arrows import Arrow
+from game.creatures import Fauna
 from game.entities import Resource, Rock, Structure, WheatField
 from game.map import GameMap
 from game.npc import NPC

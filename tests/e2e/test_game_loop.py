@@ -9,7 +9,8 @@ from loguru import logger
 
 from game.actions import Action, ActionType
 from game.archer import Archer
-from game.creatures import Arrow, WildArcher
+from game.arrows import Arrow
+from game.creatures import WildArcher
 from game.entities import WheatField
 from server.engine import GameEngine
 

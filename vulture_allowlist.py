@@ -8,7 +8,7 @@ from vulture.whitelist_utils import Whitelist
 
 _ = Whitelist()
 
-# game/creatures.py, Arrow: read as dict keys by server/serialization.py and server/engine.py,
+# game/arrows.py, Arrow: read as dict keys by server/serialization.py and server/engine.py,
 # then by static/renderer.js.
 _.fromX
 _.fromY

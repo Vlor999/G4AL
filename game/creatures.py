@@ -14,32 +14,23 @@ from __future__ import annotations
 import math
 import random
 from enum import Enum, auto
-from typing import TYPE_CHECKING, TypedDict
+from typing import TYPE_CHECKING
 
+from game.arrows import Arrow, Team, build_arrow
 from game.map import TileType
 from game.npc_names import pick_wild_archer_name
 from game.settings import (
-    ARCHER_ARROW_FLIGHT,
     ARCHER_FIRE_ANIM_TIME,
     WILD_ARCHER_DAMAGE,
     WILD_ARCHER_RANGE,
     WILD_ARCHER_SHOOT_TIME,
 )
+from game.targeting import find_nearest_living, find_walkable_tile_in_range, tile_distance
 
 if TYPE_CHECKING:
     from game.entities import Resource
     from game.map import GameMap
     from game.npc import NPC
-
-
-class Arrow(TypedDict):
-    fromX: float
-    fromY: float
-    toX: float
-    toY: float
-    frame: int
-    totalFrames: int
-    team: str
 
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -341,18 +332,10 @@ class WildArcher(Fauna):
 
     def _find_nearest_npc(self) -> tuple[NPC | None, float]:
         """Find the nearest living playable NPC."""
-        best: NPC | None = None
-        best_dist = float("inf")
-        mc, mr = self.tile_pos
-        for npc in self._all_npcs:
-            if npc.health <= 0:
-                continue
-            nc, nr = npc.tile_pos
-            d = abs(nc - mc) + abs(nr - mr)
-            if d < best_dist:
-                best_dist = d
-                best = npc
-        return best, best_dist
+        target = find_nearest_living(self.tile_pos, self._all_npcs)
+        if target is None:
+            return None, float("inf")
+        return target, tile_distance(self.tile_pos, target.tile_pos)
 
     # ── overrides / new behaviours ───────────────────────────────────────
 
@@ -406,22 +389,10 @@ class WildArcher(Fauna):
 
     def _chase_target(self, target: NPC) -> None:
         """Walk toward a player unit to get in attack range."""
-        tc, tr = target.tile_pos
         mc, mr = self.tile_pos
-        # Find closest walkable tile within range of target
-        best_tile: tuple[int, int] | None = None
-        best_cost = float("inf")
-        for dc in range(-WILD_ARCHER_RANGE, WILD_ARCHER_RANGE + 1):
-            for dr in range(-WILD_ARCHER_RANGE, WILD_ARCHER_RANGE + 1):
-                if abs(dc) + abs(dr) > WILD_ARCHER_RANGE:
-                    continue
-                c, r = tc + dc, tr + dr
-                if not self._map.is_walkable(c, r):
-                    continue
-                cost = abs(c - mc) + abs(r - mr)
-                if cost < best_cost:
-                    best_cost = cost
-                    best_tile = (c, r)
+        best_tile = find_walkable_tile_in_range(
+            self._map, origin=(mc, mr), target=target.tile_pos, shooting_range=WILD_ARCHER_RANGE
+        )
         if best_tile is None:
             self._start_idle()
             return
@@ -456,9 +427,7 @@ class WildArcher(Fauna):
         if not self._is_firing and self._timer >= fire_start:
             self._is_firing = True
             # Check range before firing
-            mc, mr = self.tile_pos
-            tc, tr = target.tile_pos
-            dist = abs(tc - mc) + abs(tr - mr)
+            dist = tile_distance(self.tile_pos, target.tile_pos)
             if dist > WILD_ARCHER_RANGE:
                 self._attack_target = None
                 self._is_firing = False
@@ -466,18 +435,7 @@ class WildArcher(Fauna):
                 return
             # Deal damage + spawn arrow
             target.health = max(0, target.health - WILD_ARCHER_DAMAGE)
-            if self._arrows is not None:
-                self._arrows.append(
-                    {
-                        "fromX": self.x,
-                        "fromY": self.y - 20,
-                        "toX": target.x,
-                        "toY": target.y - 10,
-                        "frame": 0,
-                        "totalFrames": ARCHER_ARROW_FLIGHT,
-                        "team": "red",
-                    }
-                )
+            self._arrows.append(build_arrow(shooter=self, target=target, team=Team.RED))
 
         # End of full cycle
         if self._timer >= self._shoot_duration:

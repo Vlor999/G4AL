@@ -4,7 +4,8 @@ from typing import Any
 
 from game.actions import Action, ActionType
 from game.archer import Archer
-from game.creatures import Arrow, Fauna, Sheep, WildArcher
+from game.arrows import Arrow
+from game.creatures import Fauna, Sheep, WildArcher
 from game.map import GameMap
 from game.npc import NPC
 from game.storage import ResourceStorage

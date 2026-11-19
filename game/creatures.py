@@ -17,6 +17,7 @@ from enum import Enum, auto
 from typing import TYPE_CHECKING, TypedDict
 
 from game.map import TileType
+from game.npc_names import pick_wild_archer_name
 from game.settings import (
     ARCHER_ARROW_FLIGHT,
     ARCHER_FIRE_ANIM_TIME,
@@ -292,26 +293,6 @@ class Cat(Fauna):
 #  WildArcher – autonomous hostile archer (Red team)
 # ═══════════════════════════════════════════════════════════════════════════
 
-_WILD_ARCHER_NAMES = [
-    "Bandit",
-    "Outlaw",
-    "Rogue",
-    "Poacher",
-    "Marauder",
-    "Raider",
-]
-_used_wild_archer_names: list[str] = []
-
-
-def _pick_wild_name() -> str:
-    available = [n for n in _WILD_ARCHER_NAMES if n not in _used_wild_archer_names]
-    if not available:
-        _used_wild_archer_names.clear()
-        available = list(_WILD_ARCHER_NAMES)
-    name = random.choice(available)
-    _used_wild_archer_names.append(name)
-    return name
-
 
 class WildArcher(Fauna):
     """Autonomous red archer that patrols, idles, and attacks nearby units."""
@@ -325,7 +306,7 @@ class WildArcher(Fauna):
         game_map: GameMap,
         resources: list[Resource],
     ):
-        super().__init__(x, y, game_map, resources, name=_pick_wild_name())
+        super().__init__(x, y, game_map, resources, name=pick_wild_archer_name())
         self.speed = 1.5
         self.health = 50
         self.max_health = 50

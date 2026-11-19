@@ -1,10 +1,11 @@
+import random
 from collections import Counter
 from collections.abc import Callable
 
 import pytest
 
 from game.creatures import WildArcher
-from game.npc_names import NPC_NAMES, pick_archer_name, pick_npc_name
+from game.npc_names import NPC_NAMES, NamePool, pick_archer_name, pick_npc_name
 from tests.conftest import MapBuilder
 
 ARCHER_NAMES = ("Robin", "Artemis", "Hawke", "Fletcher", "Ygritte", "Legolas")
@@ -41,3 +42,24 @@ def test_a_name_comes_back_only_once_its_whole_pool_was_picked(
     # Earlier tests may have used part of the pool: the first cycle can be short.
     assert set(picks) == set(pool)
     assert set(picks.values()) <= {2, 3, 4}
+
+
+@pytest.mark.parametrize(
+    ("names", "seeded_picks"),
+    [
+        (NPC_NAMES, ["Marie", "Lisa", "Sam", "Paul", "Bob", "Thomas", "Sam"]),
+        (ARCHER_NAMES, ["Fletcher", "Legolas", "Ygritte", "Artemis", "Robin", "Hawke", "Ygritte"]),
+        (
+            WILD_ARCHER_NAMES,
+            ["Poacher", "Raider", "Marauder", "Outlaw", "Bandit", "Rogue", "Marauder"],
+        ),
+    ],
+    ids=["pawn", "archer", "wild-archer"],
+)
+def test_a_fresh_pool_picks_names_in_seeded_order(
+    names: tuple[str, ...], seeded_picks: list[str]
+) -> None:
+    random.seed(11)
+    pool = NamePool(names)
+
+    assert [pool.pick() for _ in range(len(names) + 1)] == seeded_picks

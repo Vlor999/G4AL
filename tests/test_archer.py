@@ -8,7 +8,7 @@ from game.actions import Action, ActionType, State
 from game.archer import Archer
 from game.creatures import Arrow, Fauna, Sheep, WildArcher, remove_dead_fauna
 from game.map import GameMap
-from game.settings import ARCHER_ARROW_DAMAGE, ARCHER_RANGE
+from game.settings import ARCHER_ARROW_DAMAGE, ARCHER_ARROW_FLIGHT, ARCHER_RANGE
 from game.storage import ResourceStorage
 from tests.conftest import MapBuilder
 
@@ -64,7 +64,15 @@ def test_shoot_walks_into_range_and_fires_until_the_enemy_falls(
 
     assert battlefield.run_until(lambda: len(battlefield.arrows) == 1)
     assert enemy.health == starting_health - ARCHER_ARROW_DAMAGE
-    assert battlefield.arrows[0]["team"] == "blue"
+    assert battlefield.arrows[0] == {
+        "fromX": battlefield.archer.x,
+        "fromY": battlefield.archer.y - 20,
+        "toX": enemy.x,
+        "toY": enemy.y - 10,
+        "frame": 0,
+        "totalFrames": ARCHER_ARROW_FLIGHT,
+        "team": "blue",
+    }
     assert battlefield.distance_to(enemy) <= ARCHER_RANGE
     assert battlefield.run_until(lambda: battlefield.archer.state == State.IDLE)
     assert enemy.health <= 0

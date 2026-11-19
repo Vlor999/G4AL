@@ -63,6 +63,7 @@ class Fauna:
 
     kind: str = "fauna"
     controllable: bool = False
+    wander_radius: int = 5
 
     def __init__(
         self,
@@ -142,13 +143,17 @@ class Fauna:
         self._idle_duration = random.randint(60, 240)  # 1-4 seconds at 60fps
 
     def _start_wander(self) -> None:
-        """Pick a random nearby walkable tile and path to it."""
+        """Pick a random walkable tile within ``wander_radius`` and path to it."""
         col, row = self.tile_pos
-        target = self._random_nearby_walkable(col, row, radius=5)
+        target = self._random_nearby_walkable(col, row, radius=self.wander_radius)
         if target is None:
             self._start_idle()
             return
-        path = self._simple_path((col, row), target)
+        self._walk_to(target)
+
+    def _walk_to(self, goal: tuple[int, int]) -> None:
+        """Path to *goal* in WANDERING, or go idle when no path reaches it."""
+        path = self._simple_path(self.tile_pos, goal)
         if not path:
             self._start_idle()
             return
@@ -289,6 +294,7 @@ class WildArcher(Fauna):
     """Autonomous red archer that patrols, idles, and attacks nearby units."""
 
     kind = "wild_archer"
+    wander_radius = 8
 
     def __init__(
         self,
@@ -359,21 +365,6 @@ class WildArcher(Fauna):
             else:
                 self._idle_duration = random.randint(90, 300)
 
-    def _start_wander(self) -> None:
-        """Patrol a wider radius than sheep."""
-        col, row = self.tile_pos
-        target = self._random_nearby_walkable(col, row, radius=8)
-        if target is None:
-            self._start_idle()
-            return
-        path = self._simple_path((col, row), target)
-        if not path:
-            self._start_idle()
-            return
-        self._path = path
-        self._path_index = 0
-        self.state = FaunaState.WANDERING
-
     def _do_wander(self) -> None:
         """Override: check for enemies while walking."""
         if self._path_index >= len(self._path):
@@ -396,13 +387,7 @@ class WildArcher(Fauna):
         if best_tile is None:
             self._start_idle()
             return
-        path = self._simple_path((mc, mr), best_tile)
-        if not path:
-            self._start_idle()
-            return
-        self._path = path
-        self._path_index = 0
-        self.state = FaunaState.WANDERING
+        self._walk_to(best_tile)
 
     def _start_shoot(self) -> None:
         """Begin shooting at the current attack target."""

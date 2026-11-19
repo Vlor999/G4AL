@@ -4,11 +4,12 @@ import random
 from collections.abc import Callable
 
 from game.arrows import Arrow
-from game.creatures import FaunaState, WildArcher
+from game.fauna import FaunaState
 from game.map import GameMap
 from game.npc import NPC
 from game.settings import ARCHER_ARROW_FLIGHT, WILD_ARCHER_DAMAGE
 from game.storage import ResourceStorage
+from game.wild_archer import WildArcher
 from tests.conftest import MapBuilder
 
 FIELD = ["." * 10] * 4

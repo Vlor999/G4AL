@@ -4,8 +4,8 @@ from collections.abc import Callable
 
 import pytest
 
-from game.creatures import WildArcher
 from game.npc_names import NPC_NAMES, NamePool, pick_archer_name, pick_npc_name
+from game.wild_archer import WildArcher
 from tests.conftest import MapBuilder
 
 ARCHER_NAMES = ("Robin", "Artemis", "Hawke", "Fletcher", "Ygritte", "Legolas")

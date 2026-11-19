@@ -7,10 +7,12 @@ import pytest
 from game.actions import Action, ActionType, State
 from game.archer import Archer
 from game.arrows import Arrow
-from game.creatures import Fauna, Sheep, WildArcher, remove_dead_fauna
+from game.fauna import Fauna, remove_dead_fauna
 from game.map import GameMap
 from game.settings import ARCHER_ARROW_DAMAGE, ARCHER_ARROW_FLIGHT, ARCHER_RANGE
+from game.sheep import Sheep
 from game.storage import ResourceStorage
+from game.wild_archer import WildArcher
 from tests.conftest import MapBuilder
 
 FIELD = [".........."] * 4

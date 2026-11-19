@@ -10,8 +10,8 @@ from loguru import logger
 from game.actions import Action, ActionType
 from game.archer import Archer
 from game.arrows import Arrow
-from game.creatures import WildArcher
 from game.entities import WheatField
+from game.wild_archer import WildArcher
 from server.engine import GameEngine
 
 MAX_FRAMES = 600

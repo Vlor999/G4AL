@@ -1,11 +1,13 @@
-"""Autonomous fauna on hand-built worlds: sheep and wild archers wander and graze."""
+"""Autonomous fauna on hand-built worlds: wander, graze, removal of the dead."""
 
 import random
 
 import pytest
 
-from game.creatures import Fauna, FaunaState, Sheep, WildArcher
+from game.fauna import Fauna, FaunaState, remove_dead_fauna
 from game.map import GameMap
+from game.sheep import Sheep
+from game.wild_archer import WildArcher
 from tests.conftest import MapBuilder
 
 MEADOW = ["." * 30] * 30
@@ -73,3 +75,14 @@ def test_a_sheep_on_an_island_stays_on_its_tile(build_map: MapBuilder) -> None:
         sheep.update()
 
     assert sheep.tile_pos == (1, 1)
+
+
+def test_remove_dead_fauna_drops_the_dead_creatures(build_map: MapBuilder) -> None:
+    game_map = build_map(["." * 4])
+    alive, dead = (Sheep(*game_map.tile_center(col, 0), game_map, []) for col in (0, 1))
+    dead.health = 0
+    fauna = [alive, dead]
+
+    remove_dead_fauna(fauna)
+
+    assert fauna == [alive]

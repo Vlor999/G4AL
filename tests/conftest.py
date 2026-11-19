@@ -1,7 +1,10 @@
-from collections.abc import Callable
+from collections.abc import Callable, Iterator
+from typing import Any
 
 import pytest
+from loguru import logger
 
+from api.logger import has_event
 from game.map import GameMap, TileType
 
 _TILE_BY_SYMBOL = {
@@ -12,6 +15,7 @@ _TILE_BY_SYMBOL = {
 }
 
 MapBuilder = Callable[[list[str]], GameMap]
+LlmEndRecords = list[tuple[str, dict[str, Any]]]
 
 
 @pytest.fixture
@@ -26,3 +30,15 @@ def build_map() -> MapBuilder:
         return game_map
 
     return build
+
+
+@pytest.fixture
+def llm_end_records() -> Iterator[LlmEndRecords]:
+    """The message and ``extra`` fields of every ``llm_end`` record the sinks keep."""
+    records: LlmEndRecords = []
+    handler_id = logger.add(
+        lambda message: records.append((message.record["message"], message.record["extra"])),
+        filter=lambda record: has_event(record) and record["extra"]["event"] == "llm_end",
+    )
+    yield records
+    logger.remove(handler_id)

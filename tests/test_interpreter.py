@@ -11,7 +11,7 @@ from api.interpreter import ORDERS_SCHEMA, VoxtralOrderInterpreter
 from game.actions import ActionType
 from game.orders import VOICE_ORDER_ACTIONS, CommandRefused, NpcOrder, RefusalReason
 from game.ports import OrderInterpretationError
-from tests.conftest import MapBuilder
+from tests.conftest import LlmEndRecords, MapBuilder
 from tests.test_orders import make_npcs
 
 
@@ -215,3 +215,25 @@ def test_interpret_raises_only_the_port_error_without_the_vendor_text(
         build_interpreter().interpret(b"RIFF")
 
     assert str(raised.value) == expected_message
+
+
+@pytest.mark.parametrize(
+    ("prompt_audio_seconds", "audio_cost"),
+    [(90, 0.006), (None, 0.0)],
+    ids=["audio-reported", "audio-not-reported"],
+)
+def test_the_logged_cost_prices_the_audio_seconds_of_the_answer(
+    llm_end_records: LlmEndRecords, prompt_audio_seconds: int | None, audio_cost: float
+) -> None:
+    usage = SimpleNamespace(
+        prompt_tokens=1_000_000, completion_tokens=0, prompt_audio_seconds=prompt_audio_seconds
+    )
+    answer = answer_with([tool_call({"orders": []})])
+    answer.usage = usage
+    interpreter, _ = interpreter_answering(answer)
+
+    interpreter.interpret(b"RIFF")
+
+    [(_, extra)] = llm_end_records
+    assert extra["audio_cost_usd"] == pytest.approx(audio_cost)
+    assert extra["cost_usd"] == pytest.approx(0.1 + audio_cost)

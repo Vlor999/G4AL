@@ -1,5 +1,7 @@
 """The pipeline sinks of api/logger.py and the log lines they keep."""
 
+import subprocess
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -7,8 +9,10 @@ import pytest
 from loguru import logger
 
 from api.constants import AUDIO_MODEL
-from api.logger import configure_sinks, pipeline_logger
+from api.logger import PipelineLogger, configure_sinks
 from tests.conftest import LlmEndRecords
+
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
 
 def test_every_pipeline_sink_keeps_only_records_with_an_event(
@@ -45,7 +49,7 @@ def test_the_llm_line_lists_each_order_of_the_answer(
     orders: list[dict[str, Any]],
     described: str,
 ) -> None:
-    pipeline_logger.llm_end(order={"orders": orders}, prompt_tokens=10, completion_tokens=5)
+    PipelineLogger().llm_end(order={"orders": orders}, prompt_tokens=10, completion_tokens=5)
 
     [(message, _)] = llm_end_records
     assert message.startswith(f"LLM response: {described} | tokens=10+5 | ")
@@ -54,7 +58,7 @@ def test_the_llm_line_lists_each_order_of_the_answer(
 def test_a_failed_call_is_labelled_and_priced_as_the_audio_model(
     llm_end_records: LlmEndRecords,
 ) -> None:
-    pipeline_logger.llm_end(
+    PipelineLogger().llm_end(
         order=None, prompt_tokens=1_000_000, completion_tokens=1_000_000, error="timeout"
     )
 
@@ -65,7 +69,7 @@ def test_a_failed_call_is_labelled_and_priced_as_the_audio_model(
 def test_the_audio_seconds_are_priced_per_minute_on_top_of_the_tokens(
     llm_end_records: LlmEndRecords,
 ) -> None:
-    pipeline_logger.llm_end(
+    PipelineLogger().llm_end(
         order={"orders": []}, prompt_tokens=1_000_000, completion_tokens=0, audio_seconds=90
     )
 
@@ -74,3 +78,20 @@ def test_the_audio_seconds_are_priced_per_minute_on_top_of_the_tokens(
     assert extra["audio_cost_usd"] == pytest.approx(0.006)
     assert extra["cost_usd"] == pytest.approx(0.1 + 0.006)
     assert "audio=90s" in message
+
+
+def test_importing_the_logger_module_adds_no_sink_and_writes_no_line() -> None:
+    probe = (
+        "from loguru import logger\n"
+        "logger.remove()\n"
+        "records = []\n"
+        "logger.add(records.append)\n"
+        "import api.logger\n"
+        "assert records == [], records\n"
+        "logger.bind(event='probe').info('probe')\n"
+    )
+    result = subprocess.run(  # noqa: S603 - fixed arguments, no outside input
+        [sys.executable, "-c", probe], cwd=PROJECT_ROOT, capture_output=True, text=True
+    )
+
+    assert (result.returncode, result.stderr) == (0, "")

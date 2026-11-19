@@ -10,7 +10,6 @@ from typing import Any
 from flask_socketio import SocketIO
 from loguru import logger
 
-from api.logger import pipeline_logger
 from game.direct_orders import DirectOrder, DirectOrderOutcome, apply_direct_order
 from game.map import GameMap
 from game.npc import NPC
@@ -188,4 +187,3 @@ class GameEngine:
 
     def stop(self) -> None:
         self._running = False
-        pipeline_logger.close()

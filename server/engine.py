@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import threading
 import time
+from collections import deque
 from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import Any
@@ -26,6 +27,9 @@ class _InterpretationFailed:
     """The interpreter service failed on a voice command; the player is told on the next tick."""
 
 
+_VoiceAnswer = list[NpcOrder] | CommandRefused | _InterpretationFailed
+
+
 class GameEngine:
     """Game state and its 60 FPS loop; every public method is safe to call from any thread.
 
@@ -47,7 +51,7 @@ class GameEngine:
         self.log_messages: list[str] = []
         self._lock = threading.Lock()
         self._running = False
-        self._pending_orders: list[NpcOrder] | CommandRefused | _InterpretationFailed | None = None
+        self._pending_answers: deque[_VoiceAnswer] = deque()
 
     def _add_log(self, msg: str) -> None:
         self.log_messages.append(msg)
@@ -56,8 +60,8 @@ class GameEngine:
 
     def tick(self) -> None:
         with self._lock:
-            if self._pending_orders is not None:
-                self._apply_pending_orders()
+            while self._pending_answers:
+                self._apply_voice_answer(self._pending_answers.popleft())
             advance_world(
                 npcs=self.npcs, fauna=self.fauna, resources=self.resources, arrows=self.arrows
             )
@@ -80,20 +84,18 @@ class GameEngine:
             for n in self.npcs:
                 n.selected = False
 
-    def _apply_pending_orders(self) -> None:
-        orders = self._pending_orders
-        self._pending_orders = None
-        if isinstance(orders, _InterpretationFailed):
+    def _apply_voice_answer(self, answer: _VoiceAnswer) -> None:
+        if isinstance(answer, _InterpretationFailed):
             self._add_log("Voice command failed, try again.")
             return
-        if isinstance(orders, CommandRefused):
-            self._add_log(f"Order refused: {orders.reason}")
+        if isinstance(answer, CommandRefused):
+            self._add_log(f"Order refused: {answer.reason}")
             return
-        if not orders:
+        if not answer:
             self._add_log("No actions understood.")
             return
 
-        for outcome in apply_orders(self.npcs, orders):
+        for outcome in apply_orders(self.npcs, answer):
             order = outcome.order
             if outcome.is_spoken:
                 self._speaker.speak(order.voice_line, order.npc_name)
@@ -136,21 +138,21 @@ class GameEngine:
         ).start()
 
     def interpret_audio_command(self, wav_bytes: bytes) -> None:
-        """Interpret a voice command and queue its orders for the next tick.
+        """Interpret a voice command and queue its answer for the next tick.
 
         Blocks for the interpreter call: run it off the game loop thread. A refused
         answer reaches the game log on the next tick. A failed service call is logged
         on the server and the game log only says the command failed, without the
         service's error text.
         """
-        orders: list[NpcOrder] | CommandRefused | _InterpretationFailed
+        answer: _VoiceAnswer
         try:
-            orders = self._interpreter.interpret(wav_bytes)
+            answer = self._interpreter.interpret(wav_bytes)
         except OrderInterpretationError as error:
             logger.bind(event="order_interpretation").warning(f"Voice command dropped: {error}")
-            orders = _InterpretationFailed()
+            answer = _InterpretationFailed()
         with self._lock:
-            self._pending_orders = orders
+            self._pending_answers.append(answer)
 
     _frame_count: int = 0
     _ws_push_interval: int = 3  # frames: ~20 Hz at 60 FPS

@@ -40,8 +40,10 @@ server/: app.py (create_app, main), routes.py (Flask + Socket.IO),
    `OrderInterpretationError`, logged on the server, and leaves the game unchanged;
    the game log shows `Voice command failed, try again.`, without the service's
    error text.
-3. On its next tick the game loop calls `game.orders.apply_orders`, which enqueues the
-   actions and returns one `OrderOutcome` per order (accepted, spoken).
+3. Answers queue in `GameEngine` as their worker threads finish. On its next tick the
+   game loop takes every queued answer in arrival order and, for a list of orders,
+   calls `game.orders.apply_orders`, which enqueues the actions and returns one
+   `OrderOutcome` per order (accepted, spoken).
 4. `GameEngine` logs each reply and sends the spoken ones to the injected
    `VoiceLineSpeaker` port; its adapter, `api.tts.TTSEngine`, plays them in the
    background, and drops them when `ELEVENLABS_API_KEY` is not set.

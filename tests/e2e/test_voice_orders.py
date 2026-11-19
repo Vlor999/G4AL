@@ -67,6 +67,28 @@ def test_orders_are_logged_and_only_accepted_lines_are_spoken() -> None:
     assert speaker.lines == [("Food!", pawn.name)]
 
 
+def test_answers_that_arrive_before_a_tick_all_apply_in_arrival_order() -> None:
+    speaker = RecordingSpeaker()
+    interpreter = ScriptedOrderInterpreter()
+    engine = GameEngine(interpreter=interpreter, speaker=speaker)
+    pawn = next(npc for npc in engine.npcs if npc.kind == "pawn")
+    for voice_line, action_type in [
+        ("Wood!", ActionType.CHOP_WOOD),
+        ("Rock!", ActionType.MINE_ROCK),
+    ]:
+        interpreter.orders = [
+            NpcOrder(
+                npc_id=pawn.id, npc_name=pawn.name, action_type=action_type, voice_line=voice_line
+            )
+        ]
+        engine.interpret_audio_command(_AUDIO)
+
+    engine.tick()
+
+    assert engine.log_messages == [f'{pawn.name}: "Wood!"', f'{pawn.name}: "Rock!"']
+    assert speaker.lines == [("Wood!", pawn.name), ("Rock!", pawn.name)]
+
+
 @pytest.mark.parametrize(
     ("kind", "action_type"),
     [("pawn", ActionType.CHOP_WOOD), ("archer", ActionType.DEFEND)],

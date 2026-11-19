@@ -9,7 +9,7 @@ from mistralai.client import Mistral
 from api.constants import ORDERS_TOOL_NAME
 from api.interpreter import ORDERS_SCHEMA, VoxtralOrderInterpreter
 from game.actions import ActionType
-from game.orders import VOICE_ORDER_ACTIONS, CommandRefused, NpcOrder, RefusalReason
+from game.orders import CommandRefused, NpcOrder, RefusalReason
 from game.ports import OrderInterpretationError
 from tests.conftest import LlmEndRecords, MapBuilder
 from tests.test_orders import make_npcs
@@ -46,11 +46,24 @@ def interpreter_answering(
     return interpreter, chat
 
 
-def test_schema_actions_are_the_voice_order_actions() -> None:
+VOICE_ORDER_ACTION_VALUES = [
+    "chop_wood",
+    "mine_rock",
+    "build",
+    "eat",
+    "plant_wheat",
+    "collect_wheat",
+    "shoot",
+    "defend",
+]
+"""The actions Voxtral may answer with, written out so a new or renamed ``ActionType``
+value fails the drift test until this list, and the prompt, are reviewed."""
+
+
+def test_schema_actions_are_the_listed_voice_order_actions() -> None:
     action_schema = ORDERS_SCHEMA["properties"]["orders"]["items"]["properties"]["action"]
 
-    assert action_schema["enum"] == [action_type.value for action_type in VOICE_ORDER_ACTIONS]
-    assert ActionType.MOVE_TO.value not in action_schema["enum"]
+    assert action_schema["enum"] == VOICE_ORDER_ACTION_VALUES
 
 
 def test_prompt_roster_lists_no_action_a_voice_order_cannot_give(build_map: MapBuilder) -> None:

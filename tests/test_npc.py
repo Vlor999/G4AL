@@ -337,7 +337,7 @@ WorldBuilder = Callable[[MapBuilder], tuple[GameMap, list[Resource], ResourceSto
         (empty_world, (0, 0), Action(ActionType.CHOP_WOOD)),
         (empty_world, (0, 0), Action(ActionType.MINE_ROCK)),
         (world_with_a_reserved_tree, (0, 0), Action(ActionType.CHOP_WOOD)),
-        (world_with_unripe_wheat, (0, 0), Action(ActionType.collect_wheat)),
+        (world_with_unripe_wheat, (0, 0), Action(ActionType.COLLECT_WHEAT)),
         (empty_world, (0, 0), Action(ActionType.BUILD, target=(2, 1))),
         (island_with_building_stock, (1, 1), Action(ActionType.BUILD, target=(1, 1))),
         (island_under_a_rock, (1, 1), Action(ActionType.PLANT_WHEAT, target=(1, 1))),
@@ -440,7 +440,7 @@ def test_collect_wheat_harvests_the_nearest_ripe_field(build_map: MapBuilder) ->
     ripe = ripe_wheat(4, 0)
     npc = make_pawn(game_map, (0, 0), resources=[unripe, ripe], storage=storage)
 
-    npc.enqueue(Action(ActionType.collect_wheat))
+    npc.enqueue(Action(ActionType.COLLECT_WHEAT))
 
     assert run_until(npc, lambda: storage.wheat == 1)
     assert unripe.remaining_yields == unripe.yields

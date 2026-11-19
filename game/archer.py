@@ -14,9 +14,7 @@ from game.settings import (
     ARCHER_FIRE_ANIM_TIME,
     ARCHER_RANGE,
     ARCHER_SHOOT_TIME,
-    EAT_WHEAT_COST,
     NPC_EAT_RESTORE,
-    NPC_EAT_TIME,
     NPC_SPEED,
 )
 from game.targeting import find_nearest_living, find_walkable_tile_in_range, tile_distance
@@ -107,43 +105,46 @@ class Archer(NPC):
         self._release_reservation()
         action = self.action_queue.popleft()
         self._current_action = action
+        self._start_action(action)
 
+    def _start_action(self, action: Action) -> None:
         if action.action_type == ActionType.MOVE_TO:
-            if isinstance(action.target, tuple):
-                self._plan_move_to(*action.target)
-            else:
-                self.state = State.DONE
-
+            self._start_move_to(action)
         elif action.action_type == ActionType.SHOOT:
-            enemy = self._find_nearest_enemy()
-            if enemy is None:
-                self.say("No enemies!", 90)
-                self.state = State.DONE
-                return
-            self._shoot_target = enemy
-            dist = self._enemy_tile_distance(enemy)
-            if dist <= ARCHER_RANGE:
-                self._start_shoot_perform()
-            else:
-                self._walk_toward_enemy(enemy)
-
+            self._start_shooting()
         elif action.action_type == ActionType.EAT:
-            if self._storage.get("wheat") < EAT_WHEAT_COST:
-                self.say("No wheat to eat!", 120)
-                self.state = State.DONE
-                return
-            self._storage.spend("wheat", EAT_WHEAT_COST)
-            self._perform_timer = 0
-            self._perform_duration = NPC_EAT_TIME
-            self.state = State.PERFORMING
-
+            self._start_eat()
         elif action.action_type == ActionType.DEFEND:
-            self._defending = True
-            self.say("Defending!", 90)
-            self._defend_scan()
-
+            self._start_defending()
         else:
             self.state = State.DONE
+
+    def _start_move_to(self, action: Action) -> None:
+        if isinstance(action.target, tuple):
+            self._plan_move_to(*action.target)
+        else:
+            self.state = State.DONE
+
+    def _start_shooting(self) -> None:
+        enemy = self._find_nearest_enemy()
+        if enemy is None:
+            self.say("No enemies!", 90)
+            self.state = State.DONE
+            return
+        self._engage(enemy)
+
+    def _start_defending(self) -> None:
+        self._defending = True
+        self.say("Defending!", 90)
+        self._defend_scan()
+
+    def _engage(self, enemy: Fauna) -> None:
+        """Shoot *enemy* from here when in range, else walk into range first."""
+        self._shoot_target = enemy
+        if self._enemy_tile_distance(enemy) <= ARCHER_RANGE:
+            self._start_shoot_perform()
+        else:
+            self._walk_toward_enemy(enemy)
 
     def _walk_toward_enemy(self, enemy: Fauna) -> None:
         """Pathfind to a tile within ARCHER_RANGE of the enemy."""
@@ -162,12 +163,7 @@ class Archer(NPC):
         if enemy is None:
             self.state = State.IDLE
             return
-        self._shoot_target = enemy
-        dist = self._enemy_tile_distance(enemy)
-        if dist <= ARCHER_RANGE:
-            self._start_shoot_perform()
-        else:
-            self._walk_toward_enemy(enemy)
+        self._engage(enemy)
 
     def _start_shoot_perform(self) -> None:
         self._perform_timer = 0

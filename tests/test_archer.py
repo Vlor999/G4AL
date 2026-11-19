@@ -255,3 +255,13 @@ def test_the_archer_shoots_an_enemy_added_after_the_dead_were_removed(
 
     assert battlefield.run_until(lambda: len(battlefield.arrows) == 1)
     assert newcomer.health == newcomer.max_health - ARCHER_ARROW_DAMAGE
+
+
+def test_a_move_without_a_target_ends_at_once(build_map: MapBuilder) -> None:
+    battlefield = Battlefield(build_map(FIELD))
+
+    battlefield.archer.enqueue(Action(ActionType.MOVE_TO))
+
+    assert battlefield.archer.state == State.DONE
+    assert battlefield.run_until(lambda: battlefield.archer.state == State.IDLE)
+    assert battlefield.archer.tile_pos == (0, 1)

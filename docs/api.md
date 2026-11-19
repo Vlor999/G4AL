@@ -10,6 +10,19 @@ to a route, an event or a payload updates both sides in the same PR
 |---|---|---|
 | `state` | server → client | full game state (same shape as `GET /api/state`), pushed every 3rd tick (~20 Hz) and once on `connect` |
 
+### Storage
+
+The `storage` object of the state holds the settlement stockpile:
+
+| Key | Type | Meaning |
+|---|---|---|
+| `wood`, `stone`, `gold`, `wheat` | int | units stored per resource |
+| `total` | int | units stored, all resources |
+| `capacity` | int | maximum `total`: a base plus a bonus per completed house (`game/settings.py`) |
+| `houseCount` | int | completed houses, the storage hut excluded |
+
+The client shows `total / capacity` and `houseCount` in the inventory panel.
+
 ## HTTP
 
 All POST bodies are JSON sent as `application/json` unless stated. A route parses its

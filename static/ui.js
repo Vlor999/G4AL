@@ -33,6 +33,7 @@
         const cap  = G.gameState.storage.capacity || 50;
         document.getElementById("storage-used").textContent = used;
         document.getElementById("storage-cap").textContent = cap;
+        document.getElementById("storage-house-count").textContent = G.gameState.storage.houseCount || 0;
         const pct = cap > 0 ? Math.min(100, (used / cap) * 100) : 0;
         const capBar = document.getElementById("storage-cap-bar");
         capBar.style.width = pct + "%";

@@ -35,7 +35,7 @@ testpaths = ["tests"]
 addopts = "-ra --strict-markers"
 
 [tool.coverage.run]
-source = ["game", "api", "server"]
+source = ["game", "api", "server", "scripts"]
 branch = true
 
 [tool.coverage.report]

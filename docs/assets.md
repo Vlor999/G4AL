@@ -199,8 +199,6 @@ On disk, not loaded by `static/sprites.js`.
 - `Terrain/Resources/Tools/Tool_03.png`
 - `Terrain/Resources/Tools/Tool_04.png`
 - `Terrain/Resources/Wood/Wood Resource/Wood Resource.png`
-- `Terrain/Tileset/Tilemap_color1.png`
-- `Terrain/Tileset/Tilemap_color3.png`
 - `UI Elements/UI Elements/Cursors/Cursor_01.png`
 - `UI Elements/UI Elements/Icons/Icon_01.png`
 - `UI Elements/UI Elements/Icons/Icon_02.png`

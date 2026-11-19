@@ -12,13 +12,19 @@
         3: { light: "#42a5f5", dark: "#42a5f5" },
     };
 
+    // Ground and decorations per biome (docs/adr/0003-biome-map-generation.md).
+    const GRASS_TILESET_BY_BIOME = {
+        meadow: "ts_grass", forest: "ts_forest", highland: "ts_highland", lake: "ts_grass",
+    };
+    const BUSH_ONE_TILE_IN_BY_BIOME = { meadow: 30, forest: 8 };
+
     G.mapLayers = { canvas: null, decorations: [], waterRocks: [], clouds: [] };
 
     // ── Map builder ─────────────────────────────────────────────────────
 
     G.buildMapImage = function () {
         if (!G.mapCached) return;
-        const { cols, rows, tileSize, tiles } = G.mapCached;
+        const { cols, rows, tileSize, tiles, biomes } = G.mapCached;
         const spr = G.sprites;
         const posHash = G.posHash;
 
@@ -35,11 +41,12 @@
         for (let r = 0; r < rows; r++) {
             for (let c = 0; c < cols; c++) {
                 const tt = tiles[r][c];
+                const biome = biomes[r][c];
                 const px = c * tileSize;
                 const py = r * tileSize;
 
                 let tileset = null;
-                if (tt === 0) tileset = spr.ts_grass;
+                if (tt === 0) tileset = spr[GRASS_TILESET_BY_BIOME[biome]] || spr.ts_grass;
                 else if (tt === 1) tileset = spr.ts_dirt;
                 else if (tt === 2) tileset = spr.ts_sand;
                 else if (tt === 3) {
@@ -72,7 +79,8 @@
                     mctx.fillRect(px, py, tileSize, tileSize);
                 }
 
-                if (tt === 0 && posHash(c + 1, r + 3, 30) === 0) {
+                const bushOneTileIn = BUSH_ONE_TILE_IN_BY_BIOME[biome];
+                if (tt === 0 && bushOneTileIn && posHash(c + 1, r + 3, bushOneTileIn) === 0) {
                     decorations.push({
                         type: "bush",
                         variant: posHash(c, r, 4) + 1,

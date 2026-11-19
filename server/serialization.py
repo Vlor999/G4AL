@@ -50,6 +50,7 @@ def _serialize_map(game_map: GameMap) -> dict[str, Any]:
             [int(game_map.tiles[row][col]) for col in range(game_map.cols)]
             for row in range(game_map.rows)
         ],
+        "biomes": [[biome.value for biome in row] for row in game_map.biomes],
     }
 
 

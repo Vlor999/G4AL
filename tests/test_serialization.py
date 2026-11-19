@@ -11,6 +11,7 @@ from game.map import GameMap
 from game.npc import NPC
 from game.sheep import Sheep
 from game.storage import ResourceStorage
+from game.terrain import Biome
 from game.wild_archer import WildArcher
 from server.serialization import serialize_state
 from tests.conftest import MapBuilder
@@ -132,3 +133,12 @@ def test_resources_npcs_and_fauna_carry_their_footprint_height_and_sprite_box(
     assert hut["sprite"] == {"width": 2, "height": 3.0, "anchorX": 1.0, "anchorY": 3.0}
     assert pawn_state["sprite"] == {"width": 1.0, "height": 1.0, "anchorX": 0.5, "anchorY": 0.84375}
     assert sheep_state["footprint"] == {"width": 1, "depth": 1}
+
+
+def test_the_map_carries_the_biome_of_each_tile(build_map: MapBuilder) -> None:
+    game_map = build_map(["..", ".~"])
+    game_map.biomes[1][1] = Biome.LAKE
+
+    state = serialize(game_map, npcs=[], fauna=[])
+
+    assert state["map"]["biomes"] == [["meadow", "meadow"], ["meadow", "lake"]]

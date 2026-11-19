@@ -1,0 +1,104 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   G4AL – Map image: ground tiles drawn once, decorations and clouds placed
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+(function (G) {
+    "use strict";
+
+    const TILE_COLORS = {
+        0: { light: "#7cb342", dark: "#689f38" },
+        1: { light: "#a18864", dark: "#a18864" },
+        2: { light: "#dcc88c", dark: "#dcc88c" },
+        3: { light: "#42a5f5", dark: "#42a5f5" },
+    };
+
+    G.mapLayers = { canvas: null, decorations: [], waterRocks: [], clouds: [] };
+
+    // ── Map builder ─────────────────────────────────────────────────────
+
+    G.buildMapImage = function () {
+        if (!G.mapCached) return;
+        const { cols, rows, tileSize, tiles } = G.mapCached;
+        const spr = G.sprites;
+        const posHash = G.posHash;
+
+        const mapCanvas = document.createElement("canvas");
+        mapCanvas.width = cols * tileSize;
+        mapCanvas.height = rows * tileSize;
+        const mctx = mapCanvas.getContext("2d");
+        const decorations = [];
+        const waterRocks = [];
+
+        const SRC_X = 1 * 64;
+        const SRC_Y = 1 * 64;
+
+        for (let r = 0; r < rows; r++) {
+            for (let c = 0; c < cols; c++) {
+                const tt = tiles[r][c];
+                const px = c * tileSize;
+                const py = r * tileSize;
+
+                let tileset = null;
+                if (tt === 0) tileset = spr.ts_grass;
+                else if (tt === 1) tileset = spr.ts_dirt;
+                else if (tt === 2) tileset = spr.ts_sand;
+                else if (tt === 3) {
+                    if (spr.water_bg) {
+                        mctx.drawImage(spr.water_bg, px, py, tileSize, tileSize);
+                    } else {
+                        mctx.fillStyle = "#42a5f5";
+                        mctx.fillRect(px, py, tileSize, tileSize);
+                    }
+                    if (posHash(c + 5, r + 7, 12) === 0) {
+                        waterRocks.push({
+                            variant: posHash(c, r, 4) + 1,
+                            x: px + tileSize / 2,
+                            y: py + tileSize / 2,
+                        });
+                    }
+                    continue;
+                }
+
+                if (tileset) {
+                    mctx.drawImage(tileset, SRC_X, SRC_Y, 64, 64, px, py, tileSize, tileSize);
+                    if ((r + c) % 2 === 0) {
+                        mctx.fillStyle = "rgba(0,0,0,0.04)";
+                        mctx.fillRect(px, py, tileSize, tileSize);
+                    }
+                } else {
+                    const colors = TILE_COLORS[tt] || TILE_COLORS[0];
+                    const color = (r + c) % 2 === 0 ? colors.light : colors.dark;
+                    mctx.fillStyle = color;
+                    mctx.fillRect(px, py, tileSize, tileSize);
+                }
+
+                if (tt === 0 && posHash(c + 1, r + 3, 30) === 0) {
+                    decorations.push({
+                        type: "bush",
+                        variant: posHash(c, r, 4) + 1,
+                        offset: posHash(c + r, r * c, 8),
+                        x: px + tileSize / 2,
+                        y: py + tileSize / 2,
+                    });
+                }
+            }
+        }
+
+        // Floating clouds
+        const clouds = [];
+        const mapW = cols * tileSize;
+        const mapH = rows * tileSize;
+        const cloudCount = Math.floor(cols * rows / 40);
+        for (let i = 0; i < cloudCount; i++) {
+            clouds.push({
+                variant: posHash(i, i * 3 + 7, 8) + 1,
+                x: posHash(i * 7, i * 13, mapW),
+                y: posHash(i * 11, i * 5, mapH),
+                speed: 0.15 + posHash(i, i + 99, 100) / 500,
+                scale: 0.8 + posHash(i + 3, i * 2, 40) / 100,
+            });
+        }
+        G.mapLayers = { canvas: mapCanvas, decorations, waterRocks, clouds };
+    };
+
+})(window.G4AL);

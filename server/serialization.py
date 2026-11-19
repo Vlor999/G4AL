@@ -7,8 +7,8 @@ from typing import Any
 
 from game.actions import State as NpcState
 from game.arrows import Arrow
-from game.creatures import Fauna
 from game.entities import Resource, Rock, Structure, WheatField
+from game.fauna import Fauna
 from game.map import GameMap
 from game.npc import NPC
 from game.settings import TILE_SIZE

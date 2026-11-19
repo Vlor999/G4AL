@@ -1,5 +1,4 @@
 from game.archer import Archer
-from game.creatures import Sheep, WildArcher
 from game.map import GameMap
 from game.npc import NPC
 from game.settings import (
@@ -14,7 +13,9 @@ from game.settings import (
     STORAGE_HUT_COL,
     STORAGE_HUT_ROW,
 )
+from game.sheep import Sheep
 from game.spawning import spawn_world
+from game.wild_archer import WildArcher
 from tests.conftest import MapBuilder
 
 

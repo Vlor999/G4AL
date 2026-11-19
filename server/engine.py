@@ -9,9 +9,9 @@ from flask_socketio import SocketIO
 from loguru import logger
 
 from api.logger import pipeline_logger
-from game.creatures import remove_dead_fauna
 from game.direct_orders import DirectOrder, DirectOrderOutcome, apply_direct_order
 from game.entities import WheatField
+from game.fauna import remove_dead_fauna
 from game.map import GameMap
 from game.npc import NPC
 from game.orders import CommandRefused, NpcOrder, apply_orders

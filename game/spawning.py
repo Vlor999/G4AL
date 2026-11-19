@@ -6,8 +6,9 @@ from dataclasses import dataclass, field
 
 from game.archer import Archer
 from game.arrows import Arrow
-from game.creatures import Fauna, WildArcher, spawn_fauna
 from game.entities import Resource, Structure, spawn_resources
+from game.fauna import Fauna
+from game.fauna_spawning import spawn_fauna
 from game.map import GameMap
 from game.npc import NPC
 from game.settings import (
@@ -23,6 +24,7 @@ from game.settings import (
     WILD_ARCHER_SPAWN_RADIUS,
 )
 from game.storage import ResourceStorage
+from game.wild_archer import WildArcher
 
 
 @dataclass

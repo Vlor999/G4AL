@@ -5,10 +5,12 @@ from typing import Any
 from game.actions import Action, ActionType
 from game.archer import Archer
 from game.arrows import Arrow
-from game.creatures import Fauna, Sheep, WildArcher
+from game.fauna import Fauna
 from game.map import GameMap
 from game.npc import NPC
+from game.sheep import Sheep
 from game.storage import ResourceStorage
+from game.wild_archer import WildArcher
 from server.serialization import serialize_state
 from tests.conftest import MapBuilder
 

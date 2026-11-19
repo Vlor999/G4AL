@@ -99,10 +99,16 @@ game/
   npc.py            pawn action planning
   archer.py         archer combat
   pathfinding.py    A* on the tile grid
-  npc_names.py      canonical NPC names and name picking
+  npc_names.py      name pools of pawns, archers and wild archers
   ports.py          protocols the domain needs from the outside world
   entities.py       trees, rocks, structures, wheat fields
-  creatures.py      sheep and wild archers
+  fauna.py          autonomous creatures: idle, graze, wander
+  sheep.py          sheep
+  cat.py            the cat
+  wild_archer.py    hostile red archers
+  fauna_spawning.py fauna placement on a new map
+  targeting.py      nearest target and firing tile searches
+  arrows.py         arrows in flight
   storage.py        resource storage (wood, stone, gold, wheat)
   settings.py       game constants
 

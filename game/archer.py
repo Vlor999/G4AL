@@ -23,8 +23,8 @@ from game.targeting import find_nearest_living, find_walkable_tile_in_range, til
 
 if TYPE_CHECKING:
     from game.arrows import Arrow
-    from game.creatures import Fauna
     from game.entities import Resource
+    from game.fauna import Fauna
     from game.map import GameMap
     from game.storage import ResourceStorage
 

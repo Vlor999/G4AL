@@ -26,7 +26,7 @@ from mistralai.client.models import (
 )
 
 from api.constants import AUDIO_MODEL, ORDERS_TOOL_NAME
-from api.logger import LoggedOrder, pipeline_logger
+from api.logger import LoggedOrder, PipelineLogger
 from api.roster import get_soul
 from game.actions import ActionType
 from game.npc import NPC
@@ -219,34 +219,17 @@ def _orders_for_log(orders: Sequence[NpcOrder]) -> dict[str, list[LoggedOrder]]:
     return {"orders": logged_orders}
 
 
-def _log_answer(response: ChatCompletionResponse, answer: list[NpcOrder] | CommandRefused) -> None:
-    usage = response.usage
-    audio_seconds = usage.prompt_audio_seconds if usage else None
-    log_call = partial(
-        pipeline_logger.llm_end,
-        prompt_tokens=(usage.prompt_tokens or 0) if usage else 0,
-        completion_tokens=(usage.completion_tokens or 0) if usage else 0,
-        audio_seconds=audio_seconds if isinstance(audio_seconds, int) else 0,
-        model=AUDIO_MODEL,
-    )
-    if isinstance(answer, CommandRefused):
-        log_call(order=None, error=f"answer refused: {answer.reason}")
-        return
-    order = _orders_for_log(answer)
-    log_call(order=order)
-    if answer:
-        pipeline_logger.pipeline_summary(order=order)
-
-
 class VoxtralOrderInterpreter:
     """``OrderInterpreter`` backed by one multimodal Voxtral call per command.
 
     The client is built from ``MISTRAL_API_KEY`` on the first command unless one is
-    given. The NPC roster the prompt lists comes from ``register_roster``.
+    given. The NPC roster the prompt lists comes from ``register_roster``. Every call
+    is logged, with its cost, through ``pipeline_logger``.
     """
 
-    def __init__(self, client: Mistral | None = None) -> None:
+    def __init__(self, client: Mistral | None = None, *, pipeline_logger: PipelineLogger) -> None:
         self._client = client
+        self._pipeline_logger = pipeline_logger
         self._roster: dict[int, RosterEntry] = {}
 
     def register_roster(self, npcs: Sequence[NPC]) -> None:
@@ -288,7 +271,7 @@ class VoxtralOrderInterpreter:
 
     def _interpret(self, audio: bytes) -> list[NpcOrder] | CommandRefused:
         client = self._ensure_client()
-        pipeline_logger.llm_start(input_text="(audio input)")
+        self._pipeline_logger.llm_start(input_text="(audio input)")
         try:
             response = client.chat.complete(
                 model=AUDIO_MODEL,
@@ -300,11 +283,31 @@ class VoxtralOrderInterpreter:
                 max_tokens=1024,
             )
         except Exception as error:
-            pipeline_logger.llm_end(order=None, error=str(error))
+            self._pipeline_logger.llm_end(order=None, error=str(error))
             raise
         answer = read_orders_answer(response, self._roster)
-        _log_answer(response, answer)
+        self._log_answer(response, answer)
         return answer
+
+    def _log_answer(
+        self, response: ChatCompletionResponse, answer: list[NpcOrder] | CommandRefused
+    ) -> None:
+        usage = response.usage
+        audio_seconds = usage.prompt_audio_seconds if usage else None
+        log_call = partial(
+            self._pipeline_logger.llm_end,
+            prompt_tokens=(usage.prompt_tokens or 0) if usage else 0,
+            completion_tokens=(usage.completion_tokens or 0) if usage else 0,
+            audio_seconds=audio_seconds if isinstance(audio_seconds, int) else 0,
+            model=AUDIO_MODEL,
+        )
+        if isinstance(answer, CommandRefused):
+            log_call(order=None, error=f"answer refused: {answer.reason}")
+            return
+        order = _orders_for_log(answer)
+        log_call(order=order)
+        if answer:
+            self._pipeline_logger.pipeline_summary(order=order)
 
     def _ensure_client(self) -> Mistral:
         if self._client is None:

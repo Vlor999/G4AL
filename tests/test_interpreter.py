@@ -8,6 +8,7 @@ from mistralai.client import Mistral
 
 from api.constants import ORDERS_TOOL_NAME
 from api.interpreter import ORDERS_SCHEMA, VoxtralOrderInterpreter
+from api.logger import PipelineLogger
 from game.actions import ActionType
 from game.orders import CommandRefused, NpcOrder, RefusalReason
 from game.ports import OrderInterpretationError
@@ -40,7 +41,9 @@ def interpreter_answering(
     answer: SimpleNamespace | Exception, build_map: MapBuilder | None = None
 ) -> tuple[VoxtralOrderInterpreter, FakeChat]:
     chat = FakeChat(answer)
-    interpreter = VoxtralOrderInterpreter(cast(Mistral, SimpleNamespace(chat=chat)))
+    interpreter = VoxtralOrderInterpreter(
+        cast(Mistral, SimpleNamespace(chat=chat)), pipeline_logger=PipelineLogger()
+    )
     if build_map is not None:
         interpreter.register_roster(make_npcs(build_map))
     return interpreter, chat
@@ -213,7 +216,10 @@ def test_interpret_refuses_an_answer_that_breaks_the_order_contract(
             lambda: interpreter_answering(SimpleNamespace(choices=[], usage=None))[0],
             "Voxtral could not interpret the command (IndexError)",
         ),
-        (VoxtralOrderInterpreter, "MISTRAL_API_KEY is not set"),
+        (
+            lambda: VoxtralOrderInterpreter(pipeline_logger=PipelineLogger()),
+            "MISTRAL_API_KEY is not set",
+        ),
     ],
     ids=["client-failure", "answer-without-choice", "missing-api-key"],
 )

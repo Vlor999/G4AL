@@ -17,7 +17,7 @@ from typing import TYPE_CHECKING
 from loguru import logger
 
 from api.constants import ELEVENLABS_API_KEY_MASK
-from api.logger import pipeline_logger
+from api.logger import PipelineLogger
 from api.roster import NPC_VOICE_MAP, ElevenLabsVoice
 
 if TYPE_CHECKING:
@@ -40,14 +40,17 @@ class TTSEngine:
     builds the ElevenLabs client from ``ELEVENLABS_API_KEY``; without that key, or when
     it raises, every line is dropped silently. ``play_audio`` plays one mp3 clip and
     blocks until it ends (default: the pygame mixer, initialised by the entry point).
+    Every ElevenLabs call is logged, with its cost, through ``pipeline_logger``.
     """
 
     def __init__(
         self,
         *,
+        pipeline_logger: PipelineLogger,
         create_client: Callable[[str], ElevenLabs] | None = None,
         play_audio: Callable[[bytes], None] | None = None,
     ) -> None:
+        self._pipeline_logger = pipeline_logger
         self._queue: queue.Queue[tuple[str, str] | None] = queue.Queue()
         self._play_audio = play_audio or _play_through_mixer
         self._running = True
@@ -102,7 +105,7 @@ class TTSEngine:
         """
         try:
             voice_id = self._voice_id_for(npc_name)
-            pipeline_logger.tts_start(text, npc_name, voice_id)
+            self._pipeline_logger.tts_start(text, npc_name, voice_id)
             # Use with_raw_response to access API-reported usage headers
             raw_resp = client.text_to_speech.with_raw_response.convert(
                 voice_id=voice_id,
@@ -116,13 +119,13 @@ class TTSEngine:
                 tts_latency_ms = int(headers.get("tts-latency-ms", 0))
                 audio = b"".join(http_resp.data)
         except Exception as exc:  # noqa: BLE001 - worker thread must survive any API error
-            pipeline_logger.tts_end(
+            self._pipeline_logger.tts_end(
                 npc_name=npc_name,
                 char_count=len(text),
                 error=mask_api_key(str(exc), self._api_key),
             )
             return None
-        pipeline_logger.tts_end(
+        self._pipeline_logger.tts_end(
             npc_name=npc_name,
             char_count=character_cost,
             audio_bytes=len(audio),

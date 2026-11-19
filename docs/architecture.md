@@ -62,7 +62,7 @@ The entry point is the `server/` package:
 
 | Module | Role |
 |---|---|
-| `server/app.py` | `create_app(engine, served_host=...)` builds the Flask and Socket.IO apps around an engine; `main()` loads `.env`, starts the pygame mixer, builds the adapters, injects them into `GameEngine` through the ports of `game/ports.py`, starts the game loop thread and serves on port 8000 of `G4AL_HOST` (default `127.0.0.1`). |
+| `server/app.py` | `create_app(engine, served_host=...)` builds the Flask and Socket.IO apps around an engine; `main()` loads `.env`, starts the pygame mixer, installs the log sinks (`api.logger.use_pipeline_sinks`), builds the `PipelineLogger` the adapters log their calls through, builds the adapters, injects them into `GameEngine` through the ports of `game/ports.py`, starts the game loop thread and serves on port 8000 of `G4AL_HOST` (default `127.0.0.1`). |
 | `server/host_allowlist.py` | The WSGI middleware that answers 403 to a request whose `Host` is not an address the server is served at (DNS rebinding), around the Flask and Socket.IO apps. |
 | `server/engine.py` | `GameEngine`: the game state behind one lock, the 60 FPS loop and the state push. |
 | `server/routes.py` | The HTTP routes (a blueprint that reads the engine from the app) and the Socket.IO `connect` event. |

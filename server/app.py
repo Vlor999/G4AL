@@ -11,6 +11,7 @@ from flask import Flask
 from flask_socketio import SocketIO
 
 from api.interpreter import VoxtralOrderInterpreter
+from api.logger import PipelineLogger, use_pipeline_sinks
 from api.tts import TTSEngine
 from server.constants import (
     DEFAULT_SERVED_HOST,
@@ -61,8 +62,11 @@ def main() -> None:
     # api/tts.py plays the voice lines through the mixer.
     pygame.mixer.init()
 
-    interpreter = VoxtralOrderInterpreter()
-    speaker = TTSEngine()
+    use_pipeline_sinks()
+    pipeline_logger = PipelineLogger()
+    pipeline_logger.start_session()
+    interpreter = VoxtralOrderInterpreter(pipeline_logger=pipeline_logger)
+    speaker = TTSEngine(pipeline_logger=pipeline_logger)
     engine = GameEngine(interpreter=interpreter, speaker=speaker)
     interpreter.register_roster(engine.npcs)
     app, socketio = create_app(engine, served_host=host)
@@ -85,6 +89,7 @@ def main() -> None:
     finally:
         engine.stop()
         speaker.close()
+        pipeline_logger.close()
 
 
 def served_host_from_environment() -> str:

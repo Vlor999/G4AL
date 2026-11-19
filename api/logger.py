@@ -8,10 +8,9 @@ Two sinks:
   • ``logs/pipeline_YYYYMMDD_HHMMSS.log`` – human-readable log
   • ``logs/pipeline_YYYYMMDD_HHMMSS.jsonl`` – structured JSON-lines for analysis
 
-Usage:
-    from api.logger import pipeline_logger
-    pipeline_logger.llm_start(input_text="hello")
-    pipeline_logger.llm_end(order={...}, prompt_tokens=120, completion_tokens=45)
+The entry point calls ``use_pipeline_sinks`` once, builds one ``PipelineLogger``,
+logs ``start_session`` and hands the logger to the adapters. Importing this module
+adds no sink and writes no line.
 """
 
 from __future__ import annotations
@@ -88,6 +87,15 @@ def configure_sinks(log_dir: Path) -> list[int]:
     return handler_ids
 
 
+def use_pipeline_sinks(log_dir: Path = LOG_DIR) -> None:
+    """Replace loguru's default sink with the pipeline sinks; the entry point calls it once.
+
+    The default stderr sink would print every pipeline record a second time.
+    """
+    logger.remove()
+    configure_sinks(log_dir)
+
+
 class LoggedOrder(TypedDict):
     """One order of the ``{"orders": [...]}`` answer ``llm_end`` receives."""
 
@@ -108,10 +116,7 @@ def _describe_orders(order: dict[str, Any] | None) -> str:
 class PipelineLogger:
     """Thread-safe structured logger for Voxtral, TTS and session summary events."""
 
-    def __init__(self, log_dir: Path = LOG_DIR) -> None:
-        logger.remove()  # the default stderr sink would print every record twice
-        configure_sinks(log_dir)
-
+    def __init__(self) -> None:
         # running totals
         self._total_llm_cost = 0.0
         self._total_tts_cost = 0.0
@@ -125,6 +130,7 @@ class PipelineLogger:
         self._llm_t0: float | None = None
         self._tts_t0: float | None = None
 
+    def start_session(self) -> None:
         logger.bind(event="session_start").info("Session started")
 
     # ── LLM events ───────────────────────────────────────────────────────
@@ -271,7 +277,3 @@ class PipelineLogger:
             f"tts=${self._total_tts_cost:.4f} ({self._total_tts_chars} chars) | "
             f"total=${total_cost:.4f}"
         )
-
-
-# ── Singleton ────────────────────────────────────────────────────────────
-pipeline_logger = PipelineLogger()

@@ -9,7 +9,7 @@ import pytest
 from elevenlabs import ElevenLabs
 from loguru import logger
 
-from api.logger import has_event
+from api.logger import PipelineLogger, has_event
 from api.roster import NPC_VOICE_MAP
 from api.tts import TTSEngine
 
@@ -88,7 +88,9 @@ def speaker_answering(
 ) -> tuple[TTSEngine, FakeTextToSpeech]:
     text_to_speech = FakeTextToSpeech(answers)
     client = cast(ElevenLabs, SimpleNamespace(text_to_speech=text_to_speech))
-    speaker = TTSEngine(create_client=ClientFactory(client), play_audio=playback)
+    speaker = TTSEngine(
+        pipeline_logger=PipelineLogger(), create_client=ClientFactory(client), play_audio=playback
+    )
     return speaker, text_to_speech
 
 
@@ -198,7 +200,9 @@ def test_without_an_api_key_no_client_is_built_and_tts_is_disabled(
     monkeypatch.delenv("ELEVENLABS_API_KEY", raising=False)
     create_client = ClientFactory()
     playback = RecordingPlayback()
-    speaker = TTSEngine(create_client=create_client, play_audio=playback)
+    speaker = TTSEngine(
+        pipeline_logger=PipelineLogger(), create_client=create_client, play_audio=playback
+    )
 
     speaker.speak("Hello", "Unknown")
     speaker.close()
@@ -213,7 +217,9 @@ def test_a_client_that_fails_to_build_disables_tts(
 ) -> None:
     create_client = ClientFactory(error=ValueError("bad key"))
     playback = RecordingPlayback()
-    speaker = TTSEngine(create_client=create_client, play_audio=playback)
+    speaker = TTSEngine(
+        pipeline_logger=PipelineLogger(), create_client=create_client, play_audio=playback
+    )
 
     speaker.speak("Hello", "Unknown")
     speaker.close()
@@ -230,7 +236,11 @@ def test_a_client_build_error_masks_the_api_key(
     monkeypatch.setenv("ELEVENLABS_API_KEY", configured_key)
     create_client = ClientFactory(error=ValueError(f"invalid key {API_KEY}"))
 
-    TTSEngine(create_client=create_client, play_audio=RecordingPlayback()).close()
+    TTSEngine(
+        pipeline_logger=PipelineLogger(),
+        create_client=create_client,
+        play_audio=RecordingPlayback(),
+    ).close()
 
     assert ("ERROR", "Failed to init ElevenLabs client: invalid key <ELEVENLABS_API_KEY>") in (
         log_lines

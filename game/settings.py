@@ -1,5 +1,7 @@
 """Game-wide constants and settings."""
 
+from game.terrain import Biome
+
 # ── Core ────────────────────────────────────────────────────────────────
 FPS = 60
 
@@ -7,6 +9,22 @@ FPS = 60
 TILE_SIZE = 64  # pixels per tile side
 MAP_COLS = 30  # map width  in tiles
 MAP_ROWS = 20  # map height in tiles
+
+# ── Biomes (docs/adr/0003-biome-map-generation.md) ───────────────────────
+BIOME_REGION_COUNTS = {Biome.MEADOW: 3, Biome.FOREST: 4, Biome.HIGHLAND: 3}  # Voronoi seeds
+BIOME_BORDER_JITTER = 6.0  # squared tiles of noise on each seed distance: ragged borders
+BIOME_EDGE_MARGIN = 2  # tiles between the map edge and a region seed or a lake centre
+HOME_MEADOW_RADIUS = 4  # tiles around the map centre kept meadow, without water
+LAKE_COUNT = 3
+LAKE_RADIUS_RANGE = (1, 2)  # tiles of water around a lake centre
+LAKE_SHORE_WIDTH = 1  # tiles of sand around the water
+DIRT_PATCH_COUNTS = {Biome.MEADOW: 3, Biome.FOREST: 1, Biome.HIGHLAND: 5}
+DIRT_PATCH_RADIUS_RANGE = (1, 2)
+# Chance that a free walkable tile of the biome gets the resource
+TREE_DENSITY = {Biome.MEADOW: 0.02, Biome.FOREST: 0.3, Biome.HIGHLAND: 0.02, Biome.LAKE: 0.0}
+ROCK_DENSITY = {Biome.MEADOW: 0.01, Biome.FOREST: 0.01, Biome.HIGHLAND: 0.15, Biome.LAKE: 0.0}
+GOLD_ROCK_SHARE = {Biome.MEADOW: 0.0, Biome.FOREST: 0.0, Biome.HIGHLAND: 0.35, Biome.LAKE: 0.0}
+SHEEP_BIOMES = frozenset({Biome.MEADOW})  # where sheep spawn when such a grass tile is free
 
 # ── NPC ──────────────────────────────────────────────────────────────────
 NPC_SPEED = 2.5  # pixels / frame

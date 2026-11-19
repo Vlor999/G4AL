@@ -1,74 +1,42 @@
-"""Tile-based map with Clash-of-Clans style terrain generation."""
+"""Tile map the NPCs walk on, and the look-ups they use."""
 
 from __future__ import annotations
 
 import random
-from enum import IntEnum
 
+from game.map_generation import generate_terrain
 from game.settings import MAP_COLS, MAP_ROWS, TILE_SIZE
-
-
-class TileType(IntEnum):
-    GRASS = 0
-    DIRT = 1
-    SAND = 2
-    WATER = 3
-
-
-# Whether an NPC can walk on this tile
-WALKABLE = {TileType.GRASS, TileType.DIRT, TileType.SAND}
+from game.terrain import WALKABLE_TILES
 
 
 class GameMap:
-    """Grid of tiles + helper look-ups used by NPCs."""
+    """Grid of tiles, each with a ``TileType`` and a ``Biome``.
 
-    def __init__(self, cols: int = MAP_COLS, rows: int = MAP_ROWS, seed: int | None = None) -> None:
+    ``rng`` is the random source the terrain was generated with; spawning draws from
+    it next, so one seed replays the same map, resources and creatures. Without
+    ``rng``, one is built from ``seed`` (a fresh one when ``seed`` is None).
+    """
+
+    def __init__(
+        self,
+        cols: int = MAP_COLS,
+        rows: int = MAP_ROWS,
+        seed: int | None = None,
+        *,
+        rng: random.Random | None = None,
+    ) -> None:
         self.cols = cols
         self.rows = rows
-        if seed is not None:
-            random.seed(seed)
-        self.tiles: list[list[TileType]] = self._generate()
+        self.rng = rng if rng is not None else random.Random(seed)
+        terrain = generate_terrain(self.rng, cols=cols, rows=rows)
+        self.tiles = terrain.tiles
+        self.biomes = terrain.biomes
 
-    # ── generation ───────────────────────────────────────────────────────
-    def _generate(self) -> list[list[TileType]]:
-        """Simple procedural generation: mostly grass with ponds & dirt patches."""
-        grid = [[TileType.GRASS for _ in range(self.cols)] for _ in range(self.rows)]
-
-        # sprinkle some dirt patches (paths / bare ground)
-        for _ in range(8):
-            cx, cy = random.randint(2, self.cols - 3), random.randint(2, self.rows - 3)
-            radius = random.randint(1, 3)
-            for dy in range(-radius, radius + 1):
-                for dx in range(-radius, radius + 1):
-                    nx, ny = cx + dx, cy + dy
-                    if (
-                        0 <= nx < self.cols
-                        and 0 <= ny < self.rows
-                        and dx * dx + dy * dy <= radius * radius
-                    ):
-                        grid[ny][nx] = TileType.DIRT
-
-        # a couple of small ponds (water only, no sand border)
-        for _ in range(3):
-            cx, cy = random.randint(3, self.cols - 4), random.randint(3, self.rows - 4)
-            radius = random.randint(1, 2)
-            for dy in range(-radius, radius + 1):
-                for dx in range(-radius, radius + 1):
-                    nx, ny = cx + dx, cy + dy
-                    if (
-                        0 <= nx < self.cols
-                        and 0 <= ny < self.rows
-                        and dx * dx + dy * dy <= radius * radius
-                    ):
-                        grid[ny][nx] = TileType.WATER
-        return grid
-
-    # ── queries ──────────────────────────────────────────────────────────
     def contains_tile(self, col: int, row: int) -> bool:
         return 0 <= col < self.cols and 0 <= row < self.rows
 
     def is_walkable(self, col: int, row: int) -> bool:
-        return self.contains_tile(col, row) and self.tiles[row][col] in WALKABLE
+        return self.contains_tile(col, row) and self.tiles[row][col] in WALKABLE_TILES
 
     def tile_center(self, col: int, row: int) -> tuple[float, float]:
         """Return the world-pixel center of a tile."""

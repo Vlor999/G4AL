@@ -1,4 +1,3 @@
-import random
 from collections import Counter
 
 from game.fauna_spawning import spawn_fauna
@@ -18,7 +17,6 @@ def test_spawn_fauna_places_sheep_wild_archers_and_one_cat(build_map: MapBuilder
 
 
 def test_spawn_fauna_places_wild_archers_near_the_map_edges(build_map: MapBuilder) -> None:
-    random.seed(5)
     game_map = build_map(["." * 20] * 20)
 
     fauna = spawn_fauna(game_map, [], sheep_count=0, wild_archer_count=40)

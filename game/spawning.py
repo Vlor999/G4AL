@@ -44,14 +44,14 @@ class SpawnedWorld:
 
 
 def spawn_world(game_map: GameMap) -> SpawnedWorld:
-    """Populate ``game_map``: random resources, the built storage hut, pawns around the
-    map centre, archers around the hut, sheep, a cat and a wild archer camp in the
-    bottom-right corner."""
-    resources = spawn_resources(game_map)
+    """Populate ``game_map``, drawing from ``game_map.rng``: the built storage hut,
+    resources by biome around it, pawns around the map centre, archers around the hut,
+    sheep, a cat and a wild archer camp in the bottom-right corner."""
     storage_hut = Structure(
         STORAGE_HUT_COL, STORAGE_HUT_ROW, build_progress=100, building_type="storage_hut"
     )
     storage_hut.built = True
+    resources = spawn_resources(game_map, reserved=set(storage_hut.occupied_tiles))
     resources.append(storage_hut)
     world = SpawnedWorld(ResourceStorage(), resources, storage_hut)
 

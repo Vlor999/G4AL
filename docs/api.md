@@ -23,6 +23,14 @@ The `storage` object of the state holds the settlement stockpile:
 
 The client shows `total / capacity` and `houseCount` in the inventory panel.
 
+### Map biomes
+
+`map.biomes` is a `rows × cols` array of strings, indexed `[row][col]` like
+`map.tiles`: the biome of each tile, one of `meadow`, `forest`, `highland`, `lake`
+(`game/terrain.py`, generation in
+[ADR 0003](adr/0003-biome-map-generation.md)). The client picks the grass tileset and
+the bushes from it.
+
 ### Object dimensions
 
 Every entry of `resources`, `npcs` and `fauna` carries the size of its kind

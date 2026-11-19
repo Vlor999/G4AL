@@ -85,6 +85,8 @@ window.G4AL = window.G4AL || {};
         await Promise.all([
             // Tilesets
             loadImg("ts_grass", "Terrain/Tileset/Tilemap_color2.png"),
+            loadImg("ts_forest", "Terrain/Tileset/Tilemap_color3.png"),
+            loadImg("ts_highland", "Terrain/Tileset/Tilemap_color1.png"),
             loadImg("ts_dirt",  "Terrain/Tileset/Tilemap_color4.png"),
             loadImg("ts_sand",  "Terrain/Tileset/Tilemap_color5.png"),
             loadImg("water_bg", "Terrain/Tileset/Water Background color.png"),

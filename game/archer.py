@@ -5,11 +5,11 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from game.actions import ARCHER_ACTIONS, Action, ActionType, State
+from game.arrows import Team, build_arrow
 from game.npc import NPC
 from game.npc_names import pick_archer_name
 from game.settings import (
     ARCHER_ARROW_DAMAGE,
-    ARCHER_ARROW_FLIGHT,
     ARCHER_DEFEND_SCAN_RADIUS,
     ARCHER_FIRE_ANIM_TIME,
     ARCHER_RANGE,
@@ -19,9 +19,11 @@ from game.settings import (
     NPC_EAT_TIME,
     NPC_SPEED,
 )
+from game.targeting import find_nearest_living, find_walkable_tile_in_range, tile_distance
 
 if TYPE_CHECKING:
-    from game.creatures import Arrow, Fauna
+    from game.arrows import Arrow
+    from game.creatures import Fauna
     from game.entities import Resource
     from game.map import GameMap
     from game.storage import ResourceStorage
@@ -74,30 +76,12 @@ class Archer(NPC):
         self._all_fauna = fauna
         self._arrows = arrows
 
-    def _find_nearest_enemy(self, max_range: int = 0) -> Fauna | None:
-        """Find the nearest living WildArcher in the fauna list.
-        If max_range > 0, only consider enemies within that tile distance."""
-        best: Fauna | None = None
-        best_dist = float("inf")
-        mc, mr = self.tile_pos
-        for f in self._all_fauna:
-            if f.kind != "wild_archer":
-                continue
-            if f.health <= 0:
-                continue
-            fc, fr = f.tile_pos
-            d = abs(fc - mc) + abs(fr - mr)
-            if max_range > 0 and d > max_range:
-                continue
-            if d < best_dist:
-                best_dist = d
-                best = f
-        return best
+    def _find_nearest_enemy(self, max_range: int | None = None) -> Fauna | None:
+        wild_archers = (creature for creature in self._all_fauna if creature.kind == "wild_archer")
+        return find_nearest_living(self.tile_pos, wild_archers, max_distance=max_range)
 
     def _enemy_tile_distance(self, enemy: Fauna) -> int:
-        mc, mr = self.tile_pos
-        ec, er = enemy.tile_pos
-        return abs(ec - mc) + abs(er - mr)
+        return tile_distance(self.tile_pos, enemy.tile_pos)
 
     def enqueue(self, action: Action) -> bool:
         """Override: cancel defend mode when a new action is enqueued."""
@@ -163,21 +147,9 @@ class Archer(NPC):
 
     def _walk_toward_enemy(self, enemy: Fauna) -> None:
         """Pathfind to a tile within ARCHER_RANGE of the enemy."""
-        ec, er = enemy.tile_pos
-        mc, mr = self.tile_pos
-        best_tile: tuple[int, int] | None = None
-        best_cost = float("inf")
-        for dc in range(-ARCHER_RANGE, ARCHER_RANGE + 1):
-            for dr in range(-ARCHER_RANGE, ARCHER_RANGE + 1):
-                if abs(dc) + abs(dr) > ARCHER_RANGE:
-                    continue
-                tc, tr = ec + dc, er + dr
-                if not self._map.is_walkable(tc, tr):
-                    continue
-                cost = abs(tc - mc) + abs(tr - mr)
-                if cost < best_cost:
-                    best_cost = cost
-                    best_tile = (tc, tr)
+        best_tile = find_walkable_tile_in_range(
+            self._map, origin=self.tile_pos, target=enemy.tile_pos, shooting_range=ARCHER_RANGE
+        )
         if best_tile is None:
             self.say("Can't reach enemy!", 90)
             self.state = State.DONE
@@ -266,18 +238,7 @@ class Archer(NPC):
                 self._is_firing = True
                 enemy.health -= ARCHER_ARROW_DAMAGE
                 self.say("Fire!", 60)
-                if self._arrows is not None:
-                    self._arrows.append(
-                        {
-                            "fromX": self.x,
-                            "fromY": self.y - 20,
-                            "toX": enemy.x,
-                            "toY": enemy.y - 10,
-                            "frame": 0,
-                            "totalFrames": ARCHER_ARROW_FLIGHT,
-                            "team": "blue",
-                        }
-                    )
+                self._arrows.append(build_arrow(shooter=self, target=enemy, team=Team.BLUE))
 
             if self._perform_timer >= self._perform_duration:
                 self._is_firing = False

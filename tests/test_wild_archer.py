@@ -3,7 +3,8 @@
 import random
 from collections.abc import Callable
 
-from game.creatures import Arrow, FaunaState, WildArcher
+from game.arrows import Arrow
+from game.creatures import FaunaState, WildArcher
 from game.map import GameMap
 from game.npc import NPC
 from game.settings import ARCHER_ARROW_FLIGHT, WILD_ARCHER_DAMAGE

@@ -6,7 +6,8 @@ import pytest
 
 from game.actions import Action, ActionType, State
 from game.archer import Archer
-from game.creatures import Arrow, Fauna, Sheep, WildArcher, remove_dead_fauna
+from game.arrows import Arrow
+from game.creatures import Fauna, Sheep, WildArcher, remove_dead_fauna
 from game.map import GameMap
 from game.settings import ARCHER_ARROW_DAMAGE, ARCHER_ARROW_FLIGHT, ARCHER_RANGE
 from game.storage import ResourceStorage

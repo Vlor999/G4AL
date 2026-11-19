@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-import random
+from collections.abc import Collection
 from typing import TYPE_CHECKING
 
 from game.dimensions import (
@@ -12,8 +12,11 @@ from game.dimensions import (
     find_building_dimensions,
 )
 from game.settings import (
+    GOLD_ROCK_SHARE,
+    ROCK_DENSITY,
     ROCK_GOLD_YIELD,
     ROCK_STONE_YIELD,
+    TREE_DENSITY,
     TREE_WOOD_YIELD,
     WHEAT_GROW_TIME,
     WHEAT_YIELD,
@@ -149,31 +152,27 @@ class WheatField(Resource):
 
 
 def spawn_resources(
-    game_map: GameMap, tree_count: int = 40, rock_count: int = 15
+    game_map: GameMap, *, reserved: Collection[tuple[int, int]] = ()
 ) -> list[Resource]:
-    """Place trees and rocks randomly on walkable grass tiles."""
+    """Trees and rocks on the free walkable tiles inside the map border, each tile rolled
+    against the densities of its biome with ``game_map.rng``. ``reserved`` tiles stay free."""
     resources: list[Resource] = []
-    occupied: set[tuple[int, int]] = set()
-
-    def _random_walkable() -> tuple[int, int] | None:
-        for _ in range(200):
-            c = random.randint(1, game_map.cols - 2)
-            r = random.randint(1, game_map.rows - 2)
-            if game_map.is_walkable(c, r) and (c, r) not in occupied:
-                return c, r
-        return None
-
-    for _ in range(tree_count):
-        pos = _random_walkable()
-        if pos:
-            occupied.add(pos)
-            resources.append(Tree(*pos))
-
-    for i in range(rock_count):
-        pos = _random_walkable()
-        if pos:
-            occupied.add(pos)
-            has_gold = i < rock_count // 3
-            resources.append(Rock(*pos, has_gold=has_gold))
-
+    for row in range(1, game_map.rows - 1):
+        for col in range(1, game_map.cols - 1):
+            if not game_map.is_walkable(col, row) or (col, row) in reserved:
+                continue
+            resource = _roll_resource(game_map, (col, row))
+            if resource is not None:
+                resources.append(resource)
     return resources
+
+
+def _roll_resource(game_map: GameMap, tile: tuple[int, int]) -> Resource | None:
+    col, row = tile
+    biome = game_map.biomes[row][col]
+    roll = game_map.rng.random()
+    if roll < TREE_DENSITY[biome]:
+        return Tree(col, row)
+    if roll < TREE_DENSITY[biome] + ROCK_DENSITY[biome]:
+        return Rock(col, row, has_gold=game_map.rng.random() < GOLD_ROCK_SHARE[biome])
+    return None

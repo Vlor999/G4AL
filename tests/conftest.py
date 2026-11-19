@@ -5,7 +5,8 @@ import pytest
 from loguru import logger
 
 from api.logger import has_event
-from game.map import GameMap, TileType
+from game.map import GameMap
+from game.terrain import Biome, TileType
 
 _TILE_BY_SYMBOL = {
     ".": TileType.GRASS,
@@ -20,13 +21,14 @@ LlmEndRecords = list[tuple[str, dict[str, Any]]]
 
 @pytest.fixture
 def build_map() -> MapBuilder:
-    """Build a GameMap whose tiles are drawn row by row with `_TILE_BY_SYMBOL`."""
+    """Build a meadow GameMap whose tiles are drawn row by row with `_TILE_BY_SYMBOL`."""
 
     def build(rows: list[str]) -> GameMap:
         game_map = GameMap(seed=0)
         game_map.cols = len(rows[0])
         game_map.rows = len(rows)
         game_map.tiles = [[_TILE_BY_SYMBOL[symbol] for symbol in row] for row in rows]
+        game_map.biomes = [[Biome.MEADOW] * len(row) for row in rows]
         return game_map
 
     return build

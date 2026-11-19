@@ -7,6 +7,7 @@ from game.settings import (
     TREE_WOOD_YIELD,
     WHEAT_GROW_TIME,
 )
+from game.terrain import Biome
 from tests.conftest import MapBuilder
 
 
@@ -56,7 +57,13 @@ def test_occupied_tiles_cover_grid_footprint(building_type: str, expected_tile_c
 
 def test_spawn_resources_places_only_on_free_walkable_tiles(build_map: MapBuilder) -> None:
     game_map = build_map(["~~~~~~~~"] + ["~......~"] * 6 + ["~~~~~~~~"])
-    resources = spawn_resources(game_map, tree_count=5, rock_count=3)
+    game_map.biomes = [[Biome.FOREST] * 8 for _ in range(8)]
+    reserved = {(col, row) for col in range(1, 4) for row in range(1, 4)}
+
+    resources = spawn_resources(game_map, reserved=reserved)
+
     positions = [(resource.col, resource.row) for resource in resources]
-    assert len(positions) == len(set(positions)) == 8
+    assert positions
+    assert len(positions) == len(set(positions))
     assert all(game_map.is_walkable(col, row) for col, row in positions)
+    assert not reserved & set(positions)

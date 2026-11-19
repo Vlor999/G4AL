@@ -93,7 +93,9 @@ api/
   logger.py         pipeline logging, written to logs/
 
 game/
-  map.py            procedural tile map
+  map.py            tile map and its look-ups
+  terrain.py        tile types and biomes
+  map_generation.py biome terrain generation
   actions.py        NPC actions and action-machine states
   npc_base.py       shared NPC core: stats, queue, movement, hut trips
   npc.py            pawn action planning

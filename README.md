@@ -107,6 +107,7 @@ game/
   cat.py            the cat
   wild_archer.py    hostile red archers
   fauna_spawning.py fauna placement on a new map
+  simulation.py     one frame of the world
   targeting.py      nearest target and firing tile searches
   arrows.py         arrows in flight
   storage.py        resource storage (wood, stone, gold, wheat)

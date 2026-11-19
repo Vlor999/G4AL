@@ -43,3 +43,11 @@ def build_arrow(*, shooter: Positioned, target: Positioned, team: Team) -> Arrow
         "totalFrames": ARCHER_ARROW_FLIGHT,
         "team": team,
     }
+
+
+def advance_arrows(arrows: list[Arrow]) -> None:
+    """Move every arrow one frame on and drop the ones that landed, in place: archers
+    and wild archers hold this same list."""
+    for arrow in arrows:
+        arrow["frame"] += 1
+    arrows[:] = [arrow for arrow in arrows if arrow["frame"] < arrow["totalFrames"]]

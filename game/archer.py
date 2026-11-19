@@ -180,12 +180,7 @@ class Archer(NPC):
         ):
             enemy = self._shoot_target
             if enemy.health <= 0:
-                self.say("Target down!", 60)
-                self._shoot_target = None
-                if self._defending:
-                    self._defend_scan()
-                else:
-                    self.state = State.DONE
+                self._lose_target()
                 return
             dist = self._enemy_tile_distance(enemy)
             if dist <= ARCHER_RANGE:
@@ -202,48 +197,52 @@ class Archer(NPC):
 
     def _perform(self) -> None:
         self._perform_timer += 1
-
-        if (
-            self._current_action
-            and self._current_action.action_type == ActionType.EAT
-            and self._perform_timer >= self._perform_duration
-        ):
-            self.hunger = min(self.max_hunger, self.hunger + NPC_EAT_RESTORE)
-            self.say("Mmm, delicious!", 90)
-            self.state = State.DONE
+        action_type = self.current_action_type
+        if action_type == ActionType.EAT and self._perform_timer >= self._perform_duration:
+            self._finish_eating()
             return
-
-        if self._current_action and self._current_action.action_type in (
-            ActionType.SHOOT,
-            ActionType.DEFEND,
-        ):
-            enemy = self._shoot_target
-            if enemy is None or enemy.health <= 0:
-                self.say("Target down!", 60)
-                self._shoot_target = None
-                self._is_firing = False
-                if self._defending:
-                    self._defend_scan()
-                else:
-                    self.state = State.DONE
-                return
-
-            fire_start = self._perform_duration - ARCHER_FIRE_ANIM_TIME
-
-            if not self._is_firing and self._perform_timer >= fire_start:
-                self._is_firing = True
-                enemy.health -= ARCHER_ARROW_DAMAGE
-                self.say("Fire!", 60)
-                self._arrows.append(build_arrow(shooter=self, target=enemy, team=Team.BLUE))
-
-            if self._perform_timer >= self._perform_duration:
-                self._is_firing = False
-                dist = self._enemy_tile_distance(enemy)
-                if dist <= ARCHER_RANGE:
-                    self._perform_timer = 0
-                else:
-                    self._walk_toward_enemy(enemy)
+        if action_type in (ActionType.SHOOT, ActionType.DEFEND):
+            self._advance_shot()
             return
-
         if self._perform_timer >= self._perform_duration:
+            self.state = State.DONE
+
+    def _finish_eating(self) -> None:
+        self.hunger = min(self.max_hunger, self.hunger + NPC_EAT_RESTORE)
+        self.say("Mmm, delicious!", 90)
+        self.state = State.DONE
+
+    def _advance_shot(self) -> None:
+        """Aim, release the arrow at the end of the cycle, then shoot again or follow."""
+        enemy = self._shoot_target
+        if enemy is None or enemy.health <= 0:
+            self._is_firing = False
+            self._lose_target()
+            return
+        fire_start = self._perform_duration - ARCHER_FIRE_ANIM_TIME
+        if not self._is_firing and self._perform_timer >= fire_start:
+            self._release_arrow(enemy)
+        if self._perform_timer >= self._perform_duration:
+            self._end_shot_cycle(enemy)
+
+    def _release_arrow(self, enemy: Fauna) -> None:
+        self._is_firing = True
+        enemy.health -= ARCHER_ARROW_DAMAGE
+        self.say("Fire!", 60)
+        self._arrows.append(build_arrow(shooter=self, target=enemy, team=Team.BLUE))
+
+    def _end_shot_cycle(self, enemy: Fauna) -> None:
+        self._is_firing = False
+        if self._enemy_tile_distance(enemy) <= ARCHER_RANGE:
+            self._perform_timer = 0
+        else:
+            self._walk_toward_enemy(enemy)
+
+    def _lose_target(self) -> None:
+        """The target is down: watch for the next one when defending, else end the order."""
+        self.say("Target down!", 60)
+        self._shoot_target = None
+        if self._defending:
+            self._defend_scan()
+        else:
             self.state = State.DONE

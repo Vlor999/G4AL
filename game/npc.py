@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from game.actions import PAWN_ACTIONS, Action, ActionType, State
+from game.dimensions import find_building_dimensions
 from game.entities import Resource, Rock, Structure, Tree, WheatField
 from game.npc_base import NPCBase
 from game.settings import (
@@ -82,7 +83,8 @@ class NPC(NPCBase):
         else:
             col, row = self.tile_pos
         btype = "house1"
-        gw, gh = Structure.GRID_SIZES.get(btype, (2, 2))
+        dimensions = find_building_dimensions(btype)
+        gw, gh = dimensions.footprint_width, dimensions.footprint_depth
         resolved = self._find_free_area(col, row, gw, gh)
         if resolved is None:
             self.say("No space to build!", 120)

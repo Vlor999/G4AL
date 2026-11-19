@@ -1,10 +1,11 @@
-"""The NPC and fauna fields of the state payload the client reads (`docs/api.md`)."""
+"""The resource, NPC and fauna fields of the state payload the client reads (`docs/api.md`)."""
 
 from typing import Any
 
 from game.actions import Action, ActionType
 from game.archer import Archer
 from game.arrows import Arrow
+from game.entities import Structure
 from game.fauna import Fauna
 from game.map import GameMap
 from game.npc import NPC
@@ -108,3 +109,26 @@ def test_a_wild_archer_shows_its_shot_and_a_sheep_never_fires(build_map: MapBuil
     states = serialize(game_map, npcs=[], fauna=[wild_archer, sheep])["fauna"]
 
     assert [state["isFiring"] for state in states] == [True, False]
+
+
+def test_resources_npcs_and_fauna_carry_their_footprint_height_and_sprite_box(
+    build_map: MapBuilder,
+) -> None:
+    game_map = build_map(FIELD)
+    pawn = NPC(*game_map.tile_center(0, 0), game_map, [], ResourceStorage())
+    sheep = Sheep(*game_map.tile_center(5, 3), game_map, [])
+    state = serialize_state(
+        game_map=game_map,
+        resources=[Structure(1, 1, building_type="storage_hut")],
+        npcs=[pawn],
+        fauna=[sheep],
+        arrows=[],
+        storage=ResourceStorage(),
+        log_messages=[],
+    )
+
+    [hut], [pawn_state], [sheep_state] = state["resources"], state["npcs"], state["fauna"]
+    assert (hut["footprint"], hut["height"]) == ({"width": 2, "depth": 2}, 1)
+    assert hut["sprite"] == {"width": 2, "height": 3.0, "anchorX": 1.0, "anchorY": 3.0}
+    assert pawn_state["sprite"] == {"width": 1.0, "height": 1.0, "anchorX": 0.5, "anchorY": 0.84375}
+    assert sheep_state["footprint"] == {"width": 1, "depth": 1}

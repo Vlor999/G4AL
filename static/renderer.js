@@ -199,8 +199,7 @@
         const ts = G.mapCached.tileSize;
         const drawList = [];
         for (const res of G.gameState.resources) {
-            const gh = res.gridHeight || 1;
-            drawList.push({ type: "res", obj: res, footY: (res.row + gh) * ts });
+            drawList.push({ type: "res", obj: res, footY: (res.row + res.footprint.depth) * ts });
         }
         for (const npc of G.gameState.npcs) {
             drawList.push({ type: "npc", obj: npc, footY: npc.y });
@@ -215,10 +214,8 @@
         for (const item of drawList) {
             if (item.type === "res") {
                 const res = item.obj;
-                const gw = res.gridWidth || 1;
-                const gh = res.gridHeight || 1;
-                const sx = res.col * ts + (gw * ts) / 2 - G.camX;
-                const sy = res.row * ts + (gh * ts) / 2 - G.camY;
+                const sx = res.col * ts + (res.footprint.width * ts) / 2 - G.camX;
+                const sy = res.row * ts + (res.footprint.depth * ts) / 2 - G.camY;
                 if (sx < -ts * 3 || sx > W + ts * 3 || sy < -ts * 3 || sy > H + ts * 3) continue;
                 drawResource(ctx, res, sx, sy, ts);
             } else if (item.type === "npc") {
@@ -351,9 +348,20 @@
 
     // ── Draw resource ───────────────────────────────────────────────────
 
+    /** Screen rectangle of an object's sprite; a resource's ground point is the bottom centre of its footprint. */
+    function spriteRect(obj, groundX, groundY, ts) {
+        const box = obj.sprite;
+        return {
+            left: groundX - box.anchorX * ts,
+            top: groundY - box.anchorY * ts,
+            width: box.width * ts, height: box.height * ts,
+        };
+    }
+
     function drawResource(ctx, res, sx, sy, ts) {
         const spr = G.sprites;
         const posHash = G.posHash;
+        const rect = spriteRect(res, sx, sy + (res.footprint.depth * ts) / 2, ts);
 
         switch (res.kind) {
             case "tree": {
@@ -363,10 +371,8 @@
                     const treeFrames = G.cfgFrames("trees", 8);
                     const offset = posHash(res.col, res.row, treeFrames);
                     const frame = G.spriteFrame(treeFrames, G.cfgSpeed("trees", "slow"), offset);
-                    const dw = ts * 2.0;
-                    const dh = ts * 2.6;
                     G.drawSpriteFrame(ctx, sp, frame, treeFrames,
-                        sx - dw / 2, sy - dh + ts * 0.5, dw, dh, false);
+                        rect.left, rect.top, rect.width, rect.height, false);
                 } else {
                     ctx.fillStyle = "#795b3d";
                     ctx.fillRect(sx - 4, sy - 2, 8, 16);
@@ -382,14 +388,13 @@
                     const v = posHash(res.col, res.row, 6) + 1;
                     const sp = spr["gold" + v];
                     if (sp) {
-                        const sz = ts * 1.0;
-                        ctx.drawImage(sp, sx - sz / 2, sy - sz / 2, sz, sz);
+                        ctx.drawImage(sp, rect.left, rect.top, rect.width, rect.height);
                         const hlSpr = spr["gold_hl" + v];
                         if (hlSpr) {
                             const hlFrames = G.cfgFrames("gold_highlight", 6);
                             const hlFrame = G.spriteFrame(hlFrames, G.cfgSpeed("gold_highlight", "slow"), posHash(res.col, res.row, 6));
                             ctx.globalAlpha = 0.6;
-                            G.drawSpriteFrame(ctx, hlSpr, hlFrame, hlFrames, sx - sz / 2, sy - sz / 2, sz, sz, false);
+                            G.drawSpriteFrame(ctx, hlSpr, hlFrame, hlFrames, rect.left, rect.top, rect.width, rect.height, false);
                             ctx.globalAlpha = 1;
                         }
                     } else {
@@ -404,8 +409,7 @@
                     const v = posHash(res.col, res.row, 4) + 1;
                     const sp = spr["rock" + v];
                     if (sp) {
-                        const sz = ts * 0.8;
-                        ctx.drawImage(sp, sx - sz / 2, sy - sz / 2, sz, sz);
+                        ctx.drawImage(sp, rect.left, rect.top, rect.width, rect.height);
                     } else {
                         ctx.fillStyle = "#757575";
                         ctx.beginPath(); ctx.ellipse(sx, sy, 16, 12, 0, 0, Math.PI * 2); ctx.fill();
@@ -417,17 +421,9 @@
                 const isHut = res.buildingType === "storage_hut";
                 const houseKey = isHut ? "house1" : "house" + (posHash(res.col, res.row, 3) + 1);
                 const houseSpr = spr[houseKey] || spr.house1;
-                const sgw = res.gridWidth || 2;
-                const sgh = res.gridHeight || 2;
-                // Sprite width = footprint width; height = 1.5× width (room for roof)
-                const dw = sgw * ts;
-                const dh = dw * 1.5;
-                // Anchor sprite base at the bottom of the footprint
-                // sy is the footprint center, so bottom = sy + (sgh * ts) / 2
-                const baseY = sy + (sgh * ts) / 2;
                 if (res.built) {
                     if (houseSpr) {
-                        ctx.drawImage(houseSpr, sx - dw / 2, baseY - dh, dw, dh);
+                        ctx.drawImage(houseSpr, rect.left, rect.top, rect.width, rect.height);
                     } else {
                         ctx.fillStyle = "#654321"; ctx.fillRect(sx - 20, sy - 20, 40, 40);
                         ctx.strokeStyle = "#503018"; ctx.lineWidth = 2; ctx.strokeRect(sx - 20, sy - 20, 40, 40);
@@ -438,7 +434,7 @@
                     // Storage Hut label (pixel-art style) + capacity
                     if (isHut) {
                         const label = "STORAGE HUT";
-                        const ly = baseY - dh - 8;
+                        const ly = rect.top - 8;
                         ctx.font = "bold 9px Consolas, monospace";
                         ctx.textAlign = "center";
                         ctx.letterSpacing = "2px";
@@ -474,13 +470,13 @@
                 } else {
                     if (houseSpr) {
                         ctx.globalAlpha = 0.2 + 0.8 * (res.buildProgress / 100);
-                        ctx.drawImage(houseSpr, sx - dw / 2, baseY - dh, dw, dh);
+                        ctx.drawImage(houseSpr, rect.left, rect.top, rect.width, rect.height);
                         ctx.globalAlpha = 1;
                     } else {
                         ctx.fillStyle = "#8b7765"; ctx.fillRect(sx - 20, sy - 20, 40, 40);
                         ctx.strokeStyle = "#50403c"; ctx.lineWidth = 2; ctx.strokeRect(sx - 20, sy - 20, 40, 40);
                     }
-                    drawBar(ctx, sx, baseY - dh - 10, 36, 5, res.buildProgress / 100, "#4caf50");
+                    drawBar(ctx, sx, rect.top - 10, 36, 5, res.buildProgress / 100, "#4caf50");
                 }
                 break;
             }
@@ -679,7 +675,8 @@
 
     function drawNPC(ctx, npc, sx, sy) {
         const spr = G.sprites;
-        const SIZE = 64;
+        const rect = spriteRect(npc, sx, sy, G.mapCached.tileSize);
+        const SIZE = rect.height;
         const HALF = SIZE / 2;
         const facingRight = G.updateFacing(npc);
 
@@ -703,7 +700,7 @@
         const info = getNpcSprite(npc);
         const frame = G.spriteFrame(info.frames, info.speed, npc.id);
         const spriteDrawn = info.spr && G.drawSpriteFrame(ctx, info.spr, frame, info.frames,
-            sx - HALF, sy - SIZE + 10, SIZE, SIZE, !facingRight);
+            rect.left, rect.top, rect.width, rect.height, !facingRight);
 
         if (!spriteDrawn) {
             const bob = npc.state === "IDLE" ? Math.sin(Date.now() / 200) * 2 : 0;
@@ -809,7 +806,8 @@
         }
 
         const spr = G.sprites;
-        const SIZE = 48;
+        const rect = spriteRect(f, sx, sy, G.mapCached.tileSize);
+        const SIZE = rect.height;
         const HALF = SIZE / 2;
         const facingRight = G.updateFacing(f);
 
@@ -827,7 +825,7 @@
         const info = getFaunaSpriteInfo(f);
         const frame = G.spriteFrame(info.frames, info.speed, f.id);
         const spriteDrawn = info.spr && G.drawSpriteFrame(ctx, info.spr, frame, info.frames,
-            sx - HALF, sy - SIZE + 12, SIZE, SIZE, !facingRight);
+            rect.left, rect.top, rect.width, rect.height, !facingRight);
 
         if (!spriteDrawn) {
             // Fallback: simple colored ellipse
@@ -847,7 +845,8 @@
 
     function drawCat(ctx, f, sx, sy) {
         const spr = G.sprites;
-        const SIZE = 80;
+        const rect = spriteRect(f, sx, sy, G.mapCached.tileSize);
+        const SIZE = rect.height;
         const HALF = SIZE / 2;
 
         // Shadow
@@ -861,7 +860,7 @@
         const fi = Math.floor(G.gameFrame / LECHAT_ANIM_INTERVAL) % LECHAT_FRAMES;
         const frameImg = spr["lechat_" + fi];
         if (frameImg) {
-            ctx.drawImage(frameImg, sx - HALF, sy - SIZE + 16, SIZE, SIZE);
+            ctx.drawImage(frameImg, rect.left, rect.top, rect.width, rect.height);
         } else {
             // Fallback
             ctx.fillStyle = "#555";
@@ -880,7 +879,8 @@
 
     function drawWildArcher(ctx, f, sx, sy) {
         const spr = G.sprites;
-        const SIZE = 64;
+        const rect = spriteRect(f, sx, sy, G.mapCached.tileSize);
+        const SIZE = rect.height;
         const HALF = SIZE / 2;
         const facingRight = G.updateFacing(f);
 
@@ -898,7 +898,7 @@
         const info = getFaunaSpriteInfo(f);
         const frame = G.spriteFrame(info.frames, info.speed, f.id);
         const spriteDrawn = info.spr && G.drawSpriteFrame(ctx, info.spr, frame, info.frames,
-            sx - HALF, sy - SIZE + 10, SIZE, SIZE, !facingRight);
+            rect.left, rect.top, rect.width, rect.height, !facingRight);
 
         if (!spriteDrawn) {
             // Fallback: red circle

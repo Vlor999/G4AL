@@ -3,8 +3,14 @@
 from __future__ import annotations
 
 import random
-from typing import TYPE_CHECKING, ClassVar
+from typing import TYPE_CHECKING
 
+from game.dimensions import (
+    OBJECT_DIMENSIONS,
+    ObjectDimensions,
+    ObjectKind,
+    find_building_dimensions,
+)
 from game.settings import (
     ROCK_GOLD_YIELD,
     ROCK_STONE_YIELD,
@@ -34,6 +40,10 @@ class Resource:
         # Per-unit collection tracking
         self.remaining_yields: dict[str, int] = dict(yields)
         self._total_units: int = sum(yields.values())
+
+    @property
+    def dimensions(self) -> ObjectDimensions:
+        return OBJECT_DIMENSIONS[ObjectKind(self.kind)]
 
     def collect_one_unit(self) -> tuple[str, int] | None:
         """Collect a single unit from this resource.
@@ -71,24 +81,15 @@ class Rock(Resource):
         super().__init__(col, row, hp=ROCK_STONE_YIELD * 4, yields=yields)
         self.has_gold = has_gold
 
+    @property
+    def dimensions(self) -> ObjectDimensions:
+        return OBJECT_DIMENSIONS[ObjectKind.GOLD_ROCK if self.has_gold else ObjectKind.ROCK]
+
 
 class Structure(Resource):
     """A player-built structure (e.g. storage hut). Placeholder for v1."""
 
     kind = "structure"
-
-    # Default grid footprint per building type (tiles wide × deep)
-    GRID_SIZES: ClassVar[dict[str, tuple[int, int]]] = {
-        "house1": (2, 2),
-        "house2": (2, 2),
-        "house3": (2, 2),
-        "castle": (5, 3),
-        "barracks": (3, 3),
-        "archery": (3, 3),
-        "tower": (2, 2),
-        "monastery": (3, 3),
-        "storage_hut": (2, 2),
-    }
 
     def __init__(
         self,
@@ -101,9 +102,12 @@ class Structure(Resource):
         self.build_progress = build_progress  # 0..100
         self.built = False
         self.building_type = building_type
-        gw, gh = self.GRID_SIZES.get(building_type, (2, 2))
-        self.grid_width = gw
-        self.grid_height = gh
+        self.grid_width = self.dimensions.footprint_width
+        self.grid_height = self.dimensions.footprint_depth
+
+    @property
+    def dimensions(self) -> ObjectDimensions:
+        return find_building_dimensions(self.building_type)
 
     @property
     def occupied_tiles(self) -> list[tuple[int, int]]:

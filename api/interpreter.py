@@ -14,6 +14,7 @@ import base64
 import json
 import os
 from collections.abc import Mapping, Sequence
+from functools import partial
 from typing import Any, TypedDict
 
 from loguru import logger
@@ -220,24 +221,19 @@ def _orders_for_log(orders: Sequence[NpcOrder]) -> dict[str, list[LoggedOrder]]:
 
 def _log_answer(response: ChatCompletionResponse, answer: list[NpcOrder] | CommandRefused) -> None:
     usage = response.usage
-    prompt_tokens = (usage.prompt_tokens or 0) if usage else 0
-    completion_tokens = (usage.completion_tokens or 0) if usage else 0
-    if isinstance(answer, CommandRefused):
-        pipeline_logger.llm_end(
-            order=None,
-            prompt_tokens=prompt_tokens,
-            completion_tokens=completion_tokens,
-            model=AUDIO_MODEL,
-            error=f"answer refused: {answer.reason}",
-        )
-        return
-    order = _orders_for_log(answer)
-    pipeline_logger.llm_end(
-        order=order,
-        prompt_tokens=prompt_tokens,
-        completion_tokens=completion_tokens,
+    audio_seconds = usage.prompt_audio_seconds if usage else None
+    log_call = partial(
+        pipeline_logger.llm_end,
+        prompt_tokens=(usage.prompt_tokens or 0) if usage else 0,
+        completion_tokens=(usage.completion_tokens or 0) if usage else 0,
+        audio_seconds=audio_seconds if isinstance(audio_seconds, int) else 0,
         model=AUDIO_MODEL,
     )
+    if isinstance(answer, CommandRefused):
+        log_call(order=None, error=f"answer refused: {answer.reason}")
+        return
+    order = _orders_for_log(answer)
+    log_call(order=order)
     if answer:
         pipeline_logger.pipeline_summary(order=order)
 

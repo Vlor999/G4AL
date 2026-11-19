@@ -26,6 +26,7 @@ from loguru import logger
 
 from api.constants import (
     AUDIO_MODEL,
+    AUDIO_MODEL_AUDIO_COST_PER_SECOND,
     AUDIO_MODEL_INPUT_COST_PER_TOKEN,
     AUDIO_MODEL_OUTPUT_COST_PER_TOKEN,
     TTS_COST_PER_CHAR,
@@ -135,15 +136,21 @@ class PipelineLogger:
     def llm_end(
         self,
         order: dict[str, Any] | None,
+        *,
         prompt_tokens: int = 0,
         completion_tokens: int = 0,
+        audio_seconds: int = 0,
         model: str = AUDIO_MODEL,
         error: str | None = None,
     ) -> None:
+        """Log the end of a Voxtral call. ``cost_usd`` is the token cost plus the cost of
+        the ``audio_seconds`` of input audio, logged apart as ``audio_cost_usd``."""
         elapsed = time.perf_counter() - (self._llm_t0 or time.perf_counter())
+        audio_cost = audio_seconds * AUDIO_MODEL_AUDIO_COST_PER_SECOND
         cost = (
             prompt_tokens * AUDIO_MODEL_INPUT_COST_PER_TOKEN
             + completion_tokens * AUDIO_MODEL_OUTPUT_COST_PER_TOKEN
+            + audio_cost
         )
         self._total_llm_cost += cost
         self._total_llm_time += elapsed
@@ -157,7 +164,9 @@ class PipelineLogger:
             prompt_tokens=prompt_tokens,
             completion_tokens=completion_tokens,
             total_tokens=prompt_tokens + completion_tokens,
+            audio_seconds=audio_seconds,
             elapsed_s=round(elapsed, 3),
+            audio_cost_usd=round(audio_cost, 6),
             cost_usd=round(cost, 6),
             error=error,
         )
@@ -166,7 +175,7 @@ class PipelineLogger:
         else:
             log.info(
                 f"LLM response: {_describe_orders(order)} | "
-                f"tokens={prompt_tokens}+{completion_tokens} | "
+                f"tokens={prompt_tokens}+{completion_tokens} | audio={audio_seconds}s | "
                 f"elapsed={elapsed:.2f}s | cost=${cost:.4f}"
             )
 

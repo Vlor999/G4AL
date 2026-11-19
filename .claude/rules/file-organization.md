@@ -36,11 +36,14 @@ actions, sheep vs wild archer behaviour), each branch is its own named method or
 subclass, and the shared part stays in one place. The dispatcher reads as a thin
 switch.
 
-## Re-exports when splitting
+## No re-export when splitting
 
-When you split a module, re-export the moved public symbols from the old location in
-the same PR, and drop the re-exports once the callers moved:
+When you split a module, move the public symbols and update every caller (code,
+tests, docs) in the same PR. Leave nothing behind in the old module: no re-export,
+no alias, no `# noqa: F401` import. The old location then fails loudly instead of
+hiding a second path to the same symbol.
 
-```python
-from game.pathfinding import find_path  # noqa: F401
-```
+A temporary re-export is acceptable only when a caller cannot move in the same PR,
+for example code owned by another open PR. Mark it with the TODO from
+`language.md` (condition and deletion plan), and name the PR that deletes it in the
+description.

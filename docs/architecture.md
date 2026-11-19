@@ -47,9 +47,9 @@ server/: app.py (create_app, main), routes.py (Flask + Socket.IO),
 ## Layers
 
 See [`.claude/rules/architecture.md`](../.claude/rules/architecture.md). Today
-initial spawning (`game/spawning.py`), order application (`game/orders.py`), storage
-discard and storage dismissal live in `game/`; each HTTP route calls one public
-`GameEngine` method.
+initial spawning (`game/spawning.py`), the frame step (`game/simulation.py`), order
+application (`game/orders.py`), storage discard and storage dismissal live in
+`game/`; each HTTP route calls one public `GameEngine` method.
 
 A pawn that reaches a full storage keeps the part of its load that does not fit and
 waits, queued orders included, until space frees or `/api/dismiss_storage` is called.

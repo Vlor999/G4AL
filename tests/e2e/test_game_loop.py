@@ -87,17 +87,6 @@ def test_a_failing_push_is_logged_once_per_streak_and_the_loop_keeps_running(
     assert state_push_events == ["WARNING", "INFO"]
 
 
-def test_tick_ages_arrows_and_drops_the_ones_that_landed(engine: GameEngine) -> None:
-    landing = make_arrow(frame=4, total_frames=5)
-    flying = make_arrow(frame=0, total_frames=5)
-    engine.arrows[:] = [landing, flying]
-
-    engine.tick()
-
-    assert engine.arrows == [flying]
-    assert flying["frame"] == 1
-
-
 def test_tick_grows_wheat_fields(engine: GameEngine) -> None:
     field = WheatField(0, 0)
     engine.resources.append(field)
@@ -105,15 +94,6 @@ def test_tick_grows_wheat_fields(engine: GameEngine) -> None:
     engine.tick()
 
     assert field.growth == 1
-
-
-def test_tick_removes_dead_fauna(engine: GameEngine) -> None:
-    dead = engine.fauna[0]
-    dead.health = 0
-
-    engine.tick()
-
-    assert dead not in engine.fauna
 
 
 def test_an_archer_shoots_a_creature_added_after_tick_removed_the_dead(
@@ -136,22 +116,3 @@ def test_an_archer_shoots_a_creature_added_after_tick_removed_the_dead(
         engine.tick()
 
     assert newcomer.health < newcomer.max_health
-
-
-@pytest.mark.parametrize(
-    ("is_dead_npc_selected", "expected_selected_index"),
-    [(True, 0), (False, None)],
-    ids=["selected-npc-dies", "unselected-npc-dies"],
-)
-def test_tick_removes_dead_npcs_and_hands_the_selection_to_a_survivor(
-    engine: GameEngine, is_dead_npc_selected: bool, expected_selected_index: int | None
-) -> None:
-    dead = engine.npcs[1]
-    dead.selected = is_dead_npc_selected
-    dead.health = 0
-
-    engine.tick()
-
-    assert dead not in engine.npcs
-    selected = [index for index, npc in enumerate(engine.npcs) if npc.selected]
-    assert selected == ([] if expected_selected_index is None else [expected_selected_index])

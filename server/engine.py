@@ -10,13 +10,12 @@ from loguru import logger
 
 from api.logger import pipeline_logger
 from game.direct_orders import DirectOrder, DirectOrderOutcome, apply_direct_order
-from game.entities import WheatField
-from game.fauna import remove_dead_fauna
 from game.map import GameMap
 from game.npc import NPC
 from game.orders import CommandRefused, NpcOrder, apply_orders
 from game.ports import OrderInterpretationError, OrderInterpreter, VoiceLineSpeaker
 from game.settings import FPS
+from game.simulation import advance_world
 from game.spawning import spawn_world
 from server.serialization import serialize_state
 
@@ -53,31 +52,9 @@ class GameEngine:
         with self._lock:
             if self._pending_orders is not None:
                 self._apply_pending_orders()
-
-            for npc in self.npcs:
-                npc.update()
-
-            for creature in self.fauna:
-                creature.update()
-
-            for r in self.resources:
-                if isinstance(r, WheatField):
-                    r.grow_tick()
-
-            # Mutated in place: archers and wild archers share this list.
-            for arrow in self.arrows:
-                arrow["frame"] += 1
-            self.arrows[:] = [a for a in self.arrows if a["frame"] < a["totalFrames"]]
-
-            remove_dead_fauna(self.fauna)
-
-            # Mutated in place: the wild archers share this list.
-            dead_npcs = [n for n in self.npcs if n.health <= 0]
-            if dead_npcs:
-                selected_died = any(n.selected for n in dead_npcs)
-                self.npcs[:] = [n for n in self.npcs if n.health > 0]
-                if selected_died and self.npcs:
-                    self.npcs[0].selected = True
+            advance_world(
+                npcs=self.npcs, fauna=self.fauna, resources=self.resources, arrows=self.arrows
+            )
 
     def give_direct_order(self, order: DirectOrder) -> DirectOrderOutcome:
         with self._lock:

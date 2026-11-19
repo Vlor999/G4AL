@@ -4,10 +4,10 @@ from __future__ import annotations
 
 import random
 from collections.abc import Sequence
-from enum import Enum
+from enum import StrEnum
 
 
-class NPCName(Enum):
+class NPCName(StrEnum):
     """All available NPC names."""
 
     BOB = "Bob"

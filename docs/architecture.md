@@ -82,4 +82,4 @@ writes them.
 Tracked on GitHub; the rules in `.claude/rules/` describe the target, these items do
 not meet it yet.
 
-- `static/renderer.js` (~950 lines) exceeds the ~500-line budget.
+- `static/renderer.js` (~850 lines) exceeds the ~500-line budget.

@@ -116,6 +116,7 @@ game/
 
 static/
   game.js           client entry point, Socket.IO, camera
+  map_image.js      ground image, bushes and clouds
   renderer.js       canvas rendering
   sprites.js        sprite loading
   input.js          keyboard and mouse input

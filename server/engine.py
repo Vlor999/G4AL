@@ -3,6 +3,7 @@ from __future__ import annotations
 import threading
 import time
 from collections.abc import Mapping
+from dataclasses import dataclass
 from typing import Any
 
 from flask_socketio import SocketIO
@@ -18,6 +19,11 @@ from game.settings import FPS
 from game.simulation import advance_world
 from game.spawning import spawn_world
 from server.serialization import serialize_state
+
+
+@dataclass(frozen=True)
+class _InterpretationFailed:
+    """The interpreter service failed on a voice command; the player is told on the next tick."""
 
 
 class GameEngine:
@@ -41,7 +47,7 @@ class GameEngine:
         self.log_messages: list[str] = []
         self._lock = threading.Lock()
         self._running = False
-        self._pending_orders: list[NpcOrder] | CommandRefused | None = None
+        self._pending_orders: list[NpcOrder] | CommandRefused | _InterpretationFailed | None = None
 
     def _add_log(self, msg: str) -> None:
         self.log_messages.append(msg)
@@ -77,6 +83,9 @@ class GameEngine:
     def _apply_pending_orders(self) -> None:
         orders = self._pending_orders
         self._pending_orders = None
+        if isinstance(orders, _InterpretationFailed):
+            self._add_log("Voice command failed, try again.")
+            return
         if isinstance(orders, CommandRefused):
             self._add_log(f"Order refused: {orders.reason}")
             return
@@ -130,14 +139,16 @@ class GameEngine:
         """Interpret a voice command and queue its orders for the next tick.
 
         Blocks for the interpreter call: run it off the game loop thread. A refused
-        answer reaches the game log on the next tick; a failed service call is logged
-        and leaves the game unchanged.
+        answer reaches the game log on the next tick. A failed service call is logged
+        on the server and the game log only says the command failed, without the
+        service's error text.
         """
+        orders: list[NpcOrder] | CommandRefused | _InterpretationFailed
         try:
             orders = self._interpreter.interpret(wav_bytes)
         except OrderInterpretationError as error:
             logger.bind(event="order_interpretation").warning(f"Voice command dropped: {error}")
-            return
+            orders = _InterpretationFailed()
         with self._lock:
             self._pending_orders = orders
 

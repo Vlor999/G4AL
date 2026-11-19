@@ -61,6 +61,14 @@ class Archer(NPC):
         self._is_firing: bool = False
         self._defending: bool = False
 
+    @property
+    def is_firing(self) -> bool:
+        return self._is_firing
+
+    @property
+    def is_defending(self) -> bool:
+        return self._defending
+
     def link_battlefield(self, *, fauna: list[Fauna], arrows: list[Arrow]) -> None:
         """Share the world's lists by reference: targets come from *fauna*, shots go to *arrows*."""
         self._all_fauna = fauna

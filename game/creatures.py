@@ -104,6 +104,11 @@ class Fauna:
     def tile_pos(self) -> tuple[int, int]:
         return self._map.world_to_tile(self.x, self.y)
 
+    @property
+    def is_firing(self) -> bool:
+        """True while the shot animation is active; this default means the kind never shoots."""
+        return False
+
     def update(self) -> None:
         """Called every frame. Drives the autonomous behaviour loop."""
         if self.state == FaunaState.IDLE:
@@ -330,6 +335,10 @@ class WildArcher(Fauna):
         self._arrows: list[Arrow] = []  # shared arrow projectile list
         self._is_firing: bool = False  # True during brief fire anim
         self._start_idle()
+
+    @property
+    def is_firing(self) -> bool:
+        return self._is_firing
 
     def link_battlefield(self, *, npcs: list[NPC], arrows: list[Arrow]) -> None:
         """Share the world's lists by reference: targets come from *npcs*, shots go to *arrows*."""

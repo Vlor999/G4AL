@@ -105,8 +105,6 @@ class Structure(Resource):
         self.build_progress = build_progress  # 0..100
         self.built = False
         self.building_type = building_type
-        self.grid_width = self.dimensions.footprint_width
-        self.grid_height = self.dimensions.footprint_depth
 
     @property
     def dimensions(self) -> ObjectDimensions:
@@ -116,8 +114,8 @@ class Structure(Resource):
     def occupied_tiles(self) -> list[tuple[int, int]]:
         """Return every (col, row) this structure covers."""
         tiles: list[tuple[int, int]] = []
-        for dc in range(self.grid_width):
-            for dr in range(self.grid_height):
+        for dc in range(self.dimensions.footprint_width):
+            for dr in range(self.dimensions.footprint_depth):
                 tiles.append((self.col + dc, self.row + dr))
         return tiles
 

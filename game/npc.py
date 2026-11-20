@@ -252,8 +252,8 @@ class NPC(NPCBase):
             if r.depleted:
                 continue
             if isinstance(r, Structure):
-                for dc in range(r.grid_width):
-                    for dr in range(r.grid_height):
+                for dc in range(r.dimensions.footprint_width):
+                    for dr in range(r.dimensions.footprint_depth):
                         if r.col + dc == col and r.row + dr == row:
                             return r
             else:

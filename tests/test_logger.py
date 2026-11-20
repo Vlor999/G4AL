@@ -8,7 +8,7 @@ from typing import Any
 import pytest
 from loguru import logger
 
-from api.constants import AUDIO_MODEL
+from api.constants import AUDIO_MODEL, TEXT_MODEL
 from api.logger import PipelineLogger, configure_sinks
 from tests.conftest import LlmEndRecords
 
@@ -64,6 +64,20 @@ def test_a_failed_call_is_labelled_and_priced_as_the_audio_model(
 
     [(_, extra)] = llm_end_records
     assert (extra["model"], extra["cost_usd"]) == (AUDIO_MODEL, pytest.approx(0.1 + 0.4))
+
+
+def test_a_text_model_call_is_priced_at_the_text_model_prices(
+    llm_end_records: LlmEndRecords,
+) -> None:
+    PipelineLogger().llm_end(
+        order={"orders": []},
+        prompt_tokens=1_000_000,
+        completion_tokens=1_000_000,
+        model=TEXT_MODEL,
+    )
+
+    [(_, extra)] = llm_end_records
+    assert (extra["model"], extra["cost_usd"]) == (TEXT_MODEL, pytest.approx(0.15 + 0.6))
 
 
 def test_the_audio_seconds_are_priced_per_minute_on_top_of_the_tokens(

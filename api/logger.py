@@ -26,8 +26,7 @@ from loguru import logger
 from api.constants import (
     AUDIO_MODEL,
     AUDIO_MODEL_AUDIO_COST_PER_SECOND,
-    AUDIO_MODEL_INPUT_COST_PER_TOKEN,
-    AUDIO_MODEL_OUTPUT_COST_PER_TOKEN,
+    TOKEN_COSTS_BY_MODEL,
     TTS_COST_PER_CHAR,
 )
 
@@ -149,13 +148,15 @@ class PipelineLogger:
         model: str = AUDIO_MODEL,
         error: str | None = None,
     ) -> None:
-        """Log the end of a Voxtral call. ``cost_usd`` is the token cost plus the cost of
-        the ``audio_seconds`` of input audio, logged apart as ``audio_cost_usd``."""
+        """Log the end of a Mistral call. ``cost_usd`` is the token cost at ``model``'s
+        prices plus the cost of the ``audio_seconds`` of input audio, logged apart as
+        ``audio_cost_usd``."""
         elapsed = time.perf_counter() - (self._llm_t0 or time.perf_counter())
         audio_cost = audio_seconds * AUDIO_MODEL_AUDIO_COST_PER_SECOND
+        token_costs = TOKEN_COSTS_BY_MODEL[model]
         cost = (
-            prompt_tokens * AUDIO_MODEL_INPUT_COST_PER_TOKEN
-            + completion_tokens * AUDIO_MODEL_OUTPUT_COST_PER_TOKEN
+            prompt_tokens * token_costs.input_per_token
+            + completion_tokens * token_costs.output_per_token
             + audio_cost
         )
         self._total_llm_cost += cost

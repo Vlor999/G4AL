@@ -184,22 +184,42 @@ sprite draws (decision in `docs/adr/0002-object-dimensions-and-height-model.md`)
 
 ## Unused PNGs
 
-On disk, not loaded by `static/sprites.js`.
+On disk, not loaded by `static/sprites.js` or `static/style.css`. Kept on purpose, grouped by the
+feature each group is for.
+
+### Combat effects (explosions)
 
 - `Particle FX/Explosion_01.png`
 - `Particle FX/Explosion_02.png`
+
+### Fire effect for burning structures
+
 - `Particle FX/Fire_03.png`
+
+### Water effects (an NPC or object falling in water)
+
 - `Particle FX/Water Splash.png`
+
+### Water decoration
+
 - `Terrain/Decorations/Rubber Duck/Rubber duck.png`
+
+### Resource icons for storage and carried loads
+
 - `Terrain/Resources/Gold/Gold Resource/Gold_Resource.png`
 - `Terrain/Resources/Gold/Gold Resource/Gold_Resource_Highlight.png`
 - `Terrain/Resources/Meat/Meat Resource/Meat Resource.png`
+- `Terrain/Resources/Wood/Wood Resource/Wood Resource.png`
+
+### Tool icons (pickaxe, axe, hammer) for the interface
+
 - `Terrain/Resources/Tools/Tool_01.png`
 - `Terrain/Resources/Tools/Tool_02.png`
 - `Terrain/Resources/Tools/Tool_03.png`
 - `Terrain/Resources/Tools/Tool_04.png`
-- `Terrain/Resources/Wood/Wood Resource/Wood Resource.png`
-- `UI Elements/UI Elements/Cursors/Cursor_01.png`
+
+### Interface icons (order panel, NPC status)
+
 - `UI Elements/UI Elements/Icons/Icon_01.png`
 - `UI Elements/UI Elements/Icons/Icon_02.png`
 - `UI Elements/UI Elements/Icons/Icon_03.png`
@@ -212,6 +232,9 @@ On disk, not loaded by `static/sprites.js`.
 - `UI Elements/UI Elements/Icons/Icon_10.png`
 - `UI Elements/UI Elements/Icons/Icon_11.png`
 - `UI Elements/UI Elements/Icons/Icon_12.png`
+
+### Future unit type: lancer
+
 - `Units/Blue Units/Lancer/Lancer_DownRight_Attack.png`
 - `Units/Blue Units/Lancer/Lancer_DownRight_Defence.png`
 - `Units/Blue Units/Lancer/Lancer_Down_Attack.png`
@@ -224,11 +247,20 @@ On disk, not loaded by `static/sprites.js`.
 - `Units/Blue Units/Lancer/Lancer_UpRight_Defence.png`
 - `Units/Blue Units/Lancer/Lancer_Up_Attack.png`
 - `Units/Blue Units/Lancer/Lancer_Up_Defence.png`
+
+### Future unit type: monk (healer)
+
 - `Units/Blue Units/Monk/Heal.png`
 - `Units/Blue Units/Monk/Heal_Effect.png`
 - `Units/Blue Units/Monk/Idle.png`
 - `Units/Blue Units/Monk/Run.png`
+
+### Pawn knife run animation (hunting)
+
 - `Units/Blue Units/Pawn/Pawn_Run Knife.png`
+
+### Future unit type: warrior
+
 - `Units/Blue Units/Warrior/Warrior_Attack1.png`
 - `Units/Blue Units/Warrior/Warrior_Attack2.png`
 - `Units/Blue Units/Warrior/Warrior_Guard.png`
@@ -237,6 +269,6 @@ On disk, not loaded by `static/sprites.js`.
 
 ## Referenced but missing on disk
 
-Paths in `details.js` or `static/sprites.js` with no file.
+Paths in `details.js`, `static/sprites.js` or `static/style.css` with no file.
 
 None.

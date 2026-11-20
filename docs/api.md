@@ -23,6 +23,21 @@ The `storage` object of the state holds the settlement stockpile:
 
 The client shows `total / capacity` and `houseCount` in the inventory panel.
 
+### Chat
+
+`chat` lists the latest messages of the chat panel (`CHAT_HISTORY_LENGTH`,
+`server/constants.py`), oldest first. Each entry has a `kind`:
+
+| `kind` | Other keys | Meaning |
+|---|---|---|
+| `typed_command` | `text`: str | a command the player typed (`POST /api/command`) |
+| `spoken_command` | none | a push-to-talk command (`POST /api/audio`): the interpreter hears the audio, so there is no text |
+| `voice_line` | `npcName`: str, `text`: str | an NPC's answer to the command above it, shown whether or not ElevenLabs voices it |
+
+`hasVoiceInput` (bool) says whether the LLM provider takes spoken commands. When it is
+`false`, the client hides the microphone prompt, push-to-talk does nothing, and
+`POST /api/audio` answers 400.
+
 ### Map biomes
 
 `map.biomes` is a `rows × cols` array of strings, indexed `[row][col]` like
@@ -71,7 +86,8 @@ body once (`server/request_bodies.py`) and answers:
 | `POST /api/move` | `{"npcId": int, "col": int, "row": int}` | enqueues a `move_to` |
 | `POST /api/discard` | `{"wood"?: int, "stone"?: int, "gold"?: int, "wheat"?: int}`, amounts ≥ 0, no other key | discards resources from storage; returns `discarded` |
 | `POST /api/dismiss_storage` | none | releases NPCs waiting to deposit into a full storage; returns `released` |
-| `POST /api/audio` | multipart field `audio` (WAV), or `{"audio_b64": str}` in standard base64 | sends a push-to-talk recording to Voxtral; under 100 bytes of audio answers 400; the resulting orders arrive through the next `state` events |
+| `POST /api/audio` | multipart field `audio` (WAV), or `{"audio_b64": str}` in standard base64 | sends a push-to-talk recording to Voxtral; under 100 bytes of audio, or a provider without speech input (`hasVoiceInput` false), answers 400; the resulting orders arrive through the next `state` events |
+| `POST /api/command` | `{"text": str}` | sends a typed command to the provider's text interpreter; `text` is stripped and must be neither empty nor longer than 500 characters (`MAX_COMMAND_CHARACTERS`, `server/constants.py`), or the route answers 400; the command shows in `chat` at once, the resulting orders and voice lines arrive through the next `state` events |
 
 ## Origins
 

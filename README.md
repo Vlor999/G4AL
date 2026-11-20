@@ -9,6 +9,7 @@ It was built for the Mistral Worldwide Hackathon 2026. The backend runs locally 
 | Feature | Details |
 |---|---|
 | Voice commands | Push-to-talk in the browser. The audio goes to Voxtral, which answers with a function call whose JSON schema lists the game's actions. |
+| Text chat | Type an order in the chat panel instead of speaking it: a Mistral chat model answers with the same function call. The chat shows each command and the NPCs' voice lines as text. |
 | NPC personalities | Each NPC has a name, a personality and an ElevenLabs voice. |
 | Survival | Chop wood, mine rock, plant and harvest wheat, build structures, manage hunger. |
 | Combat | Archers shoot enemies. Wild archers attack from the map edges. |
@@ -22,7 +23,7 @@ Browser (HTML5 Canvas + Socket.IO)
         |  WebSocket (state push + events)
 Flask + Socket.IO server (server/)
         |-- Game engine      map, NPCs, entities, resources, combat   (game/)
-        |-- Mistral Voxtral  audio -> structured NPC orders           (api/interpreter.py)
+        |-- Mistral          text or audio -> structured NPC orders   (api/interpreter.py)
         |-- ElevenLabs TTS   NPC voice line playback                  (api/tts.py)
         `-- Pipeline logger  structured logs                          (api/logger.py)
 ```
@@ -33,8 +34,8 @@ You need:
 
 - Python 3.11 or newer
 - [uv](https://docs.astral.sh/uv/)
-- A Mistral API key from [console.mistral.ai](https://console.mistral.ai/)
-- Optionally, an ElevenLabs API key from [elevenlabs.io](https://elevenlabs.io/). Without it the NPCs do not speak aloud.
+- A Mistral API key from [console.mistral.ai](https://console.mistral.ai/): required. The server does not start without it.
+- Optionally, an ElevenLabs API key from [elevenlabs.io](https://elevenlabs.io/). Without it the NPCs do not speak aloud; their voice lines still show in the chat panel.
 
 ```bash
 git clone https://github.com/Vlor999/G4AL.git
@@ -46,9 +47,12 @@ cp .env.example .env
 Put your keys in `.env`:
 
 ```dotenv
-MISTRAL_API_KEY="your-mistral-api-key"
+MISTRAL_API_KEY="your-mistral-api-key"         # required
 ELEVENLABS_API_KEY="your-elevenlabs-api-key"   # optional
+G4AL_LLM_PROVIDER="mistral"                    # optional, default mistral
 ```
+
+`G4AL_LLM_PROVIDER` picks the LLM provider that interprets the orders. `mistral` is the only one today; it needs `MISTRAL_API_KEY`. A provider without speech input would hide push-to-talk and leave the chat as the only input. Adding a provider is described in [docs/architecture.md](docs/architecture.md#adding-an-llm-provider).
 
 ## Run
 
@@ -64,6 +68,7 @@ Open http://127.0.0.1:8000 in your browser. The server listens on port 8000 on `
 |---|---|
 | WASD or arrow keys | Move the camera |
 | Hold G | Push-to-talk: record a voice command |
+| Type in the chat panel, press Enter | Give a typed order |
 | Click an NPC | Select it |
 
 Example voice commands:
@@ -80,6 +85,7 @@ main.py             entry point, starts the server
 server/
   app.py            loads .env, builds the adapters and the Flask + Socket.IO app, starts the server
   engine.py         GameEngine and its game loop thread
+  providers.py      LLM provider choice (G4AL_LLM_PROVIDER) and its interpreters
   routes.py         HTTP routes and Socket.IO events
   serialization.py  game state -> client JSON
 Makefile            install, run, check (format, lint, import contract, types, dead code, tests) and fix targets
@@ -87,7 +93,8 @@ pyproject.toml      dependencies
 .env.example        environment variable template
 
 api/
-  interpreter.py    Voxtral audio -> structured NPC orders
+  interpreter.py    Mistral: typed text or Voxtral audio -> structured NPC orders
+  order_contract.py prompt, answer schema and order parsing shared by every provider
   tts.py            ElevenLabs text-to-speech
   roster.py         NPC profiles (name, personality, voice)
   logger.py         pipeline logging, written to logs/
@@ -103,6 +110,7 @@ game/
   pathfinding.py    A* on the tile grid
   npc_names.py      name pools of pawns, archers and wild archers
   ports.py          protocols the domain needs from the outside world
+  chat.py           chat messages: the player's commands, the NPCs' voice lines
   entities.py       trees, rocks, structures, wheat fields
   dimensions.py     footprint, height and sprite box of each object kind
   fauna.py          autonomous creatures: idle, graze, wander
@@ -124,6 +132,7 @@ static/
   input.js          keyboard and mouse input
   ptt.js            browser push-to-talk recording
   ui.js             HUD and overlays
+  chat.js           chat panel: typed orders, commands and voice lines
   assets/           sprite sheets and tilesets
 
 tests/              pytest suite; tests/e2e drives the HTTP routes

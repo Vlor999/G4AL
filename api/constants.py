@@ -1,5 +1,16 @@
 """Meaningful literals of the adapters (vendor model names, tool names)."""
 
+# Checked 2026-11-20: https://docs.mistral.ai/models/voxtral-small-25-07 lists the API names
+# `voxtral-small-2507` and `voxtral-small-latest`, status GA, input audio and text, features
+# chat-completions and function-calling, and no deprecation date
+# (https://docs.mistral.ai/models lists Voxtral Small among the current models).
+# https://docs.mistral.ai/studio/audio/audio-in-chat uses `voxtral-small-latest` with a tool
+# and `tool_choice` "any". Voxtral 3 (`voxtral-small-transcribe-latest`) is a transcription
+# model and does not replace it for chat with tool calls.
+# Residual risk: https://docs.mistral.ai/studio/audio/migrate-from-voxtral-2 maps the dated ID
+# behind the alias, `voxtral-small-2507`, to `voxtral-small-transcribe-latest`, which only
+# serves `/v1/audio/transcriptions`, and its deprecation timeline is empty as of 2026-11-20.
+# Recheck that page if voice commands start failing.
 AUDIO_MODEL = "voxtral-small-latest"
 """Mistral model that hears the spoken command and answers with the orders tool call."""
 

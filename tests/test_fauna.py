@@ -1,7 +1,5 @@
 """Autonomous fauna on hand-built worlds: wander, graze, removal of the dead."""
 
-import random
-
 import pytest
 
 from game.fauna import Fauna, FaunaState, remove_dead_fauna
@@ -36,7 +34,7 @@ def place(kind: type[Sheep] | type[WildArcher], game_map: GameMap) -> Fauna:
 
 @pytest.mark.parametrize(
     ("kind", "wander_radius", "seeded_legs"),
-    [(Sheep, 5, [1, 3, 2, 5, 5]), (WildArcher, 8, [7, 6, 4, 3, 4, 2, 4, 7])],
+    [(Sheep, 5, [4, 1, 5, 5]), (WildArcher, 8, [8, 6, 2, 6, 1, 7, 4, 1])],
     ids=["sheep", "wild-archer"],
 )
 def test_fauna_wanders_within_its_radius(
@@ -45,7 +43,6 @@ def test_fauna_wanders_within_its_radius(
     wander_radius: int,
     seeded_legs: list[int],
 ) -> None:
-    random.seed(7)
     creature = place(kind, build_map(MEADOW))
 
     legs = wander_legs(creature, FRAMES)
@@ -55,7 +52,6 @@ def test_fauna_wanders_within_its_radius(
 
 
 def test_a_sheep_alternates_idling_grazing_and_wandering(build_map: MapBuilder) -> None:
-    random.seed(7)
     sheep = place(Sheep, build_map(MEADOW))
     states: set[FaunaState] = set()
 
@@ -67,7 +63,6 @@ def test_a_sheep_alternates_idling_grazing_and_wandering(build_map: MapBuilder) 
 
 
 def test_a_sheep_on_an_island_stays_on_its_tile(build_map: MapBuilder) -> None:
-    random.seed(7)
     game_map = build_map(["~~~", "~.~", "~~~"])
     sheep = Sheep(*game_map.tile_center(1, 1), game_map, [])
 

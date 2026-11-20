@@ -1,6 +1,5 @@
 """Wild archer combat on hand-built worlds: target pick, approach, fire."""
 
-import random
 from collections.abc import Callable
 
 from game.arrows import Arrow
@@ -20,7 +19,6 @@ class Ambush:
     """A wild archer and the pawns and arrows lists it shares."""
 
     def __init__(self, game_map: GameMap, archer_tile: tuple[int, int]) -> None:
-        random.seed(3)
         self.game_map = game_map
         self.pawns: list[NPC] = []
         self.arrows: list[Arrow] = []

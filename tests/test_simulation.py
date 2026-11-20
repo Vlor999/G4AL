@@ -14,6 +14,7 @@ from game.npc import NPC
 from game.settings import NPC_HUNGER_DAMAGE, NPC_HUNGER_DRAIN
 from game.sheep import Sheep
 from game.simulation import advance_world
+from game.spawning import spawn_world
 from game.storage import ResourceStorage
 from game.wild_archer import WildArcher
 from tests.conftest import MapBuilder
@@ -147,3 +148,30 @@ def test_npcs_act_before_fauna(build_map: MapBuilder) -> None:
     assert pawn not in world.npcs
     assert wild_archer.state == FaunaState.IDLE
     assert world.arrows == []
+
+
+REPLAY_FRAMES = 300
+Snapshot = list[tuple[str, float, float]]
+
+
+def play_seeded_game(seed: int) -> Snapshot:
+    """Spawn a world from ``seed``, add new NPCs and creatures halfway, run it, and
+    return the name and position of everyone left."""
+    game_map = GameMap(seed=seed)
+    world = spawn_world(game_map)
+    for frame in range(REPLAY_FRAMES):
+        if frame == REPLAY_FRAMES // 2:
+            x, y = world.npcs[0].x, world.npcs[0].y
+            world.npcs.append(NPC(x, y, game_map, world.resources, world.storage))
+            world.npcs.append(Archer(x, y, game_map, world.resources, world.storage))
+            world.fauna.append(Sheep(x, y, game_map, world.resources))
+            world.fauna.append(WildArcher(x, y, game_map, world.resources))
+        advance_world(
+            npcs=world.npcs, fauna=world.fauna, resources=world.resources, arrows=world.arrows
+        )
+    return [(being.name, being.x, being.y) for being in [*world.npcs, *world.fauna]]
+
+
+@pytest.mark.parametrize("seed", [0, 42])
+def test_the_same_seed_replays_the_same_positions_and_names(seed: int) -> None:
+    assert play_seeded_game(seed) == play_seeded_game(seed)

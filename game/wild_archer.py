@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import random
 from typing import TYPE_CHECKING
 
 from game.arrows import Arrow, Team, build_arrow
@@ -82,11 +81,11 @@ class WildArcher(Fauna):
             if target and dist <= 6:
                 self._chase_target(target)
                 return
-            roll = random.random()
+            roll = self._map.rng.random()
             if roll < 0.35:
                 self._start_wander()
             else:
-                self._idle_duration = random.randint(90, 300)
+                self._idle_duration = self._map.rng.randint(90, 300)
 
     def _do_wander(self) -> None:
         if self._path_index >= len(self._path):

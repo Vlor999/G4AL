@@ -5,7 +5,6 @@ from __future__ import annotations
 
 import heapq
 import math
-import random
 from enum import Enum, auto
 from typing import TYPE_CHECKING
 
@@ -86,7 +85,7 @@ class Fauna:
         self._timer += 1
         if self._timer >= self._idle_duration:
             self._timer = 0
-            if random.random() < 0.5:
+            if self._map.rng.random() < 0.5:
                 self._start_graze()
             else:
                 self._start_wander()
@@ -105,7 +104,7 @@ class Fauna:
     def _start_idle(self) -> None:
         self.state = FaunaState.IDLE
         self._timer = 0
-        self._idle_duration = random.randint(60, 240)
+        self._idle_duration = self._map.rng.randint(60, 240)
 
     def _start_wander(self) -> None:
         col, row = self.tile_pos
@@ -128,7 +127,7 @@ class Fauna:
     def _start_graze(self) -> None:
         self.state = FaunaState.GRAZING
         self._timer = 0
-        self._graze_duration = random.randint(120, 360)
+        self._graze_duration = self._map.rng.randint(120, 360)
 
     def _follow_path(self) -> None:
         if self._path_index >= len(self._path):
@@ -155,7 +154,7 @@ class Fauna:
                     candidates.append((nc, nr))
         if not candidates:
             return None
-        return random.choice(candidates)
+        return self._map.rng.choice(candidates)
 
     def _simple_path(self, start: tuple[int, int], goal: tuple[int, int]) -> list[tuple[int, int]]:
         """A* over walkable tiles, ignoring structures and other creatures; [] when unreachable."""

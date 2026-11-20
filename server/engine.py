@@ -53,6 +53,7 @@ class GameEngine:
         self._pending_answers: deque[_VoiceAnswer] = deque()
 
     def _add_log(self, msg: str) -> None:
+        """Append to the game log, keeping the last 50 lines; the caller holds ``self._lock``."""
         self.log_messages.append(msg)
         if len(self.log_messages) > 50:
             self.log_messages.pop(0)
@@ -131,7 +132,8 @@ class GameEngine:
 
     def send_audio_command(self, wav_bytes: bytes) -> None:
         """Interpret a voice command in a worker thread; its orders apply on a later tick."""
-        self._add_log("Listening...")
+        with self._lock:
+            self._add_log("Listening...")
         threading.Thread(
             target=self.interpret_audio_command, args=(wav_bytes,), daemon=True
         ).start()

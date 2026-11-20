@@ -9,11 +9,8 @@
 
     const CAMERA_ARROW_KEYS = new Set(["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"]);
 
-    // Keys typed in the chat input are text, not camera moves or push-to-talk.
-    function isTypingInChat(e) {
-        return e.target === document.getElementById("chat-input");
-    }
-
+    // Keys pressed in a form field (chat input, model picker) belong to that
+    // field: they never move the camera or start push-to-talk.
     function isTypingInField(target) {
         return target.isContentEditable || ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName);
     }
@@ -23,10 +20,10 @@
     }
 
     document.addEventListener("keydown", e => {
-        if (isTypingInChat(e)) return;
+        if (isTypingInField(e.target)) return;
         // Arrows move the camera; left to the browser they also scroll the
         // panels, which on narrow screens scrolls the whole stacked page.
-        if (CAMERA_ARROW_KEYS.has(e.key) && !isTypingInField(e.target)) {
+        if (CAMERA_ARROW_KEYS.has(e.key)) {
             e.preventDefault();
         }
         G.keysDown.add(e.key);

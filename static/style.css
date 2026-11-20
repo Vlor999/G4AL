@@ -528,6 +528,30 @@ body {
     min-height: 0;
 }
 
+#model-picker {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 10px;
+    letter-spacing: 0.06em;
+    padding-bottom: 6px;
+}
+
+#model-select {
+    flex: 1;
+    min-width: 0;
+    background: transparent;
+    color: var(--primary);
+    border: 1px solid rgba(245, 240, 230, 0.2);
+    font: inherit;
+    font-size: 11px;
+    padding: 2px 4px;
+}
+
+#model-select option {
+    background: #111;
+}
+
 #chat-messages {
     flex: 1;
     overflow-y: auto;

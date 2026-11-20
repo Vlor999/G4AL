@@ -102,7 +102,9 @@
         const logHTML = G.gameState.log.map(m => `<div class="log-entry">${escapeHtml(m)}</div>`).join("");
         if (logEl.dataset.last !== logHTML) {
             logEl.innerHTML = logHTML;
-            logEl.scrollTop = logEl.scrollHeight;
+            // The section scrolls, not the list inside it.
+            const logSectionEl = document.getElementById("log-section");
+            logSectionEl.scrollTop = logSectionEl.scrollHeight;
             logEl.dataset.last = logHTML;
         }
 

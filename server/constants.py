@@ -30,6 +30,18 @@ MAX_COMMAND_CHARACTERS = 500
 CHAT_HISTORY_LENGTH = 30
 
 
+class LlmProvider(StrEnum):
+    """The LLM providers the entry point can build order interpreters for."""
+
+    MISTRAL = "mistral"
+
+
+LLM_PROVIDER_VARIABLE = "G4AL_LLM_PROVIDER"
+DEFAULT_LLM_PROVIDER = LlmProvider.MISTRAL
+# The environment variable that holds each provider's API key.
+API_KEY_VARIABLES: dict[LlmProvider, str] = {LlmProvider.MISTRAL: "MISTRAL_API_KEY"}
+
+
 class ChatMessageKind(StrEnum):
     """The ``kind`` of each entry of the state's ``chat`` list (`docs/api.md`)."""
 

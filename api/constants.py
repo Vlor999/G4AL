@@ -1,5 +1,7 @@
 """Meaningful literals of the adapters (vendor model names, tool names)."""
 
+from typing import NamedTuple
+
 # Checked 2026-11-20: https://docs.mistral.ai/models/voxtral-small-25-07 lists the API names
 # `voxtral-small-2507` and `voxtral-small-latest`, status GA, input audio and text, features
 # chat-completions and function-calling, and no deprecation date
@@ -14,6 +16,11 @@
 AUDIO_MODEL = "voxtral-small-latest"
 """Mistral model that hears the spoken command and answers with the orders tool call."""
 
+TEXT_MODEL = "mistral-small-latest"
+"""Mistral chat model that reads a typed command and answers with the orders tool call.
+Its function calling is documented at https://docs.mistral.ai/capabilities/function_calling/
+(read 2026-11-20)."""
+
 ELEVENLABS_API_KEY_MASK = "<ELEVENLABS_API_KEY>"
 """What a TTS log line shows in place of the ElevenLabs API key when an error text holds it."""
 
@@ -26,6 +33,23 @@ ELEVENLABS_API_KEY_MASK = "<ELEVENLABS_API_KEY>"
 AUDIO_MODEL_INPUT_COST_PER_TOKEN = 0.1 / 1_000_000
 AUDIO_MODEL_OUTPUT_COST_PER_TOKEN = 0.4 / 1_000_000
 AUDIO_MODEL_AUDIO_COST_PER_SECOND = 0.004 / 60
+
+# Mistral Small 4 prices, in USD. Source, read 2026-11-20:
+# https://docs.mistral.ai/models/mistral-small-4-0-26-03 (mistral-small-2603):
+# $0.15 / M input tokens, $0.6 / M output tokens.
+TEXT_MODEL_INPUT_COST_PER_TOKEN = 0.15 / 1_000_000
+TEXT_MODEL_OUTPUT_COST_PER_TOKEN = 0.6 / 1_000_000
+
+
+class TokenCosts(NamedTuple):
+    input_per_token: float
+    output_per_token: float
+
+
+TOKEN_COSTS_BY_MODEL: dict[str, TokenCosts] = {
+    AUDIO_MODEL: TokenCosts(AUDIO_MODEL_INPUT_COST_PER_TOKEN, AUDIO_MODEL_OUTPUT_COST_PER_TOKEN),
+    TEXT_MODEL: TokenCosts(TEXT_MODEL_INPUT_COST_PER_TOKEN, TEXT_MODEL_OUTPUT_COST_PER_TOKEN),
+}
 
 # ElevenLabs TTS price (varies by plan; usage-based estimate), in USD per character.
 # Source: https://elevenlabs.io/pricing

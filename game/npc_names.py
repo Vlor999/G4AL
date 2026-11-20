@@ -21,12 +21,16 @@ class NPCName(StrEnum):
 NPC_NAMES: tuple[str, ...] = tuple(name.value for name in NPCName)
 """Display names of every ``NPCName``, in declaration order (the pick order)."""
 
+ARCHER_NAMES: tuple[str, ...] = ("Robin", "Artemis", "Hawke", "Fletcher", "Ygritte", "Legolas")
+WILD_ARCHER_NAMES: tuple[str, ...] = ("Bandit", "Outlaw", "Rogue", "Poacher", "Marauder", "Raider")
+
 
 class NamePool:
-    """Names handed out at random, each once, until the pool is exhausted and recycled."""
+    """Names drawn from ``rng``, each once, until the pool is exhausted and recycled."""
 
-    def __init__(self, names: Sequence[str]) -> None:
+    def __init__(self, names: Sequence[str], *, rng: random.Random) -> None:
         self._names = tuple(names)
+        self._rng = rng
         self._used_names: list[str] = []
 
     def pick(self) -> str:
@@ -34,23 +38,15 @@ class NamePool:
         if not available:
             self._used_names.clear()
             available = list(self._names)
-        name = random.choice(available)
+        name = self._rng.choice(available)
         self._used_names.append(name)
         return name
 
 
-_PAWN_NAMES = NamePool(NPC_NAMES)
-_ARCHER_NAMES = NamePool(["Robin", "Artemis", "Hawke", "Fletcher", "Ygritte", "Legolas"])
-_WILD_ARCHER_NAMES = NamePool(["Bandit", "Outlaw", "Rogue", "Poacher", "Marauder", "Raider"])
+class NamePools:
+    """The name pools of one game, all drawing from the same ``rng``."""
 
-
-def pick_npc_name() -> str:
-    return _PAWN_NAMES.pick()
-
-
-def pick_archer_name() -> str:
-    return _ARCHER_NAMES.pick()
-
-
-def pick_wild_archer_name() -> str:
-    return _WILD_ARCHER_NAMES.pick()
+    def __init__(self, rng: random.Random) -> None:
+        self.pawns = NamePool(NPC_NAMES, rng=rng)
+        self.archers = NamePool(ARCHER_NAMES, rng=rng)
+        self.wild_archers = NamePool(WILD_ARCHER_NAMES, rng=rng)

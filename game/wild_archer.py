@@ -7,7 +7,6 @@ from typing import TYPE_CHECKING
 
 from game.arrows import Arrow, Team, build_arrow
 from game.fauna import Fauna, FaunaState
-from game.npc_names import pick_wild_archer_name
 from game.settings import (
     ARCHER_FIRE_ANIM_TIME,
     WILD_ARCHER_DAMAGE,
@@ -35,7 +34,7 @@ class WildArcher(Fauna):
         game_map: GameMap,
         resources: list[Resource],
     ):
-        super().__init__(x, y, game_map, resources, name=pick_wild_archer_name())
+        super().__init__(x, y, game_map, resources, name=game_map.name_pools.wild_archers.pick())
         self.speed = 1.5
         self.health = 50
         self.max_health = 50

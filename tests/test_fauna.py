@@ -36,7 +36,7 @@ def place(kind: type[Sheep] | type[WildArcher], game_map: GameMap) -> Fauna:
 
 @pytest.mark.parametrize(
     ("kind", "wander_radius", "seeded_legs"),
-    [(Sheep, 5, [1, 3, 2, 5, 5]), (WildArcher, 8, [8, 2, 6, 4, 3, 4, 4, 3, 4])],
+    [(Sheep, 5, [1, 3, 2, 5, 5]), (WildArcher, 8, [7, 6, 4, 3, 4, 2, 4, 7])],
     ids=["sheep", "wild-archer"],
 )
 def test_fauna_wanders_within_its_radius(

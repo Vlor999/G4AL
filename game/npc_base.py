@@ -9,7 +9,6 @@ from typing import TYPE_CHECKING, ClassVar
 
 from game.actions import Action, ActionType, State
 from game.entities import Resource, Structure
-from game.npc_names import pick_npc_name
 from game.pathfinding import find_path
 from game.settings import (
     NPC_HUNGER_DAMAGE,
@@ -55,7 +54,7 @@ class NPCBase:
     ):
         self.id = NPCBase._next_id
         NPCBase._next_id += 1
-        self.name = name or pick_npc_name()
+        self.name = name or game_map.name_pools.pawns.pick()
 
         self.x = x
         self.y = y

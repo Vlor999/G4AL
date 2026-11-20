@@ -3,40 +3,63 @@ from __future__ import annotations
 import threading
 import time
 from collections import deque
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass
+from functools import partial
 from typing import Any
 
 from flask_socketio import SocketIO
 from loguru import logger
 
+from game.chat import ChatMessage, NpcVoiceLine, PlayerCommand, SpokenCommand, TypedCommand
 from game.direct_orders import DirectOrder, DirectOrderOutcome, apply_direct_order
 from game.map import GameMap
 from game.npc import NPC
 from game.orders import CommandRefused, NpcOrder, apply_orders
-from game.ports import OrderInterpretationError, OrderInterpreter, VoiceLineSpeaker
+from game.ports import (
+    OrderInterpretationError,
+    TextOrderInterpreter,
+    VoiceLineSpeaker,
+    VoiceOrderInterpreter,
+)
 from game.settings import FPS
 from game.simulation import advance_world
 from game.spawning import spawn_world
+from server.constants import CHAT_HISTORY_LENGTH
 from server.serialization import serialize_state
 
 
 @dataclass(frozen=True)
 class _InterpretationFailed:
-    """The interpreter service failed on a voice command; the player is told on the next tick."""
+    """The interpreter service failed on a command; the player is told on the next tick."""
 
 
-_VoiceAnswer = list[NpcOrder] | CommandRefused | _InterpretationFailed
+_InterpreterAnswer = list[NpcOrder] | CommandRefused
+_CommandAnswer = _InterpreterAnswer | _InterpretationFailed
+
+
+def _run_in_daemon_thread(work: Callable[[], None]) -> None:
+    threading.Thread(target=work, daemon=True).start()
 
 
 class GameEngine:
     """Game state and its 60 FPS loop; every public method is safe to call from any thread.
 
-    Voice commands go through ``interpreter`` and the replies of the NPCs through
-    ``speaker``; the entry point builds both and owns their lifecycle.
+    Typed commands go through ``text_interpreter``, spoken ones through
+    ``voice_interpreter`` (``None`` when the provider has no speech input), and the
+    replies of the NPCs through ``speaker``; the entry point builds them and owns their
+    lifecycle. ``run_in_background`` runs each blocking interpreter call off the
+    calling thread.
     """
 
-    def __init__(self, *, interpreter: OrderInterpreter, speaker: VoiceLineSpeaker) -> None:
+    def __init__(
+        self,
+        *,
+        text_interpreter: TextOrderInterpreter,
+        voice_interpreter: VoiceOrderInterpreter | None,
+        speaker: VoiceLineSpeaker,
+        run_in_background: Callable[[Callable[[], None]], None] = _run_in_daemon_thread,
+    ) -> None:
         self.game_map = GameMap(seed=42)
         world = spawn_world(self.game_map)
         self.storage = world.storage
@@ -45,12 +68,15 @@ class GameEngine:
         self.npcs = world.npcs
         self.fauna = world.fauna
         self.arrows = world.arrows
-        self._interpreter = interpreter
+        self._text_interpreter = text_interpreter
+        self._voice_interpreter = voice_interpreter
         self._speaker = speaker
+        self._run_in_background = run_in_background
         self.log_messages: list[str] = []
+        self.chat_messages: deque[ChatMessage] = deque(maxlen=CHAT_HISTORY_LENGTH)
         self._lock = threading.Lock()
         self._running = False
-        self._pending_answers: deque[_VoiceAnswer] = deque()
+        self._pending_answers: deque[_CommandAnswer] = deque()
 
     def _add_log(self, msg: str) -> None:
         """Append to the game log, keeping the last 50 lines; the caller holds ``self._lock``."""
@@ -61,7 +87,7 @@ class GameEngine:
     def tick(self) -> None:
         with self._lock:
             while self._pending_answers:
-                self._apply_voice_answer(self._pending_answers.popleft())
+                self._apply_answer(self._pending_answers.popleft())
             advance_world(
                 npcs=self.npcs, fauna=self.fauna, resources=self.resources, arrows=self.arrows
             )
@@ -84,9 +110,9 @@ class GameEngine:
             for n in self.npcs:
                 n.selected = False
 
-    def _apply_voice_answer(self, answer: _VoiceAnswer) -> None:
+    def _apply_answer(self, answer: _CommandAnswer) -> None:
         if isinstance(answer, _InterpretationFailed):
-            self._add_log("Voice command failed, try again.")
+            self._add_log("Command failed, try again.")
             return
         if isinstance(answer, CommandRefused):
             self._add_log(f"Order refused: {answer.reason}")
@@ -100,6 +126,7 @@ class GameEngine:
             if outcome.is_spoken:
                 self._speaker.speak(order.voice_line, order.npc_name)
             self._add_log(f'{order.npc_name}: "{order.voice_line}"')
+            self.chat_messages.append(NpcVoiceLine(order.npc_name, order.voice_line))
 
     def discard_resources(self, amounts: Mapping[str, int]) -> dict[str, int]:
         """Discard from storage; returns what was actually removed per resource."""
@@ -128,29 +155,47 @@ class GameEngine:
                 arrows=self.arrows,
                 storage=self.storage,
                 log_messages=self.log_messages,
+                chat_messages=self.chat_messages,
+                has_voice_input=self.has_voice_input,
             )
 
-    def send_audio_command(self, wav_bytes: bytes) -> None:
-        """Interpret a voice command in a worker thread; its orders apply on a later tick."""
-        with self._lock:
-            self._add_log("Listening...")
-        threading.Thread(
-            target=self.interpret_audio_command, args=(wav_bytes,), daemon=True
-        ).start()
+    @property
+    def has_voice_input(self) -> bool:
+        """Whether the provider takes spoken commands (``send_audio_command``)."""
+        return self._voice_interpreter is not None
 
-    def interpret_audio_command(self, wav_bytes: bytes) -> None:
-        """Interpret a voice command and queue its answer for the next tick.
+    def send_text_command(self, command: str) -> None:
+        """Interpret a typed command in the background; its orders apply on a later tick."""
+        interpret = partial(self._text_interpreter.interpret_text, command)
+        self._start_interpretation(TypedCommand(command), interpret)
 
-        Blocks for the interpreter call: run it off the game loop thread. A refused
-        answer reaches the game log on the next tick. A failed service call is logged
-        on the server and the game log only says the command failed, without the
-        service's error text.
+    def send_audio_command(self, wav_bytes: bytes) -> bool:
+        """Interpret a voice command in the background; its orders apply on a later tick.
+
+        Returns False, doing nothing, when the provider has no speech input.
         """
-        answer: _VoiceAnswer
+        if self._voice_interpreter is None:
+            return False
+        interpret = partial(self._voice_interpreter.interpret_voice, wav_bytes)
+        self._start_interpretation(SpokenCommand(), interpret)
+        return True
+
+    def _start_interpretation(
+        self, command: PlayerCommand, interpret: Callable[[], _InterpreterAnswer]
+    ) -> None:
+        with self._lock:
+            self._add_log("Interpreting the command...")
+            self.chat_messages.append(command)
+        self._run_in_background(partial(self._interpret_and_queue, interpret))
+
+    def _interpret_and_queue(self, interpret: Callable[[], _InterpreterAnswer]) -> None:
+        # A failed service call is logged on the server; the game log only says the
+        # command failed, without the service's error text.
+        answer: _CommandAnswer
         try:
-            answer = self._interpreter.interpret(wav_bytes)
+            answer = interpret()
         except OrderInterpretationError as error:
-            logger.bind(event="order_interpretation").warning(f"Voice command dropped: {error}")
+            logger.bind(event="order_interpretation").warning(f"Command dropped: {error}")
             answer = _InterpretationFailed()
         with self._lock:
             self._pending_answers.append(answer)

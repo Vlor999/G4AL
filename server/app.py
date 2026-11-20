@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 from flask import Flask
 from flask_socketio import SocketIO
 
-from api.interpreter import VoxtralOrderInterpreter
+from api.interpreter import MistralOrderInterpreter
 from api.logger import PipelineLogger, use_pipeline_sinks
 from api.tts import TTSEngine
 from server.constants import (
@@ -65,9 +65,13 @@ def main() -> None:
     use_pipeline_sinks()
     pipeline_logger = PipelineLogger()
     pipeline_logger.start_session()
-    interpreter = VoxtralOrderInterpreter(pipeline_logger=pipeline_logger)
+    interpreter = MistralOrderInterpreter.from_api_key(
+        os.environ.get("MISTRAL_API_KEY", ""), pipeline_logger=pipeline_logger
+    )
     speaker = TTSEngine(pipeline_logger=pipeline_logger)
-    engine = GameEngine(interpreter=interpreter, speaker=speaker)
+    engine = GameEngine(
+        text_interpreter=interpreter, voice_interpreter=interpreter, speaker=speaker
+    )
     interpreter.register_roster(engine.npcs)
     app, socketio = create_app(engine, served_host=host)
 

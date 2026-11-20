@@ -5,6 +5,7 @@ from __future__ import annotations
 import random
 
 from game.map_generation import generate_terrain
+from game.npc_names import NamePools
 from game.settings import MAP_COLS, MAP_ROWS, TILE_SIZE
 from game.terrain import WALKABLE_TILES
 
@@ -12,9 +13,10 @@ from game.terrain import WALKABLE_TILES
 class GameMap:
     """Grid of tiles, each with a ``TileType`` and a ``Biome``.
 
-    ``rng`` is the random source the terrain was generated with; spawning draws from
-    it next, so one seed replays the same map, resources and creatures. Without
-    ``rng``, one is built from ``seed`` (a fresh one when ``seed`` is None).
+    ``rng`` is the random source of the whole game: the terrain, spawning, the NPC
+    names (``name_pools``) and the fauna behaviour draw from it, so one seed replays
+    the same game. Without ``rng``, one is built from ``seed`` (a fresh one when
+    ``seed`` is None).
     """
 
     def __init__(
@@ -31,6 +33,7 @@ class GameMap:
         terrain = generate_terrain(self.rng, cols=cols, rows=rows)
         self.tiles = terrain.tiles
         self.biomes = terrain.biomes
+        self.name_pools = NamePools(self.rng)
 
     def contains_tile(self, col: int, row: int) -> bool:
         return 0 <= col < self.cols and 0 <= row < self.rows

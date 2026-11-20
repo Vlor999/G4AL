@@ -7,7 +7,6 @@ from typing import TYPE_CHECKING
 from game.actions import ARCHER_ACTIONS, Action, ActionType, State
 from game.arrows import Team, build_arrow
 from game.npc import NPC
-from game.npc_names import pick_archer_name
 from game.settings import (
     ARCHER_ARROW_DAMAGE,
     ARCHER_DEFEND_SCAN_RADIUS,
@@ -50,7 +49,7 @@ class Archer(NPC):
             game_map,
             resources,
             storage,
-            name=name or pick_archer_name(),
+            name=name or game_map.name_pools.archers.pick(),
         )
         self.speed = NPC_SPEED * 1.1
         self.max_health = 70

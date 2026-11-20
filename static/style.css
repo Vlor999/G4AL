@@ -1366,3 +1366,18 @@ body {
         height: 240px;
     }
 }
+
+/* Very narrow screens: the logo and the guide button leave absolute
+   positioning and share the header row, so they cannot overlap. */
+@media (max-width: 460px) {
+    .center-logos,
+    #guide-btn {
+        position: static;
+        transform: none;
+    }
+
+    .g4al-logo {
+        font-size: 11px;
+        letter-spacing: 0.04em;
+    }
+}

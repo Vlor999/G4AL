@@ -55,6 +55,12 @@ def test_occupied_tiles_cover_grid_footprint(building_type: str, expected_tile_c
     assert (3, 4) in tiles
 
 
+def test_occupied_tiles_of_non_square_castle_are_five_wide_and_three_deep() -> None:
+    tiles = Structure(3, 4, building_type="castle").occupied_tiles
+    assert (3 + 4, 4 + 2) in tiles
+    assert (3 + 2, 4 + 4) not in tiles
+
+
 def test_spawn_resources_places_only_on_free_walkable_tiles(build_map: MapBuilder) -> None:
     game_map = build_map(["~~~~~~~~"] + ["~......~"] * 6 + ["~~~~~~~~"])
     game_map.biomes = [[Biome.FOREST] * 8 for _ in range(8)]

@@ -30,9 +30,10 @@ exist, and a seed did not replay the map once anything else drew from `random`.
   sand ford along its shortest way back, so every walkable tile is reachable from the
   storage hut.
 - All randomness comes from one injected `random.Random`: `GameMap(rng=...)`, or
-  `GameMap(seed=...)` which builds it. Spawning draws from the same `game_map.rng`, so
-  one seed replays the map, the biomes, the resources and the creatures. The global
-  `random` is no longer seeded.
+  `GameMap(seed=...)` which builds it. Spawning, the NPC name pools
+  (`game_map.name_pools`, one set per game) and the fauna behaviour draw from the same
+  `game_map.rng`, so one seed replays the map, the resources, the creatures, their moves
+  and the NPC names. No code in `game/` draws from the global `random`.
 - Resources are rolled per free walkable tile against the biome densities above; the
   storage hut footprint is kept free. Sheep spawn on free meadow grass; the wild archer
   camp and the cat keep their corners, whatever the biome. Wheat fields are
@@ -53,5 +54,5 @@ exist, and a seed did not replay the map once anything else drew from `random`.
 
 The map seen with the server's seed 42 changes. Map generation no longer touches the
 global `random`, so the seeded sequences other code draws from it shift (two fauna
-tests were updated for that reason). NPC names and fauna behaviour still use the global
-`random`.
+tests were updated for that reason). Since issue #82, NPC names and fauna behaviour
+draw from `game_map.rng` too, which shifts the seeded sequences once more.

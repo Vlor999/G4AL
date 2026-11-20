@@ -1,11 +1,15 @@
 """The parts of scripts/asset_inventory.py that need no image library."""
 
+import pytest
+
 from scripts.asset_inventory import (
     SpriteMeasure,
     find_frame_count,
+    group_by_feature,
     read_frame_counts,
     read_loaded_paths,
     render,
+    render_unused,
 )
 
 TREE = "Terrain/Resources/Wood/Trees/Tree1.png"
@@ -34,3 +38,34 @@ def test_render_lists_game_sprites_with_their_dimensions_and_the_unused_ones() -
     assert "| `UI Elements/Blank.png` | 64×64 | 1 | 64×64 | - | - | - | - | - |" in page
     assert "- `Particle FX/Fire_03.png`" in page
     assert page.split("## Referenced but missing on disk")[1].count("None.") == 1
+
+
+def test_loaded_paths_include_the_images_style_css_references() -> None:
+    assert "UI Elements/UI Elements/Cursors/Cursor_01.png" in read_loaded_paths()
+
+
+@pytest.mark.parametrize(
+    ("unused", "expected_lines"),
+    [
+        ([], ["None."]),
+        (
+            ["Units/Blue Units/Lancer/Lancer_Idle.png"],
+            ["### Future unit type: lancer", "- `Units/Blue Units/Lancer/Lancer_Idle.png`"],
+        ),
+        (["Elsewhere/Thing.png"], ["### No intended feature recorded"]),
+    ],
+)
+def test_unused_pngs_are_grouped_under_a_heading_by_intended_feature(
+    unused: list[str], expected_lines: list[str]
+) -> None:
+    assert all(line in render_unused(unused) for line in expected_lines)
+
+
+def test_group_by_feature_puts_a_path_under_the_first_matching_prefix() -> None:
+    groups = group_by_feature(
+        ["Terrain/Resources/Tools/Tool_01.png", "Terrain/Resources/Wood/Wood Resource/W.png"]
+    )
+    assert list(groups.values()) == [
+        ["Terrain/Resources/Tools/Tool_01.png"],
+        ["Terrain/Resources/Wood/Wood Resource/W.png"],
+    ]

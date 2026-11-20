@@ -7,9 +7,15 @@
 
     // ── Keyboard (camera scrolling + push-to-talk) ──────────────────────
 
+    const CAMERA_ARROW_KEYS = new Set(["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"]);
+
     // Keys typed in the chat input are text, not camera moves or push-to-talk.
     function isTypingInChat(e) {
         return e.target === document.getElementById("chat-input");
+    }
+
+    function isTypingInField(target) {
+        return target.isContentEditable || ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName);
     }
 
     function hasVoiceInput() {
@@ -18,6 +24,11 @@
 
     document.addEventListener("keydown", e => {
         if (isTypingInChat(e)) return;
+        // Arrows move the camera; left to the browser they also scroll the
+        // panels, which on narrow screens scrolls the whole stacked page.
+        if (CAMERA_ARROW_KEYS.has(e.key) && !isTypingInField(e.target)) {
+            e.preventDefault();
+        }
         G.keysDown.add(e.key);
 
         // G key = push-to-talk

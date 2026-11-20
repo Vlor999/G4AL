@@ -410,80 +410,10 @@ const SPRITE_CONFIG = {
     },
 
     // --- UI Elements ---
-    ui_banners: {
-        frames: 1, type: 'static',
-        files_or_dir: {
-            banner:       "static/assets/UI Elements/UI Elements/Banners/Banner.png",
-            banner_slots: "static/assets/UI Elements/UI Elements/Banners/Banner_Slots.png",
-        }
-    },
-    ui_bars: {
-        frames: 1, type: 'static',
-        files_or_dir: {
-            big_base:   "static/assets/UI Elements/UI Elements/Bars/BigBar_Base.png",
-            big_fill:   "static/assets/UI Elements/UI Elements/Bars/BigBar_Fill.png",
-            small_base: "static/assets/UI Elements/UI Elements/Bars/SmallBar_Base.png",
-            small_fill: "static/assets/UI Elements/UI Elements/Bars/SmallBar_Fill.png",
-        }
-    },
-    ui_buttons: {
-        frames: 1, type: 'static',
-        files_or_dir: {
-            big_blue_pressed:        "static/assets/UI Elements/UI Elements/Buttons/BigBlueButton_Pressed.png",
-            big_blue_regular:        "static/assets/UI Elements/UI Elements/Buttons/BigBlueButton_Regular.png",
-            big_red_pressed:         "static/assets/UI Elements/UI Elements/Buttons/BigRedButton_Pressed.png",
-            big_red_regular:         "static/assets/UI Elements/UI Elements/Buttons/BigRedButton_Regular.png",
-            small_blue_round_pressed:"static/assets/UI Elements/UI Elements/Buttons/SmallBlueRoundButton_Pressed.png",
-            small_blue_round_regular:"static/assets/UI Elements/UI Elements/Buttons/SmallBlueRoundButton_Regular.png",
-            small_blue_sq_pressed:   "static/assets/UI Elements/UI Elements/Buttons/SmallBlueSquareButton_Pressed.png",
-            small_blue_sq_regular:   "static/assets/UI Elements/UI Elements/Buttons/SmallBlueSquareButton_Regular.png",
-            small_red_round_pressed: "static/assets/UI Elements/UI Elements/Buttons/SmallRedRoundButton_Pressed.png",
-            small_red_round_regular: "static/assets/UI Elements/UI Elements/Buttons/SmallRedRoundButton_Regular.png",
-            small_red_sq_pressed:    "static/assets/UI Elements/UI Elements/Buttons/SmallRedSquareButton_Pressed.png",
-            small_red_sq_regular:    "static/assets/UI Elements/UI Elements/Buttons/SmallRedSquareButton_Regular.png",
-            tiny_round_blue:         "static/assets/UI Elements/UI Elements/Buttons/TinyRoundBlueButton.png",
-            tiny_round_red:          "static/assets/UI Elements/UI Elements/Buttons/TinyRoundRedButton.png",
-            tiny_sq_blue:            "static/assets/UI Elements/UI Elements/Buttons/TinySquareBlueButton.png",
-            tiny_sq_red:             "static/assets/UI Elements/UI Elements/Buttons/TinySquareRedButton.png",
-        }
-    },
     ui_cursors: {
         frames: 1, type: 'static',
         files_or_dir: [
             "static/assets/UI Elements/UI Elements/Cursors/Cursor_01.png",
-            "static/assets/UI Elements/UI Elements/Cursors/Cursor_02.png",
-            "static/assets/UI Elements/UI Elements/Cursors/Cursor_03.png",
-            "static/assets/UI Elements/UI Elements/Cursors/Cursor_04.png",
-        ]
-    },
-    human_avatar: {
-        frames: 1, type: 'static',
-        files_or_dir: [
-            "static/assets/UI Elements/UI Elements/Human Avatars/Avatars_01.png",
-            "static/assets/UI Elements/UI Elements/Human Avatars/Avatars_02.png",
-            "static/assets/UI Elements/UI Elements/Human Avatars/Avatars_03.png",
-            "static/assets/UI Elements/UI Elements/Human Avatars/Avatars_04.png",
-            "static/assets/UI Elements/UI Elements/Human Avatars/Avatars_05.png",
-            "static/assets/UI Elements/UI Elements/Human Avatars/Avatars_06.png",
-            "static/assets/UI Elements/UI Elements/Human Avatars/Avatars_07.png",
-            "static/assets/UI Elements/UI Elements/Human Avatars/Avatars_08.png",
-            "static/assets/UI Elements/UI Elements/Human Avatars/Avatars_09.png",
-            "static/assets/UI Elements/UI Elements/Human Avatars/Avatars_10.png",
-            "static/assets/UI Elements/UI Elements/Human Avatars/Avatars_11.png",
-            "static/assets/UI Elements/UI Elements/Human Avatars/Avatars_12.png",
-            "static/assets/UI Elements/UI Elements/Human Avatars/Avatars_13.png",
-            "static/assets/UI Elements/UI Elements/Human Avatars/Avatars_14.png",
-            "static/assets/UI Elements/UI Elements/Human Avatars/Avatars_15.png",
-            "static/assets/UI Elements/UI Elements/Human Avatars/Avatars_16.png",
-            "static/assets/UI Elements/UI Elements/Human Avatars/Avatars_17.png",
-            "static/assets/UI Elements/UI Elements/Human Avatars/Avatars_18.png",
-            "static/assets/UI Elements/UI Elements/Human Avatars/Avatars_19.png",
-            "static/assets/UI Elements/UI Elements/Human Avatars/Avatars_20.png",
-            "static/assets/UI Elements/UI Elements/Human Avatars/Avatars_21.png",
-            "static/assets/UI Elements/UI Elements/Human Avatars/Avatars_22.png",
-            "static/assets/UI Elements/UI Elements/Human Avatars/Avatars_23.png",
-            "static/assets/UI Elements/UI Elements/Human Avatars/Avatars_24.png",
-            "static/assets/UI Elements/UI Elements/Human Avatars/Avatars_25.png",
         ]
     },
     ui_icons: {
@@ -502,47 +432,5 @@ const SPRITE_CONFIG = {
             "static/assets/UI Elements/UI Elements/Icons/Icon_11.png",
             "static/assets/UI Elements/UI Elements/Icons/Icon_12.png",
         ]
-    },
-    ui_papers: {
-        frames: 1, type: 'static',
-        files_or_dir: {
-            regular: "static/assets/UI Elements/UI Elements/Papers/RegularPaper.png",
-            special: "static/assets/UI Elements/UI Elements/Papers/SpecialPaper.png",
-        }
-    },
-    ui_ribbons: {
-        frames: 1, type: 'static',
-        files_or_dir: {
-            big:   "static/assets/UI Elements/UI Elements/Ribbons/BigRibbons.png",
-            small: "static/assets/UI Elements/UI Elements/Ribbons/SmallRibbons.png",
-        }
-    },
-    ui_swords: {
-        frames: 1, type: 'static',
-        files_or_dir: "static/assets/UI Elements/UI Elements/Swords/Swords.png"
-    },
-    ui_wood_table: {
-        frames: 1, type: 'static',
-        files_or_dir: {
-            table: "static/assets/UI Elements/UI Elements/Wood Table/WoodTable.png",
-            slots: "static/assets/UI Elements/UI Elements/Wood Table/WoodTable_Slots.png",
-        }
-    },
-    ui_store_banner: {
-        frames: 1, type: 'static',
-        files_or_dir: {
-            banner: "static/assets/UI Elements/UI Banners from the store page/Banner/Banner.png",
-            slots:  "static/assets/UI Elements/UI Banners from the store page/Banner/Slots.png",
-        }
-    },
-    ui_store_ribbons: {
-        frames: 1, type: 'static',
-        files_or_dir: {
-            black:  "static/assets/UI Elements/UI Banners from the store page/Ribbons/Ribbon_Black.png",
-            blue:   "static/assets/UI Elements/UI Banners from the store page/Ribbons/Ribbon_Blue.png",
-            purple: "static/assets/UI Elements/UI Banners from the store page/Ribbons/Ribbon_Purple.png",
-            red:    "static/assets/UI Elements/UI Banners from the store page/Ribbons/Ribbon_Red.png",
-            yellow: "static/assets/UI Elements/UI Banners from the store page/Ribbons/Ribbon_Yellow.png",
-        }
     },
 };

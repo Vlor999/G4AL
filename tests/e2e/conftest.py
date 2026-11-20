@@ -6,7 +6,12 @@ from flask.testing import FlaskClient
 from server.app import create_app
 from server.constants import SERVER_PORT
 from server.engine import GameEngine
-from tests.fakes import RecordingSpeaker, ScriptedOrderInterpreter, run_now
+from tests.fakes import (
+    RecordingSpeaker,
+    ScriptedOrderInterpreter,
+    build_model_selection,
+    run_now,
+)
 
 
 @pytest.fixture
@@ -19,8 +24,7 @@ def engine(interpreter: ScriptedOrderInterpreter) -> GameEngine:
     """A fresh game engine with fake ports, without the game loop thread; commands are
     interpreted on the calling thread."""
     return GameEngine(
-        text_interpreter=interpreter,
-        voice_interpreter=interpreter,
+        model_selection=build_model_selection(interpreter),
         speaker=RecordingSpeaker(),
         run_in_background=run_now,
     )

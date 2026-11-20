@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections.abc import Iterable, Sequence
 from typing import Any
 
+from api.model_catalog import CatalogModel
 from game.actions import State as NpcState
 from game.arrows import Arrow
 from game.chat import ChatMessage, NpcVoiceLine, SpokenCommand, TypedCommand
@@ -16,6 +17,7 @@ from game.npc import NPC
 from game.settings import TILE_SIZE
 from game.storage import ResourceStorage
 from server.constants import ChatMessageKind
+from server.model_selection import SelectedModel
 
 
 def serialize_state(
@@ -28,7 +30,8 @@ def serialize_state(
     storage: ResourceStorage,
     log_messages: Sequence[str],
     chat_messages: Iterable[ChatMessage],
-    has_voice_input: bool,
+    available_models: Sequence[CatalogModel],
+    selected_model: SelectedModel,
 ) -> dict[str, Any]:
     """Build the full state payload; the caller holds the engine lock."""
     return {
@@ -43,7 +46,18 @@ def serialize_state(
         "storageFullAlert": any(npc.state == NpcState.WAITING_DEPOSIT for npc in npcs),
         "log": list(log_messages[-20:]),
         "chat": [_serialize_chat_message(message) for message in chat_messages],
-        "hasVoiceInput": has_voice_input,
+        "models": [_serialize_model(model) for model in available_models],
+        "selectedModelId": selected_model.model.model_id,
+        "hasVoiceInput": selected_model.voice is not None,
+    }
+
+
+def _serialize_model(model: CatalogModel) -> dict[str, Any]:
+    return {
+        "id": model.model_id,
+        "name": model.display_name,
+        "provider": model.provider,
+        "hasVoiceInput": model.has_voice_input,
     }
 
 

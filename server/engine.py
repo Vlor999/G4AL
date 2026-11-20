@@ -16,16 +16,12 @@ from game.direct_orders import DirectOrder, DirectOrderOutcome, apply_direct_ord
 from game.map import GameMap
 from game.npc import NPC
 from game.orders import CommandRefused, NpcOrder, apply_orders
-from game.ports import (
-    OrderInterpretationError,
-    TextOrderInterpreter,
-    VoiceLineSpeaker,
-    VoiceOrderInterpreter,
-)
+from game.ports import OrderInterpretationError, VoiceLineSpeaker
 from game.settings import FPS
 from game.simulation import advance_world
 from game.spawning import spawn_world
 from server.constants import CHAT_HISTORY_LENGTH
+from server.model_selection import ModelSelection
 from server.serialization import serialize_state
 
 
@@ -45,18 +41,16 @@ def _run_in_daemon_thread(work: Callable[[], None]) -> None:
 class GameEngine:
     """Game state and its 60 FPS loop; every public method is safe to call from any thread.
 
-    Typed commands go through ``text_interpreter``, spoken ones through
-    ``voice_interpreter`` (``None`` when the provider has no speech input), and the
-    replies of the NPCs through ``speaker``; the entry point builds them and owns their
-    lifecycle. ``run_in_background`` runs each blocking interpreter call off the
-    calling thread.
+    Commands go to the interpreters of the model selected in ``model_selection`` when
+    they are sent, and the replies of the NPCs through ``speaker``; the entry point
+    builds them and owns their lifecycle. ``run_in_background`` runs each blocking
+    interpreter call off the calling thread.
     """
 
     def __init__(
         self,
         *,
-        text_interpreter: TextOrderInterpreter,
-        voice_interpreter: VoiceOrderInterpreter | None,
+        model_selection: ModelSelection,
         speaker: VoiceLineSpeaker,
         run_in_background: Callable[[Callable[[], None]], None] = _run_in_daemon_thread,
     ) -> None:
@@ -68,8 +62,7 @@ class GameEngine:
         self.npcs = world.npcs
         self.fauna = world.fauna
         self.arrows = world.arrows
-        self._text_interpreter = text_interpreter
-        self._voice_interpreter = voice_interpreter
+        self._model_selection = model_selection
         self._speaker = speaker
         self._run_in_background = run_in_background
         self.log_messages: list[str] = []
@@ -156,27 +149,34 @@ class GameEngine:
                 storage=self.storage,
                 log_messages=self.log_messages,
                 chat_messages=self.chat_messages,
-                has_voice_input=self.has_voice_input,
+                available_models=self._model_selection.available_models,
+                selected_model=self._model_selection.selected(),
             )
 
-    @property
-    def has_voice_input(self) -> bool:
-        """Whether the provider takes spoken commands (``send_audio_command``)."""
-        return self._voice_interpreter is not None
+    def select_model(self, model_id: str) -> bool:
+        """Send the next commands to ``model_id``; a command already sent keeps its
+        model. Returns False, changing nothing, when no available model has this id."""
+        return self._model_selection.select(model_id)
 
     def send_text_command(self, command: str) -> None:
-        """Interpret a typed command in the background; its orders apply on a later tick."""
-        interpret = partial(self._text_interpreter.interpret_text, command)
+        """Interpret a typed command in the background with the selected model; its
+        orders apply on a later tick."""
+        selected = self._model_selection.selected()
+        interpret = partial(selected.text.interpret_text, command, model_id=selected.model.model_id)
         self._start_interpretation(TypedCommand(command), interpret)
 
     def send_audio_command(self, wav_bytes: bytes) -> bool:
-        """Interpret a voice command in the background; its orders apply on a later tick.
+        """Interpret a voice command in the background with the selected model; its
+        orders apply on a later tick.
 
-        Returns False, doing nothing, when the provider has no speech input.
+        Returns False, doing nothing, when the selected model does not hear audio.
         """
-        if self._voice_interpreter is None:
+        selected = self._model_selection.selected()
+        if selected.voice is None:
             return False
-        interpret = partial(self._voice_interpreter.interpret_voice, wav_bytes)
+        interpret = partial(
+            selected.voice.interpret_voice, wav_bytes, model_id=selected.model.model_id
+        )
         self._start_interpretation(SpokenCommand(), interpret)
         return True
 

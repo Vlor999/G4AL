@@ -12,6 +12,7 @@ from flask_socketio import SocketIO
 
 from api.logger import PipelineLogger, use_pipeline_sinks
 from api.tts import TTSEngine
+from game.ports import VoiceLineSpeaker
 from server.constants import (
     DEFAULT_SERVED_HOST,
     ENGINE_EXTENSION,
@@ -27,7 +28,8 @@ from server.host_allowlist import (
     browser_url,
     normalise_served_host,
 )
-from server.providers import build_order_interpreters, read_provider_choice
+from server.model_selection import ModelSelection
+from server.providers import StartupModels, build_order_interpreters, read_startup_models
 from server.routes import register_socket_events, routes
 
 
@@ -56,8 +58,9 @@ def main() -> None:
     load_dotenv(PROJECT_ROOT / ".env")
     # Before any side effect: a G4AL_HOST no browser can reach exits here.
     host = served_host_from_environment()
-    # Likewise a provider without its API key: no order could ever be interpreted.
-    provider_choice = read_provider_choice(os.environ)
+    # Likewise an unknown model, or one whose provider key is missing: no order could
+    # ever be interpreted.
+    startup_models = read_startup_models(os.environ)
 
     os.environ["SDL_VIDEODRIVER"] = "dummy"
     pygame.init()
@@ -67,14 +70,8 @@ def main() -> None:
     use_pipeline_sinks()
     pipeline_logger = PipelineLogger()
     pipeline_logger.start_session()
-    interpreters = build_order_interpreters(provider_choice, pipeline_logger=pipeline_logger)
     speaker = TTSEngine(pipeline_logger=pipeline_logger)
-    engine = GameEngine(
-        text_interpreter=interpreters.text,
-        voice_interpreter=interpreters.voice,
-        speaker=speaker,
-    )
-    interpreters.register_roster(engine.npcs)
+    engine = build_engine(startup_models, speaker=speaker, pipeline_logger=pipeline_logger)
     app, socketio = create_app(engine, served_host=host)
 
     game_thread = threading.Thread(target=engine.run_loop, args=(socketio,), daemon=True)
@@ -96,6 +93,28 @@ def main() -> None:
         engine.stop()
         speaker.close()
         pipeline_logger.close()
+
+
+def build_engine(
+    startup_models: StartupModels, *, speaker: VoiceLineSpeaker, pipeline_logger: PipelineLogger
+) -> GameEngine:
+    """A game engine on the start model, with the interpreters of every provider whose
+    key is set, each one knowing the NPCs of the new world."""
+    interpreters = {
+        provider: build_order_interpreters(
+            provider, api_key=api_key, pipeline_logger=pipeline_logger
+        )
+        for provider, api_key in startup_models.api_keys.items()
+    }
+    model_selection = ModelSelection(
+        available_models=startup_models.available_models,
+        selected=startup_models.selected,
+        interpreters=interpreters,
+    )
+    engine = GameEngine(model_selection=model_selection, speaker=speaker)
+    for provider_interpreters in interpreters.values():
+        provider_interpreters.register_roster(engine.npcs)
+    return engine
 
 
 def served_host_from_environment() -> str:

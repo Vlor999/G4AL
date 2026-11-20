@@ -13,8 +13,10 @@ from game.sheep import Sheep
 from game.storage import ResourceStorage
 from game.terrain import Biome
 from game.wild_archer import WildArcher
+from server.model_selection import SelectedModel
 from server.serialization import serialize_state
 from tests.conftest import MapBuilder
+from tests.fakes import VOICE_MODEL, ScriptedOrderInterpreter
 
 FIELD = ["......"] * 4
 MAX_FRAMES = 1000
@@ -30,7 +32,10 @@ def serialize(game_map: GameMap, *, npcs: list[NPC], fauna: list[Fauna]) -> dict
         storage=ResourceStorage(),
         log_messages=[],
         chat_messages=[],
-        has_voice_input=True,
+        available_models=[],
+        selected_model=SelectedModel(
+            model=VOICE_MODEL, text=ScriptedOrderInterpreter(), voice=None
+        ),
     )
 
 
@@ -129,7 +134,10 @@ def test_resources_npcs_and_fauna_carry_their_footprint_height_and_sprite_box(
         storage=ResourceStorage(),
         log_messages=[],
         chat_messages=[],
-        has_voice_input=True,
+        available_models=[],
+        selected_model=SelectedModel(
+            model=VOICE_MODEL, text=ScriptedOrderInterpreter(), voice=None
+        ),
     )
 
     [hut], [pawn_state], [sheep_state] = state["resources"], state["npcs"], state["fauna"]

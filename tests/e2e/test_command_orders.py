@@ -6,12 +6,20 @@ from collections.abc import Callable
 
 import pytest
 
+from api.model_catalog import CatalogModel
 from game.actions import ActionType
 from game.orders import CommandRefused, NpcOrder, RefusalReason
 from game.ports import OrderInterpretationError
 from server.constants import CHAT_HISTORY_LENGTH
 from server.engine import GameEngine
-from tests.fakes import RecordingSpeaker, ScriptedOrderInterpreter, run_now
+from tests.fakes import (
+    TEXT_MODEL,
+    VOICE_MODEL,
+    RecordingSpeaker,
+    ScriptedOrderInterpreter,
+    build_model_selection,
+    run_now,
+)
 
 _AUDIO = b"RIFF"
 _TYPED = "Bob, chop wood"
@@ -38,8 +46,7 @@ def build_engine(
     interpreter: ScriptedOrderInterpreter, speaker: RecordingSpeaker | None = None
 ) -> GameEngine:
     return GameEngine(
-        text_interpreter=interpreter,
-        voice_interpreter=interpreter,
+        model_selection=build_model_selection(interpreter),
         speaker=speaker or RecordingSpeaker(),
         run_in_background=run_now,
     )
@@ -191,13 +198,20 @@ def test_an_accepted_order_shows_its_voice_line_in_a_bubble_and_speaks_it(
     assert speaker.lines == [("Aye!", npc.name)]
 
 
-def test_without_a_voice_interpreter_a_spoken_command_is_refused_and_typing_still_works() -> None:
+@pytest.mark.parametrize(
+    ("selected", "has_voice_adapter"),
+    [(TEXT_MODEL, True), (VOICE_MODEL, False)],
+    ids=["text-model", "provider-without-voice-adapter"],
+)
+def test_without_voice_input_a_spoken_command_is_refused_and_typing_still_works(
+    selected: CatalogModel, has_voice_adapter: bool
+) -> None:
     interpreter = ScriptedOrderInterpreter()
+    model_selection = build_model_selection(
+        interpreter, selected=selected, has_voice_adapter=has_voice_adapter
+    )
     engine = GameEngine(
-        text_interpreter=interpreter,
-        voice_interpreter=None,
-        speaker=RecordingSpeaker(),
-        run_in_background=run_now,
+        model_selection=model_selection, speaker=RecordingSpeaker(), run_in_background=run_now
     )
 
     assert engine.send_audio_command(_AUDIO) is False
@@ -233,3 +247,38 @@ def test_sending_a_command_logs_once_the_game_loop_lock_is_free(
     sender.join()
 
     assert engine.log_messages[0] == _STARTED
+
+
+def test_a_model_switch_applies_from_the_next_command_and_not_to_one_already_sent() -> None:
+    interpreter = ScriptedOrderInterpreter()
+    pending_work: list[Callable[[], None]] = []
+    engine = GameEngine(
+        model_selection=build_model_selection(interpreter, selected=VOICE_MODEL),
+        speaker=RecordingSpeaker(),
+        run_in_background=pending_work.append,
+    )
+
+    engine.send_text_command("sent before the switch")
+    assert engine.select_model(TEXT_MODEL.model_id) is True
+    engine.send_text_command("sent after the switch")
+    for work in pending_work:
+        work()
+
+    assert interpreter.model_ids == [VOICE_MODEL.model_id, TEXT_MODEL.model_id]
+    state = engine.get_state()
+    assert (state["selectedModelId"], state["hasVoiceInput"]) == (TEXT_MODEL.model_id, False)
+
+
+def test_a_model_outside_the_available_ones_is_not_selected() -> None:
+    interpreter = ScriptedOrderInterpreter()
+    engine = GameEngine(
+        model_selection=build_model_selection(interpreter, available_models=[VOICE_MODEL]),
+        speaker=RecordingSpeaker(),
+        run_in_background=run_now,
+    )
+
+    assert engine.select_model(TEXT_MODEL.model_id) is False
+    assert engine.select_model("gpt-unknown") is False
+    engine.send_text_command(_TYPED)
+
+    assert interpreter.model_ids == [VOICE_MODEL.model_id]

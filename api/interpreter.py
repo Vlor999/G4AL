@@ -1,10 +1,10 @@
 """Mistral adapter of the ``TextOrderInterpreter`` and ``VoiceOrderInterpreter`` ports.
 
-A typed command goes to a Mistral chat model (``TEXT_MODEL``), a recorded one to
-Voxtral (``AUDIO_MODEL``) in one multimodal call, with no transcription step. Both
-calls send the shared system prompt and are constrained the same way: the model must
-call the ``give_npc_orders`` function (``tool_choice="any"``) once
-(``parallel_tool_calls=False``), whose parameters are ``ORDERS_SCHEMA``. The arguments
+Each command goes to the catalog model the caller names: a typed one as text, a
+recorded one as audio to a voice model (Voxtral) in one multimodal call, with no
+transcription step. Both calls send the shared system prompt and are constrained the
+same way: the model must call the ``give_npc_orders`` function (``tool_choice="any"``)
+once (``parallel_tool_calls=False``), whose parameters are ``ORDERS_SCHEMA``. The arguments
 of every such call are validated by ``parse_orders``; an answer that breaks the
 contract becomes a ``CommandRefused`` outcome.
 """
@@ -23,7 +23,7 @@ from mistralai.client.models import (
     ToolTypedDict,
 )
 
-from api.constants import AUDIO_MODEL, ORDERS_TOOL_NAME, TEXT_MODEL
+from api.constants import ORDERS_TOOL_NAME
 from api.logger import PipelineLogger
 from api.order_contract import (
     ORDERS_SCHEMA,
@@ -122,16 +122,16 @@ class MistralOrderInterpreter:
         """Make ``npcs`` the roster the prompt lists and the answers are matched against."""
         self._roster = build_roster(npcs)
 
-    def interpret_text(self, command: str) -> list[NpcOrder] | CommandRefused:
+    def interpret_text(self, command: str, *, model_id: str) -> list[NpcOrder] | CommandRefused:
         """See ``TextOrderInterpreter``. The error's message names the failure type
         only; the failure's type and text go to the log."""
         messages = _build_text_messages(command, self._roster)
-        return self._interpret(model=TEXT_MODEL, messages=messages, logged_input=command)
+        return self._interpret(model=model_id, messages=messages, logged_input=command)
 
-    def interpret_voice(self, audio: bytes) -> list[NpcOrder] | CommandRefused:
+    def interpret_voice(self, audio: bytes, *, model_id: str) -> list[NpcOrder] | CommandRefused:
         """See ``VoiceOrderInterpreter`` and ``interpret_text``."""
         messages = _build_voice_messages(audio, self._roster)
-        return self._interpret(model=AUDIO_MODEL, messages=messages, logged_input="(audio input)")
+        return self._interpret(model=model_id, messages=messages, logged_input="(audio input)")
 
     def _interpret(
         self,

@@ -16,6 +16,7 @@ from server.request_bodies import (
     parse_audio_base64,
     parse_command_text,
     parse_discard_amounts,
+    parse_model_id,
     parse_move_order,
     parse_selected_npc_id,
 )
@@ -92,7 +93,7 @@ def post_audio() -> ResponseReturnValue:
     if len(wav_bytes) < MIN_AUDIO_BYTES:
         return _refuse("no audio data received")
     if not _engine().send_audio_command(wav_bytes):
-        return _refuse("the LLM provider takes no voice commands")
+        return _refuse("the selected model takes no voice commands")
     return jsonify({"ok": True})
 
 
@@ -100,6 +101,15 @@ def post_audio() -> ResponseReturnValue:
 def post_command() -> ResponseReturnValue:
     """Interpret a typed command. Body: {"text": "<command>"}."""
     _engine().send_text_command(parse_command_text(_json_body()))
+    return jsonify({"ok": True})
+
+
+@routes.route("/api/model", methods=["POST"])
+def post_model() -> ResponseReturnValue:
+    """Pick the model of the next commands. Body: {"modelId": "<catalog id>"}."""
+    model_id = parse_model_id(_json_body())
+    if not _engine().select_model(model_id):
+        return _refuse(f"unknown or unavailable modelId: {model_id!r}")
     return jsonify({"ok": True})
 
 

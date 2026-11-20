@@ -1,6 +1,8 @@
 from enum import StrEnum
 from pathlib import Path
 
+from api.model_catalog import LlmProvider
+
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 ENGINE_EXTENSION = "g4al_game_engine"
@@ -30,13 +32,8 @@ MAX_COMMAND_CHARACTERS = 500
 CHAT_HISTORY_LENGTH = 30
 
 
-class LlmProvider(StrEnum):
-    """The LLM providers the entry point can build order interpreters for."""
-
-    MISTRAL = "mistral"
-
-
 LLM_PROVIDER_VARIABLE = "G4AL_LLM_PROVIDER"
+LLM_MODEL_VARIABLE = "G4AL_LLM_MODEL"
 DEFAULT_LLM_PROVIDER = LlmProvider.MISTRAL
 # The environment variable that holds each provider's API key.
 API_KEY_VARIABLES: dict[LlmProvider, str] = {LlmProvider.MISTRAL: "MISTRAL_API_KEY"}

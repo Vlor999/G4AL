@@ -8,11 +8,12 @@ from typing import Any
 import pytest
 from loguru import logger
 
-from api.constants import AUDIO_MODEL, TEXT_MODEL
 from api.logger import PipelineLogger, configure_sinks
 from tests.conftest import LlmEndRecords
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
+
+_VOXTRAL = "voxtral-small-latest"
 
 
 def test_every_pipeline_sink_keeps_only_records_with_an_event(
@@ -49,42 +50,47 @@ def test_the_llm_line_lists_each_order_of_the_answer(
     orders: list[dict[str, Any]],
     described: str,
 ) -> None:
-    PipelineLogger().llm_end(order={"orders": orders}, prompt_tokens=10, completion_tokens=5)
+    PipelineLogger().llm_end(
+        order={"orders": orders}, prompt_tokens=10, completion_tokens=5, model=_VOXTRAL
+    )
 
     [(message, _)] = llm_end_records
     assert message.startswith(f"LLM response: {described} | tokens=10+5 | ")
 
 
-def test_a_failed_call_is_labelled_and_priced_as_the_audio_model(
-    llm_end_records: LlmEndRecords,
+@pytest.mark.parametrize(
+    ("model", "cost"),
+    [
+        ("voxtral-small-latest", 0.1 + 0.4),
+        ("mistral-small-latest", 0.15 + 0.6),
+        ("mistral-large-latest", 0.7 + 2.1),
+    ],
+)
+@pytest.mark.parametrize("error", [None, "timeout"], ids=["answered", "failed"])
+def test_a_call_is_labelled_and_priced_at_its_model_rates(
+    llm_end_records: LlmEndRecords, model: str, cost: float, error: str | None
 ) -> None:
     PipelineLogger().llm_end(
-        order=None, prompt_tokens=1_000_000, completion_tokens=1_000_000, error="timeout"
-    )
-
-    [(_, extra)] = llm_end_records
-    assert (extra["model"], extra["cost_usd"]) == (AUDIO_MODEL, pytest.approx(0.1 + 0.4))
-
-
-def test_a_text_model_call_is_priced_at_the_text_model_prices(
-    llm_end_records: LlmEndRecords,
-) -> None:
-    PipelineLogger().llm_end(
-        order={"orders": []},
+        order=None,
         prompt_tokens=1_000_000,
         completion_tokens=1_000_000,
-        model=TEXT_MODEL,
+        model=model,
+        error=error,
     )
 
     [(_, extra)] = llm_end_records
-    assert (extra["model"], extra["cost_usd"]) == (TEXT_MODEL, pytest.approx(0.15 + 0.6))
+    assert (extra["model"], extra["cost_usd"]) == (model, pytest.approx(cost))
 
 
 def test_the_audio_seconds_are_priced_per_minute_on_top_of_the_tokens(
     llm_end_records: LlmEndRecords,
 ) -> None:
     PipelineLogger().llm_end(
-        order={"orders": []}, prompt_tokens=1_000_000, completion_tokens=0, audio_seconds=90
+        order={"orders": []},
+        prompt_tokens=1_000_000,
+        completion_tokens=0,
+        audio_seconds=90,
+        model=_VOXTRAL,
     )
 
     [(message, extra)] = llm_end_records

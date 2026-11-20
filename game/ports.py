@@ -20,8 +20,10 @@ class OrderInterpretationError(Exception):
 class TextOrderInterpreter(Protocol):
     """Turns a typed command into orders for the NPCs. Every LLM provider implements it."""
 
-    def interpret_text(self, command: str) -> list[NpcOrder] | CommandRefused:
-        """The orders given in ``command``; empty when none were.
+    def interpret_text(self, command: str, *, model_id: str) -> list[NpcOrder] | CommandRefused:
+        """The orders ``model_id`` finds in ``command``; empty when none were.
+
+        ``model_id`` is the id of one of this provider's models in the model catalog.
 
         Returns ``CommandRefused`` when the service answered but its answer breaks the
         order contract. Raises ``OrderInterpretationError`` when the service fails, and
@@ -34,13 +36,16 @@ class TextOrderInterpreter(Protocol):
 class VoiceOrderInterpreter(Protocol):
     """Turns a spoken command into orders for the NPCs.
 
-    ``interpret_voice`` returns the orders heard in ``audio`` (a WAV recording), with
-    the outcomes, errors and blocking of ``TextOrderInterpreter.interpret_text``. Only
-    a provider with speech input implements it; without one, the game takes typed
-    commands only.
+    ``interpret_voice`` returns the orders ``model_id`` hears in ``audio`` (a WAV
+    recording), with the arguments, outcomes, errors and blocking of
+    ``TextOrderInterpreter.interpret_text``. Only a provider with speech input
+    implements it, and only its voice models are passed; without one, the game takes
+    typed commands only.
     """
 
-    def interpret_voice(self, audio: bytes) -> list[NpcOrder] | CommandRefused: ...
+    def interpret_voice(
+        self, audio: bytes, *, model_id: str
+    ) -> list[NpcOrder] | CommandRefused: ...
 
 
 class VoiceLineSpeaker(Protocol):

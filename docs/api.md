@@ -34,9 +34,20 @@ The client shows `total / capacity` and `houseCount` in the inventory panel.
 | `spoken_command` | none | a push-to-talk command (`POST /api/audio`): the interpreter hears the audio, so there is no text |
 | `voice_line` | `npcName`: str, `text`: str | an NPC's answer to the command above it, shown whether or not ElevenLabs voices it |
 
-`hasVoiceInput` (bool) says whether the LLM provider takes spoken commands. When it is
-`false`, the client hides the microphone prompt, push-to-talk does nothing, and
-`POST /api/audio` answers 400.
+### Models
+
+The player picks the model that interprets the next command
+(`api/model_catalog.py`, `server/model_selection.py`):
+
+| Key | Type | Meaning |
+|---|---|---|
+| `models` | list of `{"id": str, "name": str, "provider": str, "hasVoiceInput": bool}` | the catalog models whose provider API key is set, in catalog order |
+| `selectedModelId` | str | the `id` of the model the next command goes to |
+| `hasVoiceInput` | bool | whether the selected model takes spoken commands |
+
+When `hasVoiceInput` is `false`, the client hides the microphone prompt, push-to-talk
+does nothing, and `POST /api/audio` answers 400. A command keeps the model selected
+when it was sent, even if the player switches before its answer arrives.
 
 ### Map biomes
 
@@ -86,8 +97,9 @@ body once (`server/request_bodies.py`) and answers:
 | `POST /api/move` | `{"npcId": int, "col": int, "row": int}` | enqueues a `move_to` |
 | `POST /api/discard` | `{"wood"?: int, "stone"?: int, "gold"?: int, "wheat"?: int}`, amounts ≥ 0, no other key | discards resources from storage; returns `discarded` |
 | `POST /api/dismiss_storage` | none | releases NPCs waiting to deposit into a full storage; returns `released` |
-| `POST /api/audio` | multipart field `audio` (WAV), or `{"audio_b64": str}` in standard base64 | sends a push-to-talk recording to Voxtral; under 100 bytes of audio, or a provider without speech input (`hasVoiceInput` false), answers 400; the resulting orders arrive through the next `state` events |
-| `POST /api/command` | `{"text": str}` | sends a typed command to the provider's text interpreter; `text` is stripped and must be neither empty nor longer than 500 characters (`MAX_COMMAND_CHARACTERS`, `server/constants.py`), or the route answers 400; the command shows in `chat` at once, the resulting orders and voice lines arrive through the next `state` events |
+| `POST /api/audio` | multipart field `audio` (WAV), or `{"audio_b64": str}` in standard base64 | sends a push-to-talk recording to the selected model; under 100 bytes of audio, or a selected model without voice input (`hasVoiceInput` false), answers 400; the resulting orders arrive through the next `state` events |
+| `POST /api/command` | `{"text": str}` | sends a typed command to the selected model; `text` is stripped and must be neither empty nor longer than 500 characters (`MAX_COMMAND_CHARACTERS`, `server/constants.py`), or the route answers 400; the command shows in `chat` at once, the resulting orders and voice lines arrive through the next `state` events |
+| `POST /api/model` | `{"modelId": str}` | selects the model of the next commands; an `id` outside `models` answers 400 |
 
 ## Origins
 

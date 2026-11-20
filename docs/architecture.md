@@ -5,7 +5,8 @@
 ```
 Browser (static/: Canvas renderer, input, push-to-talk, chat)
    │  HTTP: /api/state, /api/action, /api/select, /api/move,
-   │        /api/discard, /api/dismiss_storage, /api/audio, /api/command
+   │        /api/discard, /api/dismiss_storage, /api/audio, /api/command,
+   │        /api/model
    │  Socket.IO: state push every 3rd tick (~20 Hz)
    ▼
 server/: app.py (create_app, main), routes.py (Flask + Socket.IO),
@@ -19,14 +20,17 @@ server/: app.py (create_app, main), routes.py (Flask + Socket.IO),
 ## Command flow
 
 1. `static/ptt.js` records while the key is held, encodes a WAV and posts it to
-   `/api/audio`; `static/chat.js` posts a typed command to `/api/command`.
-2. `GameEngine.send_audio_command` or `send_text_command` adds the command to the chat
-   and hands it to a worker thread, which calls the injected port (`game/ports.py`):
-   `VoiceOrderInterpreter` for audio, `TextOrderInterpreter` for text. Their Mistral
-   adapter, `api.interpreter.MistralOrderInterpreter`, makes one call per command with
-   the system prompt and the NPC roster of `api/order_contract.py`: a multimodal
-   Voxtral call (`voxtral-small-latest`) for audio, a chat call
-   (`mistral-small-latest`) for text. The model must answer by calling the
+   `/api/audio`; `static/chat.js` posts a typed command to `/api/command`, and the
+   model picked in its list to `/api/model`.
+2. `GameEngine.send_audio_command` or `send_text_command` reads the selected model
+   (`server/model_selection.py`, entry point state behind its own lock), adds the
+   command to the chat and hands it to a worker thread, which calls the injected port
+   (`game/ports.py`) with that model's id: `VoiceOrderInterpreter` for audio (only a
+   model that hears audio has one), `TextOrderInterpreter` for text. A model switch
+   therefore applies from the next command. The Mistral adapter,
+   `api.interpreter.MistralOrderInterpreter`, makes one call per command with the
+   system prompt and the NPC roster of `api/order_contract.py`: multimodal for audio,
+   text for a typed command. The model must answer by calling the
    `give_npc_orders` function once (`tool_choice="any"`,
    `parallel_tool_calls=False`), whose JSON schema takes its actions from
    `game.orders.VOICE_ORDER_ACTIONS`: every `ActionType` but `move_to`, whose target
@@ -55,9 +59,11 @@ server/: app.py (create_app, main), routes.py (Flask + Socket.IO),
 
 ## Adding an LLM provider
 
-`G4AL_LLM_PROVIDER` (default `mistral`) picks the provider at startup
-(`server/providers.py`). The server exits with a message naming the variable when the
-provider is unknown or its API key is not set. To add one:
+At startup (`server/providers.py`) the game starts on the model `G4AL_LLM_MODEL`
+names, or else on the default model of `G4AL_LLM_PROVIDER` (default `mistral`). The
+server exits with a message naming the variable when the provider or the model is
+unknown, or when the start model's provider key is not set. The picker lists every
+catalog model whose provider key is set. To add a provider:
 
 1. Write one adapter module in `api/` that implements `TextOrderInterpreter`
    (`interpret_text`), and `VoiceOrderInterpreter` (`interpret_voice`) only if the
@@ -66,10 +72,14 @@ provider is unknown or its API key is not set. To add one:
    arguments to `parse_orders`, and translate every vendor error into
    `OrderInterpretationError`. Give it a `register_roster(npcs)` built on
    `build_roster`.
-2. Add a member to `LlmProvider` and its key variable to `API_KEY_VARIABLES` in
-   `server/constants.py`, and the variable to `.env.example`.
-3. Add its `case` to `build_order_interpreters` in `server/providers.py`, with
-   `voice=None` when it has no audio adapter: the client then hides push-to-talk.
+2. Add a member to `LlmProvider` (`api/model_catalog.py`), its key variable to
+   `API_KEY_VARIABLES` in `server/constants.py`, and the variable to `.env.example`.
+3. List its models in `MODEL_CATALOG` (`api/model_catalog.py`): id, display name,
+   whether it hears audio, prices from the vendor's docs; and its default model in
+   `DEFAULT_MODELS`. The logged cost of each call comes from these prices.
+4. Add its `case` to `build_order_interpreters` in `server/providers.py`, with
+   `voice=None` when it has no audio adapter: the client then hides push-to-talk for
+   its models.
 
 Nothing changes in `game/` or `static/`.
 
@@ -90,7 +100,8 @@ The entry point is the `server/` package:
 | `server/app.py` | `create_app(engine, served_host=...)` builds the Flask and Socket.IO apps around an engine; `main()` loads `.env`, starts the pygame mixer, installs the log sinks (`api.logger.use_pipeline_sinks`), builds the `PipelineLogger` the adapters log their calls through, builds the adapters, injects them into `GameEngine` through the ports of `game/ports.py`, starts the game loop thread and serves on port 8000 of `G4AL_HOST` (default `127.0.0.1`). |
 | `server/host_allowlist.py` | The WSGI middleware that answers 403 to a request whose `Host` is not an address the server is served at (DNS rebinding), around the Flask and Socket.IO apps. |
 | `server/engine.py` | `GameEngine`: the game state behind one lock, the 60 FPS loop and the state push. |
-| `server/providers.py` | Reads `G4AL_LLM_PROVIDER` and the provider's API key, and builds its order interpreters. |
+| `server/providers.py` | Reads the start model (`G4AL_LLM_PROVIDER`, `G4AL_LLM_MODEL`) and the API keys, and builds each provider's order interpreters. |
+| `server/model_selection.py` | `ModelSelection`: the models the player may pick and the selected one, with its interpreters. |
 | `server/routes.py` | The HTTP routes (a blueprint that reads the engine from the app) and the Socket.IO `connect` event. |
 | `server/serialization.py` | The JSON the client reads, built from the game state. |
 

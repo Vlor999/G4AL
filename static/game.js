@@ -3,7 +3,7 @@
    Shared state, Socket.IO, Camera, Canvas setup, Boot
    ═══════════════════════════════════════════════════════════════════════════
    Module load order (set in index.html):
-     details.js → sprites.js → renderer.js → ptt.js → ui.js → input.js → game.js
+     details.js → sprites.js → renderer.js → ptt.js → ui.js → chat.js → input.js → game.js
    ═══════════════════════════════════════════════════════════════════════════ */
 
 (function (G) {

@@ -105,6 +105,11 @@
             logEl.scrollTop = logEl.scrollHeight;
             logEl.dataset.last = logHTML;
         }
+
+        G.updateChat();
+
+        // Without a voice adapter for the provider the chat is the only input.
+        if (!G.gameState.hasVoiceInput) micModal.classList.add("hidden");
     };
 
     function escapeHtml(text) {
@@ -112,6 +117,7 @@
         div.textContent = text;
         return div.innerHTML;
     }
+    G.escapeHtml = escapeHtml;
 
     // ── Speech Bubbles ──────────────────────────────────────────────────
 

@@ -7,11 +7,21 @@
 
     // ── Keyboard (camera scrolling + push-to-talk) ──────────────────────
 
+    // Keys typed in the chat input are text, not camera moves or push-to-talk.
+    function isTypingInChat(e) {
+        return e.target === document.getElementById("chat-input");
+    }
+
+    function hasVoiceInput() {
+        return Boolean(G.gameState && G.gameState.hasVoiceInput);
+    }
+
     document.addEventListener("keydown", e => {
+        if (isTypingInChat(e)) return;
         G.keysDown.add(e.key);
 
         // G key = push-to-talk
-        if ((e.key === "g" || e.key === "G") && !e.repeat) {
+        if ((e.key === "g" || e.key === "G") && !e.repeat && hasVoiceInput()) {
             G.pttStart();
         }
     });

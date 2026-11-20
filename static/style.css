@@ -519,6 +519,66 @@ body {
     line-height: 1.45;
 }
 
+/* ── Chat ────────────────────────────────────────────────────────────────── */
+
+#chat-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+#chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
+    font-size: 11px;
+    padding-top: 4px;
+}
+
+.chat-message {
+    padding: 2px 0;
+    line-height: 1.45;
+}
+
+.chat-command {
+    color: var(--accent);
+}
+
+.chat-voice-line {
+    color: var(--primary);
+}
+
+.chat-npc-name {
+    font-weight: 700;
+}
+
+#chat-form {
+    display: flex;
+    gap: 4px;
+    padding-top: 6px;
+}
+
+#chat-input {
+    flex: 1;
+    min-width: 0;
+    background: transparent;
+    color: var(--primary);
+    border: 1px solid rgba(245, 240, 230, 0.2);
+    font: inherit;
+    font-size: 11px;
+    padding: 4px 6px;
+}
+
+#chat-send-btn {
+    background: transparent;
+    color: var(--accent);
+    border: 1px solid rgba(245, 240, 230, 0.2);
+    font: inherit;
+    font-size: 11px;
+    cursor: pointer;
+}
+
 /* ── Audio Controls ──────────────────────────────────────────────────────── */
 
 #audio-controls {

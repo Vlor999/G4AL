@@ -29,6 +29,8 @@ def serialize(game_map: GameMap, *, npcs: list[NPC], fauna: list[Fauna]) -> dict
         arrows=[],
         storage=ResourceStorage(),
         log_messages=[],
+        chat_messages=[],
+        has_voice_input=True,
     )
 
 
@@ -126,6 +128,8 @@ def test_resources_npcs_and_fauna_carry_their_footprint_height_and_sprite_box(
         arrows=[],
         storage=ResourceStorage(),
         log_messages=[],
+        chat_messages=[],
+        has_voice_input=True,
     )
 
     [hut], [pawn_state], [sheep_state] = state["resources"], state["npcs"], state["fauna"]

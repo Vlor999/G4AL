@@ -14,6 +14,7 @@ from server.request_bodies import (
     InvalidRequestError,
     parse_action_order,
     parse_audio_base64,
+    parse_command_text,
     parse_discard_amounts,
     parse_move_order,
     parse_selected_npc_id,
@@ -90,7 +91,15 @@ def post_audio() -> ResponseReturnValue:
     wav_bytes = upload.read() if upload is not None else parse_audio_base64(_json_body())
     if len(wav_bytes) < MIN_AUDIO_BYTES:
         return _refuse("no audio data received")
-    _engine().send_audio_command(wav_bytes)
+    if not _engine().send_audio_command(wav_bytes):
+        return _refuse("the LLM provider takes no voice commands")
+    return jsonify({"ok": True})
+
+
+@routes.route("/api/command", methods=["POST"])
+def post_command() -> ResponseReturnValue:
+    """Interpret a typed command. Body: {"text": "<command>"}."""
+    _engine().send_text_command(parse_command_text(_json_body()))
     return jsonify({"ok": True})
 
 

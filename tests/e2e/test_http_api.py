@@ -10,8 +10,14 @@ from flask.testing import FlaskClient
 
 from game.settings import MAP_COLS, MAP_ROWS
 from server.app import create_app
-from server.constants import MAX_REQUEST_BYTES, MIN_AUDIO_BYTES
+from server.constants import (
+    MAX_COMMAND_CHARACTERS,
+    MAX_REQUEST_BYTES,
+    MIN_AUDIO_BYTES,
+    SERVER_PORT,
+)
 from server.engine import GameEngine
+from tests.fakes import RecordingSpeaker, ScriptedOrderInterpreter
 
 
 def read_state(client: FlaskClient) -> dict[str, Any]:
@@ -28,7 +34,17 @@ def first_controllable_npc(client: FlaskClient) -> dict[str, Any]:
 def test_state_exposes_every_top_level_section(client: FlaskClient) -> None:
     state = read_state(client)
 
-    assert set(state) >= {"map", "resources", "npcs", "fauna", "arrows", "storage", "log"}
+    assert set(state) >= {
+        "map",
+        "resources",
+        "npcs",
+        "fauna",
+        "arrows",
+        "storage",
+        "log",
+        "chat",
+        "hasVoiceInput",
+    }
     assert len(state["map"]["tiles"]) == state["map"]["rows"]
     assert state["npcs"]
 
@@ -98,6 +114,10 @@ UNKNOWN_NPC_ID = 999_999
         ("/api/audio", {"audio_b64": "c2hvcnQ="}),
         ("/api/audio", {"audio_b64": "not base64!"}),
         ("/api/audio", {"audio_b64": "é"}),
+        ("/api/command", {}),
+        ("/api/command", {"text": 3}),
+        ("/api/command", {"text": " \n "}),
+        ("/api/command", {"text": "a" * (MAX_COMMAND_CHARACTERS + 1)}),
     ],
 )
 def test_invalid_request_is_refused(client: FlaskClient, route: str, body: object) -> None:
@@ -132,13 +152,44 @@ def test_multipart_audio_without_its_file_names_both_accepted_forms(client: Flas
     }
 
 
-def test_uploaded_audio_is_sent_to_the_engine(client: FlaskClient, engine: GameEngine) -> None:
+def test_uploaded_audio_is_sent_to_the_interpreter(
+    client: FlaskClient, interpreter: ScriptedOrderInterpreter
+) -> None:
     response = client.post(
         "/api/audio", data={"audio": (io.BytesIO(bytes(MIN_AUDIO_BYTES)), "a.wav")}
     )
 
     assert response.get_json() == {"ok": True}
-    assert engine.log_messages[-1] == "Listening..."
+    assert interpreter.commands == [bytes(MIN_AUDIO_BYTES)]
+
+
+def test_a_typed_command_is_sent_stripped_to_the_interpreter(
+    client: FlaskClient, interpreter: ScriptedOrderInterpreter
+) -> None:
+    command = "a" * MAX_COMMAND_CHARACTERS
+
+    response = client.post("/api/command", json={"text": f"  {command}\n"})
+
+    assert response.get_json() == {"ok": True}
+    assert interpreter.commands == [command]
+
+
+def test_audio_is_refused_when_the_provider_takes_no_voice_commands() -> None:
+    engine = GameEngine(
+        text_interpreter=ScriptedOrderInterpreter(),
+        voice_interpreter=None,
+        speaker=RecordingSpeaker(),
+    )
+    app, _ = create_app(engine)
+    app.config["SERVER_NAME"] = f"localhost:{SERVER_PORT}"
+
+    response = app.test_client().post(
+        "/api/audio", data={"audio": (io.BytesIO(bytes(MIN_AUDIO_BYTES)), "a.wav")}
+    )
+
+    assert response.status_code == 400
+    assert response.get_json() == {"error": "the LLM provider takes no voice commands"}
+    assert app.test_client().get("/api/state").get_json()["hasVoiceInput"] is False
 
 
 @pytest.mark.parametrize(

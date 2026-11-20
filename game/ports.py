@@ -17,11 +17,11 @@ class OrderInterpretationError(Exception):
     """The interpreter service could not be reached or failed (key, network, API)."""
 
 
-class OrderInterpreter(Protocol):
-    """Turns a spoken command into orders for the NPCs."""
+class TextOrderInterpreter(Protocol):
+    """Turns a typed command into orders for the NPCs. Every LLM provider implements it."""
 
-    def interpret(self, audio: bytes) -> list[NpcOrder] | CommandRefused:
-        """The orders heard in ``audio`` (a WAV recording); empty when none were.
+    def interpret_text(self, command: str) -> list[NpcOrder] | CommandRefused:
+        """The orders given in ``command``; empty when none were.
 
         Returns ``CommandRefused`` when the service answered but its answer breaks the
         order contract. Raises ``OrderInterpretationError`` when the service fails, and
@@ -29,6 +29,18 @@ class OrderInterpreter(Protocol):
         Blocks for the duration of the call: never run it on the game loop thread.
         """
         ...
+
+
+class VoiceOrderInterpreter(Protocol):
+    """Turns a spoken command into orders for the NPCs.
+
+    ``interpret_voice`` returns the orders heard in ``audio`` (a WAV recording), with
+    the outcomes, errors and blocking of ``TextOrderInterpreter.interpret_text``. Only
+    a provider with speech input implements it; without one, the game takes typed
+    commands only.
+    """
+
+    def interpret_voice(self, audio: bytes) -> list[NpcOrder] | CommandRefused: ...
 
 
 class VoiceLineSpeaker(Protocol):

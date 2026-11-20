@@ -2,11 +2,12 @@
 
 from __future__ import annotations
 
-from collections.abc import Sequence
+from collections.abc import Iterable, Sequence
 from typing import Any
 
 from game.actions import State as NpcState
 from game.arrows import Arrow
+from game.chat import ChatMessage, NpcVoiceLine, SpokenCommand, TypedCommand
 from game.dimensions import OBJECT_DIMENSIONS, ObjectDimensions, ObjectKind
 from game.entities import Resource, Rock, Structure, WheatField
 from game.fauna import Fauna
@@ -14,6 +15,7 @@ from game.map import GameMap
 from game.npc import NPC
 from game.settings import TILE_SIZE
 from game.storage import ResourceStorage
+from server.constants import ChatMessageKind
 
 
 def serialize_state(
@@ -25,6 +27,8 @@ def serialize_state(
     arrows: Sequence[Arrow],
     storage: ResourceStorage,
     log_messages: Sequence[str],
+    chat_messages: Iterable[ChatMessage],
+    has_voice_input: bool,
 ) -> dict[str, Any]:
     """Build the full state payload; the caller holds the engine lock."""
     return {
@@ -38,7 +42,19 @@ def serialize_state(
         "storage": storage.snapshot(),
         "storageFullAlert": any(npc.state == NpcState.WAITING_DEPOSIT for npc in npcs),
         "log": list(log_messages[-20:]),
+        "chat": [_serialize_chat_message(message) for message in chat_messages],
+        "hasVoiceInput": has_voice_input,
     }
+
+
+def _serialize_chat_message(message: ChatMessage) -> dict[str, Any]:
+    match message:
+        case TypedCommand(text=text):
+            return {"kind": ChatMessageKind.TYPED_COMMAND, "text": text}
+        case SpokenCommand():
+            return {"kind": ChatMessageKind.SPOKEN_COMMAND}
+        case NpcVoiceLine(npc_name=npc_name, voice_line=voice_line):
+            return {"kind": ChatMessageKind.VOICE_LINE, "npcName": npc_name, "text": voice_line}
 
 
 def _serialize_map(game_map: GameMap) -> dict[str, Any]:

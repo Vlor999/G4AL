@@ -6,9 +6,10 @@ from typing import Any, cast
 import pytest
 from mistralai.client import Mistral
 
-from api.constants import ORDERS_TOOL_NAME
-from api.interpreter import ORDERS_SCHEMA, VoxtralOrderInterpreter
+from api.constants import AUDIO_MODEL, ORDERS_TOOL_NAME, TEXT_MODEL
+from api.interpreter import MistralOrderInterpreter
 from api.logger import PipelineLogger
+from api.order_contract import ORDERS_SCHEMA
 from game.actions import ActionType
 from game.orders import CommandRefused, NpcOrder, RefusalReason
 from game.ports import OrderInterpretationError
@@ -39,9 +40,9 @@ class FakeChat:
 
 def interpreter_answering(
     answer: SimpleNamespace | Exception, build_map: MapBuilder | None = None
-) -> tuple[VoxtralOrderInterpreter, FakeChat]:
+) -> tuple[MistralOrderInterpreter, FakeChat]:
     chat = FakeChat(answer)
-    interpreter = VoxtralOrderInterpreter(
+    interpreter = MistralOrderInterpreter(
         cast(Mistral, SimpleNamespace(chat=chat)), pipeline_logger=PipelineLogger()
     )
     if build_map is not None:
@@ -59,7 +60,7 @@ VOICE_ORDER_ACTION_VALUES = [
     "shoot",
     "defend",
 ]
-"""The actions Voxtral may answer with, written out so a new or renamed ``ActionType``
+"""The actions the model may answer with, written out so a new or renamed ``ActionType``
 value fails the drift test until this list, and the prompt, are reviewed."""
 
 
@@ -72,7 +73,7 @@ def test_schema_actions_are_the_listed_voice_order_actions() -> None:
 def test_prompt_roster_lists_no_action_a_voice_order_cannot_give(build_map: MapBuilder) -> None:
     interpreter, chat = interpreter_answering(answer_with([tool_call({"orders": []})]), build_map)
 
-    interpreter.interpret(b"RIFF")
+    interpreter.interpret_voice(b"RIFF")
 
     [call] = chat.calls
     system_prompt = call["messages"][0]["content"]
@@ -80,16 +81,45 @@ def test_prompt_roster_lists_no_action_a_voice_order_cannot_give(build_map: MapB
     assert ActionType.MOVE_TO.value not in system_prompt
 
 
-def test_interpret_forces_the_orders_tool_call() -> None:
+def interpret_typed(interpreter: MistralOrderInterpreter) -> object:
+    return interpreter.interpret_text("Bob, chop wood")
+
+
+def interpret_spoken(interpreter: MistralOrderInterpreter) -> object:
+    return interpreter.interpret_voice(b"RIFF")
+
+
+@pytest.mark.parametrize(
+    ("interpret", "model"),
+    [(interpret_typed, TEXT_MODEL), (interpret_spoken, AUDIO_MODEL)],
+    ids=["typed", "spoken"],
+)
+def test_each_input_forces_the_orders_tool_call_on_its_model(
+    interpret: Callable[[MistralOrderInterpreter], object], model: str
+) -> None:
     interpreter, chat = interpreter_answering(answer_with([tool_call({"orders": []})]))
 
-    interpreter.interpret(b"RIFF")
+    interpret(interpreter)
 
     [call] = chat.calls
+    assert call["model"] == model
     assert call["tool_choice"] == "any"
     assert call["parallel_tool_calls"] is False
     assert [tool["function"]["name"] for tool in call["tools"]] == [ORDERS_TOOL_NAME]
     assert call["tools"][0]["function"]["parameters"] is ORDERS_SCHEMA
+
+
+def test_a_typed_command_is_sent_as_text_after_the_shared_system_prompt(
+    build_map: MapBuilder,
+) -> None:
+    interpreter, chat = interpreter_answering(answer_with([tool_call({"orders": []})]), build_map)
+
+    interpreter.interpret_text("Bob, chop wood")
+    interpreter.interpret_voice(b"RIFF")
+
+    typed_call, spoken_call = chat.calls
+    assert typed_call["messages"][0] == spoken_call["messages"][0]
+    assert typed_call["messages"][1]["content"].endswith("\nBob, chop wood")
 
 
 @pytest.mark.parametrize("encode", [lambda args: args, json.dumps], ids=["dict", "json-string"])
@@ -107,7 +137,7 @@ def test_interpret_maps_each_called_order_to_an_npc_order(
     interpreter, _ = interpreter_answering(answer_with([tool_call(encode(arguments))]))
     interpreter.register_roster(npcs)
 
-    orders = interpreter.interpret(b"RIFF")
+    orders = interpreter.interpret_voice(b"RIFF")
 
     assert orders == [
         NpcOrder(pawn.id, pawn.name, ActionType.MINE_ROCK, "Fine."),
@@ -127,7 +157,7 @@ def test_interpret_merges_the_orders_of_every_orders_call(build_map: MapBuilder)
     interpreter, _ = interpreter_answering(answer_with([first_call, second_call]))
     interpreter.register_roster(npcs)
 
-    orders = interpreter.interpret(b"RIFF")
+    orders = interpreter.interpret_voice(b"RIFF")
 
     assert orders == [
         NpcOrder(pawn.id, pawn.name, ActionType.CHOP_WOOD, "On it."),
@@ -202,36 +232,30 @@ def test_interpret_refuses_an_answer_that_breaks_the_order_contract(
 ) -> None:
     interpreter, _ = interpreter_answering(answer, build_map)
 
-    assert interpreter.interpret(b"RIFF") == CommandRefused(reason)
+    assert interpreter.interpret_voice(b"RIFF") == CommandRefused(reason)
 
 
 @pytest.mark.parametrize(
-    ("build_interpreter", "expected_message"),
+    ("answer", "expected_message"),
     [
         (
-            lambda: interpreter_answering(ConnectionError("network down"))[0],
-            "Voxtral could not interpret the command (ConnectionError)",
+            ConnectionError("network down"),
+            "Mistral could not interpret the command (ConnectionError)",
         ),
         (
-            lambda: interpreter_answering(SimpleNamespace(choices=[], usage=None))[0],
-            "Voxtral could not interpret the command (IndexError)",
-        ),
-        (
-            lambda: VoxtralOrderInterpreter(pipeline_logger=PipelineLogger()),
-            "MISTRAL_API_KEY is not set",
+            SimpleNamespace(choices=[], usage=None),
+            "Mistral could not interpret the command (IndexError)",
         ),
     ],
-    ids=["client-failure", "answer-without-choice", "missing-api-key"],
+    ids=["client-failure", "answer-without-choice"],
 )
 def test_interpret_raises_only_the_port_error_without_the_vendor_text(
-    build_interpreter: Callable[[], VoxtralOrderInterpreter],
-    expected_message: str,
-    monkeypatch: pytest.MonkeyPatch,
+    answer: SimpleNamespace | Exception, expected_message: str
 ) -> None:
-    monkeypatch.delenv("MISTRAL_API_KEY", raising=False)
+    interpreter, _ = interpreter_answering(answer)
 
     with pytest.raises(OrderInterpretationError) as raised:
-        build_interpreter().interpret(b"RIFF")
+        interpreter.interpret_text("Bob, chop wood")
 
     assert str(raised.value) == expected_message
 
@@ -251,7 +275,7 @@ def test_the_logged_cost_prices_the_audio_seconds_of_the_answer(
     answer.usage = usage
     interpreter, _ = interpreter_answering(answer)
 
-    interpreter.interpret(b"RIFF")
+    interpreter.interpret_voice(b"RIFF")
 
     [(_, extra)] = llm_end_records
     assert extra["audio_cost_usd"] == pytest.approx(audio_cost)

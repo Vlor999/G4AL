@@ -1,21 +1,19 @@
-"""Mistral Voxtral adapter of the ``OrderInterpreter`` port.
+"""Mistral adapter of the ``TextOrderInterpreter`` and ``VoiceOrderInterpreter`` ports.
 
-``VoxtralOrderInterpreter`` sends the recorded audio and the system prompt to Voxtral in
-one multimodal call (no intermediate transcription step). The answer is constrained on
-the API side: Voxtral must call the ``give_npc_orders`` function (``tool_choice="any"``)
-once (``parallel_tool_calls=False``), and its JSON schema lists the actions of
-``VOICE_ORDER_ACTIONS``. The arguments of every such call are then validated into ``NpcOrder``
-values; an answer that breaks the contract becomes a ``CommandRefused`` outcome.
+A typed command goes to a Mistral chat model (``TEXT_MODEL``), a recorded one to
+Voxtral (``AUDIO_MODEL``) in one multimodal call, with no transcription step. Both
+calls send the shared system prompt and are constrained the same way: the model must
+call the ``give_npc_orders`` function (``tool_choice="any"``) once
+(``parallel_tool_calls=False``), whose parameters are ``ORDERS_SCHEMA``. The arguments
+of every such call are validated by ``parse_orders``; an answer that breaks the
+contract becomes a ``CommandRefused`` outcome.
 """
 
 from __future__ import annotations
 
 import base64
-import json
-import os
-from collections.abc import Mapping, Sequence
+from collections.abc import Sequence
 from functools import partial
-from typing import Any, TypedDict
 
 from loguru import logger
 from mistralai.client import Mistral
@@ -25,129 +23,64 @@ from mistralai.client.models import (
     ToolTypedDict,
 )
 
-from api.constants import AUDIO_MODEL, ORDERS_TOOL_NAME
-from api.logger import LoggedOrder, PipelineLogger
-from api.roster import get_soul
-from game.actions import ActionType
+from api.constants import AUDIO_MODEL, ORDERS_TOOL_NAME, TEXT_MODEL
+from api.logger import PipelineLogger
+from api.order_contract import (
+    ORDERS_SCHEMA,
+    Roster,
+    RosterEntry,
+    build_orders_for_log,
+    build_roster,
+    build_system_prompt,
+    parse_orders,
+)
 from game.npc import NPC
-from game.orders import VOICE_ORDER_ACTIONS, CommandRefused, NpcOrder, RefusalReason
+from game.orders import CommandRefused, NpcOrder, RefusalReason
 from game.ports import OrderInterpretationError
-
-
-class RosterEntry(TypedDict):
-    id: int
-    name: str
-    kind: str
-    allowed_actions: list[str]
-
-
-# Keyed by NPC id.
-Roster = Mapping[int, RosterEntry]
-
-ORDERS_SCHEMA: dict[str, Any] = {
-    "type": "object",
-    "properties": {
-        "orders": {
-            "type": "array",
-            "items": {
-                "type": "object",
-                "properties": {
-                    "npc_id": {"type": "integer", "description": "ID of the NPC in the roster"},
-                    "action": {
-                        "type": "string",
-                        "enum": [action_type.value for action_type in VOICE_ORDER_ACTIONS],
-                    },
-                    "voice_line": {
-                        "type": "string",
-                        "description": "What the NPC answers, in character, 1-2 sentences",
-                    },
-                },
-                "required": ["npc_id", "action", "voice_line"],
-                "additionalProperties": False,
-            },
-        },
-    },
-    "required": ["orders"],
-    "additionalProperties": False,
-}
 
 ORDERS_TOOL: ToolTypedDict = {
     "type": "function",
     "function": {
         "name": ORDERS_TOOL_NAME,
-        "description": "Give the NPCs the orders heard in the player's voice command.",
+        "description": "Give the NPCs the orders of the player's command.",
         "parameters": ORDERS_SCHEMA,
     },
 }
 
-SYSTEM_PROMPT = """\
-You are the command interpreter for a 2D survival game. Players speak orders to NPCs \
-(bots). A single command may target **one or many NPCs** with **one or many actions**.
-
-Your job:
-1. Find every NPC + action pair in the command.
-2. For each pair, pick the NPC from the roster (its ID) and the matching action.
-3. Write a short, **in-character voice line** for each NPC (1-2 sentences max).
-
-─── NPC Roster ───
-{roster}
-
-─── Character Personalities ───
-{personalities}
-
-─── Rules ───
-• Give one order per NPC + action pair, in the order they were spoken.
-• If the NPC name is misspelled, abbreviated, or mispronounced, do your best to match it.
-• If you truly cannot determine the NPC, give no order for it.
-• Each NPC has a type (pawn, archer) with the allowed actions listed in the roster.
-• If the player asks an NPC for an action NOT in its allowed actions, still give that \
-order, but its voice line is an in-character refusal explaining why it cannot.
-• The voice line reflects the NPC's unique personality: short, punchy, and fun.
-"""
-
-USER_INSTRUCTION = "Give the orders spoken in this voice command."
+VOICE_INSTRUCTION = "Give the orders spoken in this voice command."
+TEXT_INSTRUCTION = "Give the orders of this typed command:"
 
 
-def _build_roster_table(roster: Roster) -> str:
-    """Format the roster as a readable table for the prompt."""
-    if not roster:
-        return "(no NPCs registered)"
-    lines = ["| ID | Name | Type | Allowed actions |", "|-----|------|------|-----------------|"]
-    for info in roster.values():
-        actions = ", ".join(info["allowed_actions"])
-        lines.append(f"| {info['id']} | {info['name']} | {info['kind']} | {actions} |")
-    return "\n".join(lines)
-
-
-def _build_system_prompt(roster: Roster) -> str:
-    personalities = "\n\n".join(
-        f"**{info['name']}**: {get_soul(info['name'])}" for info in roster.values()
-    )
-    return SYSTEM_PROMPT.format(
-        roster=_build_roster_table(roster),
-        personalities=personalities or "(no personalities loaded)",
-    )
-
-
-def _build_messages(audio: bytes, roster: Roster) -> list[ChatCompletionRequestMessageTypedDict]:
+def _build_voice_messages(
+    audio: bytes, roster: Roster
+) -> list[ChatCompletionRequestMessageTypedDict]:
     audio_b64 = base64.b64encode(audio).decode("utf-8")
     return [
-        {"role": "system", "content": _build_system_prompt(roster)},
+        {"role": "system", "content": build_system_prompt(roster)},
         {
             "role": "user",
             "content": [
                 {"type": "input_audio", "input_audio": audio_b64},
-                {"type": "text", "text": USER_INSTRUCTION},
+                {"type": "text", "text": VOICE_INSTRUCTION},
             ],
         },
+    ]
+
+
+def _build_text_messages(
+    command: str, roster: Roster
+) -> list[ChatCompletionRequestMessageTypedDict]:
+    return [
+        {"role": "system", "content": build_system_prompt(roster)},
+        {"role": "user", "content": f"{TEXT_INSTRUCTION}\n{command}"},
     ]
 
 
 def read_orders_answer(
     response: ChatCompletionResponse, roster: Roster
 ) -> list[NpcOrder] | CommandRefused:
-    """The orders of every ``give_npc_orders`` call in Voxtral's answer, in call order,
-    or why the answer is refused.
+    """The orders of every ``give_npc_orders`` call in the answer, in call order, or
+    why the answer is refused.
 
     The request asks for a single call, but an answer that still holds several loses
     none of them: their orders are merged, and one refused call refuses the answer.
@@ -160,122 +93,75 @@ def read_orders_answer(
         return CommandRefused(RefusalReason.NO_ORDERS_GIVEN)
     orders: list[NpcOrder] = []
     for tool_call in orders_calls:
-        call_orders = _parse_orders(tool_call.function.arguments, roster)
+        call_orders = parse_orders(tool_call.function.arguments, roster)
         if isinstance(call_orders, CommandRefused):
             return call_orders
         orders.extend(call_orders)
     return orders
 
 
-def _parse_orders(
-    arguments: dict[str, Any] | str, roster: Roster
-) -> list[NpcOrder] | CommandRefused:
-    try:
-        payload = json.loads(arguments) if isinstance(arguments, str) else arguments
-        items = payload["orders"]
-    except (json.JSONDecodeError, KeyError, TypeError):
-        return CommandRefused(RefusalReason.MALFORMED_ANSWER)
-    if not isinstance(items, list):
-        return CommandRefused(RefusalReason.MALFORMED_ANSWER)
-    orders: list[NpcOrder] = []
-    for item in items:
-        order = _parse_order(item, roster)
-        if isinstance(order, CommandRefused):
-            return order
-        orders.append(order)
-    return orders
+class MistralOrderInterpreter:
+    """Both order interpreter ports, backed by one Mistral call per command.
 
-
-def _parse_order(item: object, roster: Roster) -> NpcOrder | CommandRefused:
-    if not isinstance(item, dict):
-        return CommandRefused(RefusalReason.MALFORMED_ANSWER)
-    npc_id, action, voice_line = item.get("npc_id"), item.get("action"), item.get("voice_line")
-    if not isinstance(npc_id, int) or not isinstance(voice_line, str):
-        return CommandRefused(RefusalReason.MALFORMED_ANSWER)
-    try:
-        action_type = ActionType(action)
-    except ValueError:
-        return CommandRefused(RefusalReason.UNKNOWN_ACTION)
-    if action_type not in VOICE_ORDER_ACTIONS:
-        return CommandRefused(RefusalReason.ACTION_NEEDS_TARGET)
-    npc = roster.get(npc_id)
-    if npc is None:
-        return CommandRefused(RefusalReason.UNKNOWN_NPC)
-    return NpcOrder(
-        npc_id=npc_id, npc_name=npc["name"], action_type=action_type, voice_line=voice_line
-    )
-
-
-def _orders_for_log(orders: Sequence[NpcOrder]) -> dict[str, list[LoggedOrder]]:
-    logged_orders = [
-        LoggedOrder(
-            npc_id=order.npc_id,
-            npc_name=order.npc_name,
-            action=order.action_type.value,
-            voice_line=order.voice_line,
-        )
-        for order in orders
-    ]
-    return {"orders": logged_orders}
-
-
-class VoxtralOrderInterpreter:
-    """``OrderInterpreter`` backed by one multimodal Voxtral call per command.
-
-    The client is built from ``MISTRAL_API_KEY`` on the first command unless one is
-    given. The NPC roster the prompt lists comes from ``register_roster``. Every call
-    is logged, with its cost, through ``pipeline_logger``.
+    The NPC roster the prompt lists comes from ``register_roster``. Every call is
+    logged, with its cost, through ``pipeline_logger``.
     """
 
-    def __init__(self, client: Mistral | None = None, *, pipeline_logger: PipelineLogger) -> None:
+    def __init__(self, client: Mistral, *, pipeline_logger: PipelineLogger) -> None:
         self._client = client
         self._pipeline_logger = pipeline_logger
         self._roster: dict[int, RosterEntry] = {}
 
+    @classmethod
+    def from_api_key(
+        cls, api_key: str, *, pipeline_logger: PipelineLogger
+    ) -> MistralOrderInterpreter:
+        return cls(Mistral(api_key=api_key), pipeline_logger=pipeline_logger)
+
     def register_roster(self, npcs: Sequence[NPC]) -> None:
-        """Make ``npcs`` the roster the prompt lists and the answers are matched against.
+        """Make ``npcs`` the roster the prompt lists and the answers are matched against."""
+        self._roster = build_roster(npcs)
 
-        Each NPC's allowed actions are narrowed to the ones a voice order can give.
-        """
-        self._roster = {
-            npc.id: {
-                "id": npc.id,
-                "name": npc.name,
-                "kind": npc.kind,
-                "allowed_actions": [
-                    action.value for action in npc.allowed_actions if action in VOICE_ORDER_ACTIONS
-                ],
-            }
-            for npc in npcs
-        }
+    def interpret_text(self, command: str) -> list[NpcOrder] | CommandRefused:
+        """See ``TextOrderInterpreter``. The error's message names the failure type
+        only; the failure's type and text go to the log."""
+        messages = _build_text_messages(command, self._roster)
+        return self._interpret(model=TEXT_MODEL, messages=messages, logged_input=command)
 
-    def interpret(self, audio: bytes) -> list[NpcOrder] | CommandRefused:
-        """The orders Voxtral hears in ``audio``, or ``CommandRefused`` for an answer
-        that breaks the order contract.
+    def interpret_voice(self, audio: bytes) -> list[NpcOrder] | CommandRefused:
+        """See ``VoiceOrderInterpreter`` and ``interpret_text``."""
+        messages = _build_voice_messages(audio, self._roster)
+        return self._interpret(model=AUDIO_MODEL, messages=messages, logged_input="(audio input)")
 
-        Raises ``OrderInterpretationError``, and nothing else, on a missing key or any
-        other failure (API, network, unexpected answer shape). Its message names the
-        failure type only; the failure's type and text go to the log.
-        """
+    def _interpret(
+        self,
+        *,
+        model: str,
+        messages: list[ChatCompletionRequestMessageTypedDict],
+        logged_input: str,
+    ) -> list[NpcOrder] | CommandRefused:
         try:
-            return self._interpret(audio)
-        except OrderInterpretationError:
-            raise
+            return self._ask(model=model, messages=messages, logged_input=logged_input)
         except Exception as error:
             failure = type(error).__name__
             logger.bind(event="order_interpretation", failure=failure).error(
-                f"Voxtral interpretation failed: {failure}: {error}"
+                f"Mistral interpretation failed: {failure}: {error}"
             )
-            message = f"Voxtral could not interpret the command ({failure})"
+            message = f"Mistral could not interpret the command ({failure})"
             raise OrderInterpretationError(message) from error
 
-    def _interpret(self, audio: bytes) -> list[NpcOrder] | CommandRefused:
-        client = self._ensure_client()
-        self._pipeline_logger.llm_start(input_text="(audio input)")
+    def _ask(
+        self,
+        *,
+        model: str,
+        messages: list[ChatCompletionRequestMessageTypedDict],
+        logged_input: str,
+    ) -> list[NpcOrder] | CommandRefused:
+        self._pipeline_logger.llm_start(input_text=logged_input)
         try:
-            response = client.chat.complete(
-                model=AUDIO_MODEL,
-                messages=_build_messages(audio, self._roster),
+            response = self._client.chat.complete(
+                model=model,
+                messages=messages,
                 tools=[ORDERS_TOOL],
                 tool_choice="any",
                 parallel_tool_calls=False,
@@ -283,14 +169,18 @@ class VoxtralOrderInterpreter:
                 max_tokens=1024,
             )
         except Exception as error:
-            self._pipeline_logger.llm_end(order=None, error=str(error))
+            self._pipeline_logger.llm_end(order=None, model=model, error=str(error))
             raise
         answer = read_orders_answer(response, self._roster)
-        self._log_answer(response, answer)
+        self._log_answer(response, answer, model=model)
         return answer
 
     def _log_answer(
-        self, response: ChatCompletionResponse, answer: list[NpcOrder] | CommandRefused
+        self,
+        response: ChatCompletionResponse,
+        answer: list[NpcOrder] | CommandRefused,
+        *,
+        model: str,
     ) -> None:
         usage = response.usage
         audio_seconds = usage.prompt_audio_seconds if usage else None
@@ -299,20 +189,12 @@ class VoxtralOrderInterpreter:
             prompt_tokens=(usage.prompt_tokens or 0) if usage else 0,
             completion_tokens=(usage.completion_tokens or 0) if usage else 0,
             audio_seconds=audio_seconds if isinstance(audio_seconds, int) else 0,
-            model=AUDIO_MODEL,
+            model=model,
         )
         if isinstance(answer, CommandRefused):
             log_call(order=None, error=f"answer refused: {answer.reason}")
             return
-        order = _orders_for_log(answer)
+        order = build_orders_for_log(answer)
         log_call(order=order)
         if answer:
             self._pipeline_logger.pipeline_summary(order=order)
-
-    def _ensure_client(self) -> Mistral:
-        if self._client is None:
-            api_key = os.environ.get("MISTRAL_API_KEY", "")
-            if not api_key:
-                raise OrderInterpretationError("MISTRAL_API_KEY is not set")
-            self._client = Mistral(api_key=api_key)
-        return self._client

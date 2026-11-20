@@ -1,3 +1,4 @@
+from enum import StrEnum
 from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -21,3 +22,17 @@ LOOPBACK_HOST_NAMES = ("localhost", "127.0.0.1")
 WILDCARD_BIND_ADDRESSES = frozenset({"0.0.0.0", "::"})  # noqa: S104
 # Bind addresses that listen on loopback.
 LOOPBACK_BIND_ADDRESSES = frozenset({"localhost", "127.0.0.1", "::1"}) | WILDCARD_BIND_ADDRESSES
+
+
+# Longest typed command POST /api/command accepts, in characters: a few sentences.
+MAX_COMMAND_CHARACTERS = 500
+# Chat messages the state keeps: older ones scroll out of the chat panel.
+CHAT_HISTORY_LENGTH = 30
+
+
+class ChatMessageKind(StrEnum):
+    """The ``kind`` of each entry of the state's ``chat`` list (`docs/api.md`)."""
+
+    TYPED_COMMAND = "typed_command"
+    SPOKEN_COMMAND = "spoken_command"
+    VOICE_LINE = "voice_line"

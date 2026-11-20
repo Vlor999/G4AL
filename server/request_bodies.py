@@ -9,6 +9,7 @@ from typing import TypeGuard
 from game.actions import ActionType
 from game.constants import STORED_RESOURCE_KINDS
 from game.direct_orders import DirectOrder
+from server.constants import MAX_COMMAND_CHARACTERS
 
 
 class InvalidRequestError(ValueError):
@@ -70,6 +71,20 @@ def parse_audio_base64(body: object) -> bytes:
     # ValueError, the parent of binascii.Error: a non-ASCII string fails before decoding.
     except ValueError:
         raise InvalidRequestError("audio_b64 is not valid base64") from None
+
+
+def parse_command_text(body: object) -> str:
+    """Parse `{"text": str}`: the typed command, stripped, neither empty nor longer
+    than ``MAX_COMMAND_CHARACTERS``."""
+    text = _require_object(body).get("text")
+    if not isinstance(text, str):
+        raise InvalidRequestError("text must be a string")
+    command = text.strip()
+    if not command:
+        raise InvalidRequestError("text must not be empty")
+    if len(command) > MAX_COMMAND_CHARACTERS:
+        raise InvalidRequestError(f"text longer than {MAX_COMMAND_CHARACTERS} characters")
+    return command
 
 
 def _require_object(body: object) -> Mapping[str, object]:

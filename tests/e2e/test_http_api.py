@@ -14,10 +14,9 @@ from server.constants import (
     MAX_COMMAND_CHARACTERS,
     MAX_REQUEST_BYTES,
     MIN_AUDIO_BYTES,
-    SERVER_PORT,
 )
 from server.engine import GameEngine
-from tests.fakes import RecordingSpeaker, ScriptedOrderInterpreter
+from tests.fakes import ScriptedOrderInterpreter
 
 
 def read_state(client: FlaskClient) -> dict[str, Any]:
@@ -118,6 +117,10 @@ UNKNOWN_NPC_ID = 999_999
         ("/api/command", {"text": 3}),
         ("/api/command", {"text": " \n "}),
         ("/api/command", {"text": "a" * (MAX_COMMAND_CHARACTERS + 1)}),
+        ("/api/model", {}),
+        ("/api/model", {"modelId": 3}),
+        ("/api/model", {"modelId": "gpt-unknown"}),
+        ("/api/model", {"modelId": "codestral-latest"}),
     ],
 )
 def test_invalid_request_is_refused(client: FlaskClient, route: str, body: object) -> None:
@@ -174,22 +177,49 @@ def test_a_typed_command_is_sent_stripped_to_the_interpreter(
     assert interpreter.commands == [command]
 
 
-def test_audio_is_refused_when_the_provider_takes_no_voice_commands() -> None:
-    engine = GameEngine(
-        text_interpreter=ScriptedOrderInterpreter(),
-        voice_interpreter=None,
-        speaker=RecordingSpeaker(),
-    )
-    app, _ = create_app(engine)
-    app.config["SERVER_NAME"] = f"localhost:{SERVER_PORT}"
+def test_the_state_lists_the_available_models_and_the_selected_one(client: FlaskClient) -> None:
+    state = read_state(client)
 
-    response = app.test_client().post(
+    assert state["models"] == [
+        {
+            "id": "voxtral-small-latest",
+            "name": "Voxtral Small",
+            "provider": "mistral",
+            "hasVoiceInput": True,
+        },
+        {
+            "id": "mistral-small-latest",
+            "name": "Mistral Small 4",
+            "provider": "mistral",
+            "hasVoiceInput": False,
+        },
+    ]
+    assert (state["selectedModelId"], state["hasVoiceInput"]) == ("voxtral-small-latest", True)
+
+
+def test_a_picked_model_takes_the_next_command(
+    client: FlaskClient, interpreter: ScriptedOrderInterpreter
+) -> None:
+    response = client.post("/api/model", json={"modelId": "mistral-small-latest"})
+    client.post("/api/command", json={"text": "Bob, chop wood"})
+
+    assert response.get_json() == {"ok": True}
+    assert interpreter.model_ids == ["mistral-small-latest"]
+    assert read_state(client)["selectedModelId"] == "mistral-small-latest"
+
+
+def test_audio_is_refused_when_the_selected_model_takes_no_voice_commands(
+    client: FlaskClient,
+) -> None:
+    client.post("/api/model", json={"modelId": "mistral-small-latest"})
+
+    response = client.post(
         "/api/audio", data={"audio": (io.BytesIO(bytes(MIN_AUDIO_BYTES)), "a.wav")}
     )
 
     assert response.status_code == 400
-    assert response.get_json() == {"error": "the LLM provider takes no voice commands"}
-    assert app.test_client().get("/api/state").get_json()["hasVoiceInput"] is False
+    assert response.get_json() == {"error": "the selected model takes no voice commands"}
+    assert read_state(client)["hasVoiceInput"] is False
 
 
 @pytest.mark.parametrize(

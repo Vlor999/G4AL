@@ -6,7 +6,7 @@ from typing import Any, cast
 import pytest
 from mistralai.client import Mistral
 
-from api.constants import AUDIO_MODEL, ORDERS_TOOL_NAME, TEXT_MODEL
+from api.constants import ORDERS_TOOL_NAME
 from api.interpreter import MistralOrderInterpreter
 from api.logger import PipelineLogger
 from api.order_contract import ORDERS_SCHEMA
@@ -15,6 +15,9 @@ from game.orders import CommandRefused, NpcOrder, RefusalReason
 from game.ports import OrderInterpretationError
 from tests.conftest import LlmEndRecords, MapBuilder
 from tests.test_orders import make_npcs
+
+_VOICE_MODEL_ID = "voxtral-small-latest"
+_TEXT_MODEL_ID = "mistral-small-latest"
 
 
 def tool_call(arguments: dict[str, Any] | str, name: str = ORDERS_TOOL_NAME) -> SimpleNamespace:
@@ -73,7 +76,7 @@ def test_schema_actions_are_the_listed_voice_order_actions() -> None:
 def test_prompt_roster_lists_no_action_a_voice_order_cannot_give(build_map: MapBuilder) -> None:
     interpreter, chat = interpreter_answering(answer_with([tool_call({"orders": []})]), build_map)
 
-    interpreter.interpret_voice(b"RIFF")
+    interpreter.interpret_voice(b"RIFF", model_id=_VOICE_MODEL_ID)
 
     [call] = chat.calls
     system_prompt = call["messages"][0]["content"]
@@ -82,16 +85,16 @@ def test_prompt_roster_lists_no_action_a_voice_order_cannot_give(build_map: MapB
 
 
 def interpret_typed(interpreter: MistralOrderInterpreter) -> object:
-    return interpreter.interpret_text("Bob, chop wood")
+    return interpreter.interpret_text("Bob, chop wood", model_id=_TEXT_MODEL_ID)
 
 
 def interpret_spoken(interpreter: MistralOrderInterpreter) -> object:
-    return interpreter.interpret_voice(b"RIFF")
+    return interpreter.interpret_voice(b"RIFF", model_id=_VOICE_MODEL_ID)
 
 
 @pytest.mark.parametrize(
     ("interpret", "model"),
-    [(interpret_typed, TEXT_MODEL), (interpret_spoken, AUDIO_MODEL)],
+    [(interpret_typed, _TEXT_MODEL_ID), (interpret_spoken, _VOICE_MODEL_ID)],
     ids=["typed", "spoken"],
 )
 def test_each_input_forces_the_orders_tool_call_on_its_model(
@@ -114,8 +117,8 @@ def test_a_typed_command_is_sent_as_text_after_the_shared_system_prompt(
 ) -> None:
     interpreter, chat = interpreter_answering(answer_with([tool_call({"orders": []})]), build_map)
 
-    interpreter.interpret_text("Bob, chop wood")
-    interpreter.interpret_voice(b"RIFF")
+    interpreter.interpret_text("Bob, chop wood", model_id=_TEXT_MODEL_ID)
+    interpreter.interpret_voice(b"RIFF", model_id=_VOICE_MODEL_ID)
 
     typed_call, spoken_call = chat.calls
     assert typed_call["messages"][0] == spoken_call["messages"][0]
@@ -137,7 +140,7 @@ def test_interpret_maps_each_called_order_to_an_npc_order(
     interpreter, _ = interpreter_answering(answer_with([tool_call(encode(arguments))]))
     interpreter.register_roster(npcs)
 
-    orders = interpreter.interpret_voice(b"RIFF")
+    orders = interpreter.interpret_voice(b"RIFF", model_id=_VOICE_MODEL_ID)
 
     assert orders == [
         NpcOrder(pawn.id, pawn.name, ActionType.MINE_ROCK, "Fine."),
@@ -157,7 +160,7 @@ def test_interpret_merges_the_orders_of_every_orders_call(build_map: MapBuilder)
     interpreter, _ = interpreter_answering(answer_with([first_call, second_call]))
     interpreter.register_roster(npcs)
 
-    orders = interpreter.interpret_voice(b"RIFF")
+    orders = interpreter.interpret_voice(b"RIFF", model_id=_VOICE_MODEL_ID)
 
     assert orders == [
         NpcOrder(pawn.id, pawn.name, ActionType.CHOP_WOOD, "On it."),
@@ -232,7 +235,7 @@ def test_interpret_refuses_an_answer_that_breaks_the_order_contract(
 ) -> None:
     interpreter, _ = interpreter_answering(answer, build_map)
 
-    assert interpreter.interpret_voice(b"RIFF") == CommandRefused(reason)
+    assert interpreter.interpret_voice(b"RIFF", model_id=_VOICE_MODEL_ID) == CommandRefused(reason)
 
 
 @pytest.mark.parametrize(
@@ -255,7 +258,7 @@ def test_interpret_raises_only_the_port_error_without_the_vendor_text(
     interpreter, _ = interpreter_answering(answer)
 
     with pytest.raises(OrderInterpretationError) as raised:
-        interpreter.interpret_text("Bob, chop wood")
+        interpreter.interpret_text("Bob, chop wood", model_id=_TEXT_MODEL_ID)
 
     assert str(raised.value) == expected_message
 
@@ -275,8 +278,28 @@ def test_the_logged_cost_prices_the_audio_seconds_of_the_answer(
     answer.usage = usage
     interpreter, _ = interpreter_answering(answer)
 
-    interpreter.interpret_voice(b"RIFF")
+    interpreter.interpret_voice(b"RIFF", model_id=_VOICE_MODEL_ID)
 
     [(_, extra)] = llm_end_records
     assert extra["audio_cost_usd"] == pytest.approx(audio_cost)
     assert extra["cost_usd"] == pytest.approx(0.1 + audio_cost)
+
+
+@pytest.mark.parametrize(
+    ("model_id", "cost"),
+    [("mistral-large-latest", 0.7 + 2.1), ("ministral-3b-latest", 0.1 + 0.1)],
+)
+def test_the_log_prices_a_command_at_the_rates_of_its_model(
+    llm_end_records: LlmEndRecords, model_id: str, cost: float
+) -> None:
+    answer = answer_with([tool_call({"orders": []})])
+    answer.usage = SimpleNamespace(
+        prompt_tokens=1_000_000, completion_tokens=1_000_000, prompt_audio_seconds=None
+    )
+    interpreter, chat = interpreter_answering(answer)
+
+    interpreter.interpret_text("Bob, chop wood", model_id=model_id)
+
+    [(_, extra)] = llm_end_records
+    assert chat.calls[0]["model"] == extra["model"] == model_id
+    assert extra["cost_usd"] == pytest.approx(cost)

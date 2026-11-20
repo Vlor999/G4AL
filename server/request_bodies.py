@@ -87,6 +87,14 @@ def parse_command_text(body: object) -> str:
     return command
 
 
+def parse_model_id(body: object) -> str:
+    """Parse `{"modelId": str}`."""
+    model_id = _require_object(body).get("modelId")
+    if not isinstance(model_id, str):
+        raise InvalidRequestError("modelId must be a string")
+    return model_id
+
+
 def _require_object(body: object) -> Mapping[str, object]:
     if not isinstance(body, dict):
         raise InvalidRequestError("body must be a JSON object")

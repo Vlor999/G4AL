@@ -23,12 +23,8 @@ from typing import TYPE_CHECKING, Any, TypedDict
 
 from loguru import logger
 
-from api.constants import (
-    AUDIO_MODEL,
-    AUDIO_MODEL_AUDIO_COST_PER_SECOND,
-    TOKEN_COSTS_BY_MODEL,
-    TTS_COST_PER_CHAR,
-)
+from api.constants import TTS_COST_PER_CHAR
+from api.model_catalog import MODELS_BY_ID
 
 if TYPE_CHECKING:
     from loguru import Record
@@ -145,18 +141,18 @@ class PipelineLogger:
         prompt_tokens: int = 0,
         completion_tokens: int = 0,
         audio_seconds: int = 0,
-        model: str = AUDIO_MODEL,
+        model: str,
         error: str | None = None,
     ) -> None:
-        """Log the end of a Mistral call. ``cost_usd`` is the token cost at ``model``'s
-        prices plus the cost of the ``audio_seconds`` of input audio, logged apart as
+        """Log the end of a call to ``model``, a catalog model id. ``cost_usd`` is the
+        token cost at that model's prices plus the cost of the ``audio_seconds`` of input audio, logged apart as
         ``audio_cost_usd``."""
         elapsed = time.perf_counter() - (self._llm_t0 or time.perf_counter())
-        audio_cost = audio_seconds * AUDIO_MODEL_AUDIO_COST_PER_SECOND
-        token_costs = TOKEN_COSTS_BY_MODEL[model]
+        prices = MODELS_BY_ID[model].prices
+        audio_cost = audio_seconds * prices.audio_per_second
         cost = (
-            prompt_tokens * token_costs.input_per_token
-            + completion_tokens * token_costs.output_per_token
+            prompt_tokens * prices.input_per_token
+            + completion_tokens * prices.output_per_token
             + audio_cost
         )
         self._total_llm_cost += cost

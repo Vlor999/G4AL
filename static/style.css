@@ -1356,3 +1356,13 @@ body {
         overflow: visible;
     }
 }
+
+/* Stacked layout: the chat and the log keep a fixed height and scroll, so the
+   chat form stays in place as messages arrive. */
+@media (max-width: 760px) {
+    #chat-section,
+    #log-section {
+        flex: none;
+        height: 240px;
+    }
+}

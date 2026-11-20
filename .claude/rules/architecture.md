@@ -21,7 +21,7 @@ when it is installed; this file wins where they differ.
 - The domain writes no vendor format: no JSON payload shape for the client, no prompt
   text, no Mistral message structure. It hands values over; the entry point or the
   adapter renders them.
-- A port is named after a capability (`OrderInterpreter`, `VoiceLineSpeaker`) and its
+- A port is named after a capability (`TextOrderInterpreter`, `VoiceLineSpeaker`) and its
   methods after game actions (`interpret`, `speak`), never after vendor calls.
 - An adapter holds no game rule, translates every vendor error into its port's error,
   and never puts a secret in an error or a log line.

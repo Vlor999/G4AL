@@ -3,32 +3,36 @@
 ## Runtime
 
 ```
-Browser (static/: Canvas renderer, input, push-to-talk)
+Browser (static/: Canvas renderer, input, push-to-talk, chat)
    │  HTTP: /api/state, /api/action, /api/select, /api/move,
-   │        /api/discard, /api/dismiss_storage, /api/audio
+   │        /api/discard, /api/dismiss_storage, /api/audio, /api/command
    │  Socket.IO: state push every 3rd tick (~20 Hz)
    ▼
 server/: app.py (create_app, main), routes.py (Flask + Socket.IO),
          engine.py (GameEngine, game loop thread, 60 FPS), serialization.py
    ├── game/        pure simulation: map, NPCs, fauna, resources, storage
-   ├── api/interpreter.py  WAV → Mistral Voxtral → NPC orders (worker thread)
+   ├── api/interpreter.py  text or WAV → Mistral → NPC orders (worker thread)
    ├── api/tts.py          voice line → ElevenLabs → pygame mixer (worker thread)
    └── api/logger.py       JSONL logs with timing, tokens and cost
 ```
 
-## Voice command flow
+## Command flow
 
 1. `static/ptt.js` records while the key is held, encodes a WAV and posts it to
-   `/api/audio`.
-2. `GameEngine.send_audio_command` hands the bytes to a worker thread, which calls the
-   injected `OrderInterpreter` port (`game/ports.py`). Its adapter,
-   `api.interpreter.VoxtralOrderInterpreter`, makes one multimodal Voxtral call with
-   the system prompt and the NPC roster. Voxtral must answer by calling the
+   `/api/audio`; `static/chat.js` posts a typed command to `/api/command`.
+2. `GameEngine.send_audio_command` or `send_text_command` adds the command to the chat
+   and hands it to a worker thread, which calls the injected port (`game/ports.py`):
+   `VoiceOrderInterpreter` for audio, `TextOrderInterpreter` for text. Their Mistral
+   adapter, `api.interpreter.MistralOrderInterpreter`, makes one call per command with
+   the system prompt and the NPC roster of `api/order_contract.py`: a multimodal
+   Voxtral call (`voxtral-small-latest`) for audio, a chat call
+   (`mistral-small-latest`) for text. The model must answer by calling the
    `give_npc_orders` function once (`tool_choice="any"`,
    `parallel_tool_calls=False`), whose JSON schema takes its actions from
    `game.orders.VOICE_ORDER_ACTIONS`: every `ActionType` but `move_to`, whose target
    tile a voice order does not carry (the player gives it with a right-click). The
-   adapter validates the arguments into `game.orders.NpcOrder` values. Mistral
+   adapter validates the arguments into `game.orders.NpcOrder` values
+   (`api.order_contract.parse_orders`, shared by every provider). Mistral
    documents audio input with a forced tool call, but not with
    `parallel_tool_calls=False`; that combination is untested against the live API.
    The safety net is the adapter: an answer that still holds several
@@ -38,15 +42,36 @@ server/: app.py (create_app, main), routes.py (Flask + Socket.IO),
    `Order refused: <reason>`. One bad order refuses the whole answer: no order of
    that command is applied. A service failure is raised as
    `OrderInterpretationError`, logged on the server, and leaves the game unchanged;
-   the game log shows `Voice command failed, try again.`, without the service's
+   the game log shows `Command failed, try again.`, without the service's
    error text.
 3. Answers queue in `GameEngine` as their worker threads finish. On its next tick the
    game loop takes every queued answer in arrival order and, for a list of orders,
    calls `game.orders.apply_orders`, which enqueues the actions and returns one
    `OrderOutcome` per order (accepted, spoken).
-4. `GameEngine` logs each reply and sends the spoken ones to the injected
+4. `GameEngine` logs each reply, adds it to the chat (`docs/api.md` § Chat), and
+   sends the spoken ones to the injected
    `VoiceLineSpeaker` port; its adapter, `api.tts.TTSEngine`, plays them in the
    background, and drops them when `ELEVENLABS_API_KEY` is not set.
+
+## Adding an LLM provider
+
+`G4AL_LLM_PROVIDER` (default `mistral`) picks the provider at startup
+(`server/providers.py`). The server exits with a message naming the variable when the
+provider is unknown or its API key is not set. To add one:
+
+1. Write one adapter module in `api/` that implements `TextOrderInterpreter`
+   (`interpret_text`), and `VoiceOrderInterpreter` (`interpret_voice`) only if the
+   provider takes audio. Send `build_system_prompt` and `ORDERS_SCHEMA` from
+   `api/order_contract.py` in the vendor's structured-output shape, hand the answer's
+   arguments to `parse_orders`, and translate every vendor error into
+   `OrderInterpretationError`. Give it a `register_roster(npcs)` built on
+   `build_roster`.
+2. Add a member to `LlmProvider` and its key variable to `API_KEY_VARIABLES` in
+   `server/constants.py`, and the variable to `.env.example`.
+3. Add its `case` to `build_order_interpreters` in `server/providers.py`, with
+   `voice=None` when it has no audio adapter: the client then hides push-to-talk.
+
+Nothing changes in `game/` or `static/`.
 
 ## Layers
 
@@ -65,6 +90,7 @@ The entry point is the `server/` package:
 | `server/app.py` | `create_app(engine, served_host=...)` builds the Flask and Socket.IO apps around an engine; `main()` loads `.env`, starts the pygame mixer, installs the log sinks (`api.logger.use_pipeline_sinks`), builds the `PipelineLogger` the adapters log their calls through, builds the adapters, injects them into `GameEngine` through the ports of `game/ports.py`, starts the game loop thread and serves on port 8000 of `G4AL_HOST` (default `127.0.0.1`). |
 | `server/host_allowlist.py` | The WSGI middleware that answers 403 to a request whose `Host` is not an address the server is served at (DNS rebinding), around the Flask and Socket.IO apps. |
 | `server/engine.py` | `GameEngine`: the game state behind one lock, the 60 FPS loop and the state push. |
+| `server/providers.py` | Reads `G4AL_LLM_PROVIDER` and the provider's API key, and builds its order interpreters. |
 | `server/routes.py` | The HTTP routes (a blueprint that reads the engine from the app) and the Socket.IO `connect` event. |
 | `server/serialization.py` | The JSON the client reads, built from the game state. |
 

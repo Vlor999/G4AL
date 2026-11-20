@@ -1,5 +1,7 @@
 """Drive the voice order hand-off of GameEngine: interpreter answer in, NPC actions, log and voice lines out."""
 
+import threading
+
 import pytest
 
 from game.actions import ActionType
@@ -18,6 +20,19 @@ def test_an_empty_answer_is_logged_as_not_understood() -> None:
     engine.tick()
 
     assert engine.log_messages[-1] == "No actions understood."
+
+
+def test_sending_a_command_logs_listening_once_the_game_loop_lock_is_free() -> None:
+    engine = GameEngine(interpreter=ScriptedOrderInterpreter(), speaker=RecordingSpeaker())
+
+    with engine._lock:
+        sender = threading.Thread(target=engine.send_audio_command, args=(_AUDIO,))
+        sender.start()
+        sender.join(timeout=0.1)
+        assert engine.log_messages == []
+    sender.join()
+
+    assert engine.log_messages == ["Listening..."]
 
 
 def test_a_failed_interpretation_tells_the_player_without_the_service_error() -> None:

@@ -4,14 +4,14 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from game.archer import Archer
-from game.arrows import Arrow
-from game.clock import WorldClock
-from game.entities import Resource, Structure, spawn_resources
-from game.fauna import Fauna
-from game.fauna_spawning import spawn_fauna
-from game.map import GameMap
-from game.npc import NPC
+from game.combat.arrows import Arrow
+from game.fauna.fauna import Fauna
+from game.fauna.fauna_spawning import spawn_fauna
+from game.fauna.wild_archer import WildArcher
+from game.npcs.archer import Archer
+from game.npcs.npc import NPC
+from game.resources.entities import Resource, Structure, spawn_resources
+from game.resources.storage import ResourceStorage
 from game.settings import (
     ARCHER_SPAWN_MAX_DISTANCE,
     INITIAL_ARCHER_COUNT,
@@ -24,8 +24,8 @@ from game.settings import (
     WILD_ARCHER_CORNER_MARGIN,
     WILD_ARCHER_SPAWN_RADIUS,
 )
-from game.storage import ResourceStorage
-from game.wild_archer import WildArcher
+from game.world.clock import WorldClock
+from game.world.map import GameMap
 
 
 @dataclass
@@ -70,13 +70,7 @@ def spawn_world(game_map: GameMap) -> SpawnedWorld:
 
 
 def _occupied_entity_tiles(resources: list[Resource]) -> set[tuple[int, int]]:
-    entity_tiles: set[tuple[int, int]] = set()
-    for resource in resources:
-        if isinstance(resource, Structure):
-            entity_tiles.update(resource.occupied_tiles)
-        else:
-            entity_tiles.add((resource.col, resource.row))
-    return entity_tiles
+    return {tile for resource in resources for tile in resource.occupied_tiles}
 
 
 def _spawn_pawns_near_center(

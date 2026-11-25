@@ -4,13 +4,13 @@ from collections.abc import Callable
 
 import pytest
 
-from game.arrows import Arrow
-from game.fauna import FaunaState
-from game.map import GameMap
-from game.npc import NPC
+from game.combat.arrows import Arrow
+from game.fauna.fauna import FaunaState
+from game.fauna.wild_archer import WildArcher
+from game.npcs.npc import NPC
+from game.resources.storage import ResourceStorage
 from game.settings import ARCHER_ARROW_FLIGHT, WILD_ARCHER_DAMAGE, WILD_ARCHER_GRACE_FRAMES
-from game.storage import ResourceStorage
-from game.wild_archer import WildArcher
+from game.world.map import GameMap
 from tests.conftest import MapBuilder, clock_at
 
 FIELD = ["." * 10] * 4

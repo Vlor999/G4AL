@@ -7,7 +7,7 @@ from enum import Enum, auto
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from game.entities import Resource
+    from game.resources.entities import Resource
 
 
 class State(Enum):

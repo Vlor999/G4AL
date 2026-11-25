@@ -7,8 +7,8 @@ from collections.abc import Callable
 import pytest
 
 from api.model_catalog import CatalogModel
-from game.actions import ActionType
-from game.orders import CommandRefused, NpcOrder, RefusalReason
+from game.npcs.actions import ActionType
+from game.orders.orders import CommandRefused, NpcOrder, RefusalReason
 from game.ports import OrderInterpretationError
 from server.constants import CHAT_HISTORY_LENGTH
 from server.engine import GameEngine

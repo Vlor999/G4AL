@@ -7,11 +7,11 @@ import pytest
 from flask_socketio import SocketIO
 from loguru import logger
 
-from game.actions import Action, ActionType
-from game.archer import Archer
-from game.arrows import Arrow
-from game.entities import WheatField
-from game.wild_archer import WildArcher
+from game.combat.arrows import Arrow
+from game.fauna.wild_archer import WildArcher
+from game.npcs.actions import Action, ActionType
+from game.npcs.archer import Archer
+from game.resources.entities import WheatField
 from server.engine import GameEngine
 
 MAX_FRAMES = 600

@@ -1,7 +1,7 @@
 import pytest
 
-from game.map import GameMap
 from game.settings import TILE_SIZE
+from game.world.map import GameMap
 from tests.conftest import MapBuilder
 
 GRID = [

@@ -9,8 +9,8 @@ from enum import Enum, auto
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from game.entities import Resource
-    from game.map import GameMap
+    from game.resources.entities import Resource
+    from game.world.map import GameMap
 
 
 class FaunaState(Enum):
@@ -34,8 +34,11 @@ class Fauna:
     """A creature that idles, grazes and wanders on its own; subclasses set its stats."""
 
     kind: str = "fauna"
+    default_name: str = "Fauna"
     controllable: bool = False
     wander_radius: int = 5
+    max_health: int = 30
+    speed: float = 1.0
 
     def __init__(
         self,
@@ -43,15 +46,13 @@ class Fauna:
         y: float,
         game_map: GameMap,
         resources: list[Resource],
-        name: str = "Fauna",
+        name: str | None = None,
     ):
         self.id = _next_fauna_id()
-        self.name = name
+        self.name = name or self.default_name
         self.x = x
         self.y = y
-        self.health = 30
-        self.max_health = 30
-        self.speed = 1.0
+        self.health = self.max_health
 
         self._map = game_map
         self._resources = resources
@@ -59,9 +60,8 @@ class Fauna:
         self.state = FaunaState.IDLE
         self._path: list[tuple[int, int]] = []
         self._path_index = 0
-        self._timer = 0  # frames spent in the current state
-        self._idle_duration = 0
-        self._graze_duration = 0
+        self._timer = 0
+        self._state_duration = 0
 
     @property
     def tile_pos(self) -> tuple[int, int]:
@@ -83,7 +83,7 @@ class Fauna:
 
     def _do_idle(self) -> None:
         self._timer += 1
-        if self._timer >= self._idle_duration:
+        if self._timer >= self._state_duration:
             self._timer = 0
             if self._map.rng.random() < 0.5:
                 self._start_graze()
@@ -98,13 +98,17 @@ class Fauna:
 
     def _do_graze(self) -> None:
         self._timer += 1
-        if self._timer >= self._graze_duration:
+        if self._timer >= self._state_duration:
             self._start_idle()
 
     def _start_idle(self) -> None:
-        self.state = FaunaState.IDLE
+        self._enter_timed_state(FaunaState.IDLE, self._map.rng.randint(60, 240))
+
+    def _enter_timed_state(self, state: FaunaState, duration: int) -> None:
+        """Enter *state* for *duration* frames, counted by ``_timer`` from 0."""
+        self.state = state
         self._timer = 0
-        self._idle_duration = self._map.rng.randint(60, 240)
+        self._state_duration = duration
 
     def _start_wander(self) -> None:
         col, row = self.tile_pos
@@ -125,9 +129,7 @@ class Fauna:
         self.state = FaunaState.WANDERING
 
     def _start_graze(self) -> None:
-        self.state = FaunaState.GRAZING
-        self._timer = 0
-        self._graze_duration = self._map.rng.randint(120, 360)
+        self._enter_timed_state(FaunaState.GRAZING, self._map.rng.randint(120, 360))
 
     def _follow_path(self) -> None:
         if self._path_index >= len(self._path):

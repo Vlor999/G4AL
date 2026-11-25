@@ -21,7 +21,7 @@ from game.settings import (
     LAKE_RADIUS_RANGE,
     LAKE_SHORE_WIDTH,
 )
-from game.terrain import WALKABLE_TILES, Biome, TileType
+from game.world.terrain import WALKABLE_TILES, Biome, TileType
 
 Tile = tuple[int, int]
 NEIGHBOUR_STEPS = ((1, 0), (-1, 0), (0, 1), (0, -1))

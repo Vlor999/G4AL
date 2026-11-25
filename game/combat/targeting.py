@@ -6,7 +6,7 @@ from collections.abc import Iterable
 from typing import TYPE_CHECKING, Protocol, TypeVar
 
 if TYPE_CHECKING:
-    from game.map import GameMap
+    from game.world.map import GameMap
 
 
 class Combatant(Protocol):

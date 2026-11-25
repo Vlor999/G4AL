@@ -5,9 +5,9 @@ import pytest
 from loguru import logger
 
 from api.logger import has_event
-from game.clock import WorldClock
-from game.map import GameMap
-from game.terrain import Biome, TileType
+from game.world.clock import WorldClock
+from game.world.map import GameMap
+from game.world.terrain import Biome, TileType
 
 _TILE_BY_SYMBOL = {
     ".": TileType.GRASS,

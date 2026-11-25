@@ -11,15 +11,15 @@ from typing import Any
 from flask_socketio import SocketIO
 from loguru import logger
 
-from game.chat import ChatMessage, NpcVoiceLine, PlayerCommand, SpokenCommand, TypedCommand
-from game.direct_orders import DirectOrder, DirectOrderOutcome, apply_direct_order
-from game.map import GameMap
-from game.npc import NPC
-from game.orders import CommandRefused, NpcOrder, apply_orders
+from game.npcs.npc import NPC
+from game.orders.chat import ChatMessage, NpcVoiceLine, PlayerCommand, SpokenCommand, TypedCommand
+from game.orders.direct_orders import DirectOrder, DirectOrderOutcome, apply_direct_order
+from game.orders.orders import CommandRefused, NpcOrder, apply_orders
 from game.ports import OrderInterpretationError, VoiceLineSpeaker
 from game.settings import FPS
 from game.simulation import advance_world
 from game.spawning import spawn_world
+from game.world.map import GameMap
 from server.constants import CHAT_HISTORY_LENGTH
 from server.model_selection import ModelSelection
 from server.serialization import serialize_state

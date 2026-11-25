@@ -1,6 +1,6 @@
 from collections import Counter
 
-from game.fauna_spawning import spawn_fauna
+from game.fauna.fauna_spawning import spawn_fauna
 from tests.conftest import MapBuilder
 
 

@@ -4,15 +4,15 @@ from collections.abc import Callable
 
 import pytest
 
-from game.actions import Action, ActionType, State
-from game.archer import Archer
-from game.arrows import Arrow
-from game.fauna import Fauna, remove_dead_fauna
-from game.map import GameMap
+from game.combat.arrows import Arrow
+from game.fauna.fauna import Fauna, remove_dead_fauna
+from game.fauna.sheep import Sheep
+from game.fauna.wild_archer import WildArcher
+from game.npcs.actions import Action, ActionType, State
+from game.npcs.archer import Archer
+from game.resources.storage import ResourceStorage
 from game.settings import ARCHER_ARROW_DAMAGE, ARCHER_ARROW_FLIGHT, ARCHER_RANGE
-from game.sheep import Sheep
-from game.storage import ResourceStorage
-from game.wild_archer import WildArcher
+from game.world.map import GameMap
 from tests.conftest import MapBuilder
 
 FIELD = [".........."] * 4

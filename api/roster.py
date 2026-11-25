@@ -14,7 +14,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from enum import Enum
 
-from game.npc_names import NPCName
+from game.world.npc_names import NPCName
 
 # ═══════════════════════════════════════════════════════════════════════════
 #  ElevenLabs voice library

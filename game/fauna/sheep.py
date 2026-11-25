@@ -4,15 +4,18 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from game.fauna import Fauna
+from game.fauna.fauna import Fauna
 
 if TYPE_CHECKING:
-    from game.entities import Resource
-    from game.map import GameMap
+    from game.resources.entities import Resource
+    from game.world.map import GameMap
 
 
 class Sheep(Fauna):
     kind = "sheep"
+    default_name = "Sheep"
+    max_health = 20
+    speed = 0.8
 
     def __init__(
         self,
@@ -21,8 +24,5 @@ class Sheep(Fauna):
         game_map: GameMap,
         resources: list[Resource],
     ):
-        super().__init__(x, y, game_map, resources, name="Sheep")
-        self.speed = 0.8
-        self.health = 20
-        self.max_health = 20
+        super().__init__(x, y, game_map, resources)
         self._start_idle()

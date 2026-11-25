@@ -6,16 +6,16 @@ from collections.abc import Iterable, Sequence
 from typing import Any
 
 from api.model_catalog import CatalogModel
-from game.actions import State as NpcState
-from game.arrows import Arrow
-from game.chat import ChatMessage, NpcVoiceLine, SpokenCommand, TypedCommand
-from game.dimensions import OBJECT_DIMENSIONS, ObjectDimensions, ObjectKind
-from game.entities import Resource, Rock, Structure, WheatField
-from game.fauna import Fauna
-from game.map import GameMap
-from game.npc import NPC
+from game.combat.arrows import Arrow
+from game.fauna.fauna import Fauna
+from game.npcs.actions import State as NpcState
+from game.npcs.npc import NPC
+from game.orders.chat import ChatMessage, NpcVoiceLine, SpokenCommand, TypedCommand
+from game.resources.entities import Resource, Rock, Structure, WheatField
+from game.resources.storage import ResourceStorage
 from game.settings import TILE_SIZE
-from game.storage import ResourceStorage
+from game.world.dimensions import OBJECT_DIMENSIONS, ObjectDimensions, ObjectKind
+from game.world.map import GameMap
 from server.constants import ChatMessageKind
 from server.model_selection import SelectedModel
 

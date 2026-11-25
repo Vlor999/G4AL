@@ -4,18 +4,18 @@ from collections.abc import Callable
 
 import pytest
 
-from game.archer import Archer
-from game.map import GameMap
-from game.npc import NPC
-from game.npc_names import (
+from game.fauna.wild_archer import WildArcher
+from game.npcs.archer import Archer
+from game.npcs.npc import NPC
+from game.resources.storage import ResourceStorage
+from game.world.map import GameMap
+from game.world.npc_names import (
     ARCHER_NAMES,
     NPC_NAMES,
     WILD_ARCHER_NAMES,
     NamePool,
     NamePools,
 )
-from game.storage import ResourceStorage
-from game.wild_archer import WildArcher
 from tests.conftest import MapBuilder
 
 

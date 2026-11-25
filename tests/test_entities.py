@@ -1,13 +1,13 @@
 import pytest
 
-from game.entities import Rock, Structure, Tree, WheatField, spawn_resources
+from game.resources.entities import Rock, Structure, Tree, WheatField, spawn_resources
 from game.settings import (
     ROCK_GOLD_YIELD,
     ROCK_STONE_YIELD,
     TREE_WOOD_YIELD,
     WHEAT_GROW_TIME,
 )
-from game.terrain import Biome
+from game.world.terrain import Biome
 from tests.conftest import MapBuilder
 
 

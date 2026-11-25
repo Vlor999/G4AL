@@ -1,6 +1,6 @@
 import pytest
 
-from game.actions import ActionType, create_order_action
+from game.npcs.actions import ActionType, create_order_action
 
 OWN_TILE = (1, 1)
 TARGET = (2, 3)

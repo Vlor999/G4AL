@@ -14,9 +14,9 @@ from typing import Any, TypedDict
 
 from api.logger import LoggedOrder
 from api.roster import get_soul
-from game.actions import ActionType
-from game.npc import NPC
-from game.orders import VOICE_ORDER_ACTIONS, CommandRefused, NpcOrder, RefusalReason
+from game.npcs.actions import ActionType
+from game.npcs.npc import NPC
+from game.orders.orders import VOICE_ORDER_ACTIONS, CommandRefused, NpcOrder, RefusalReason
 
 
 class RosterEntry(TypedDict):

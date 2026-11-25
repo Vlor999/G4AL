@@ -79,3 +79,18 @@ forbidden_modules = [
     "loguru",
     "dotenv",
 ]
+
+# Each game sub-package imports only the ones below it; npcs and fauna share a layer
+# because archers and wild archers name each other's types. settings and constants sit
+# outside the layers: every package reads them.
+[[tool.importlinter.contracts]]
+name = "game sub-packages depend downward"
+type = "layers"
+layers = [
+    "game.spawning | game.simulation | game.ports",
+    "game.orders",
+    "game.npcs : game.fauna",
+    "game.combat",
+    "game.resources",
+    "game.world",
+]

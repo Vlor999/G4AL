@@ -7,7 +7,7 @@
 Run from the repository root: ``uv run --script scripts/asset_inventory.py``.
 It measures every PNG, reads frame counts from ``static/assets/details.js`` and the
 loaded paths from ``static/sprites.js`` and ``static/style.css``, and joins the footprint and height of each
-object kind from ``game/dimensions.py``.
+object kind from ``game/world/dimensions.py``.
 """
 
 from __future__ import annotations
@@ -21,8 +21,8 @@ from urllib.parse import unquote
 REPOSITORY_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPOSITORY_ROOT))
 
-from game.dimensions import OBJECT_DIMENSIONS, ObjectKind  # noqa: E402
 from game.settings import TILE_SIZE  # noqa: E402
+from game.world.dimensions import OBJECT_DIMENSIONS, ObjectKind  # noqa: E402
 
 ASSETS_DIRECTORY = REPOSITORY_ROOT / "static" / "assets"
 DETAILS_FILE = ASSETS_DIRECTORY / "details.js"
@@ -216,7 +216,7 @@ def render(sprites: list[SpriteMeasure], *, unused: list[str], missing: list[str
         f"Paths are relative to `static/assets/`. One tile is {TILE_SIZE} px. The frame count",
         "comes from `details.js` (1 when the sheet is not listed there). The anchor is the",
         "bottom centre of the opaque box of frame 0: where the object touches the ground.",
-        "Footprint and height are the values of `game/dimensions.py` for the object kind the",
+        "Footprint and height are the values of `game/world/dimensions.py` for the object kind the",
         "sprite draws (decision in `docs/adr/0002-object-dimensions-and-height-model.md`).",
         "",
         "## Game sprites",

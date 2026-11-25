@@ -2,18 +2,18 @@
 
 from typing import Any
 
-from game.actions import Action, ActionType
-from game.archer import Archer
-from game.arrows import Arrow
-from game.entities import Structure
-from game.fauna import Fauna
-from game.map import GameMap
-from game.npc import NPC
+from game.combat.arrows import Arrow
+from game.fauna.fauna import Fauna
+from game.fauna.sheep import Sheep
+from game.fauna.wild_archer import WildArcher
+from game.npcs.actions import Action, ActionType
+from game.npcs.archer import Archer
+from game.npcs.npc import NPC
+from game.resources.entities import Structure
+from game.resources.storage import ResourceStorage
 from game.settings import WILD_ARCHER_GRACE_FRAMES
-from game.sheep import Sheep
-from game.storage import ResourceStorage
-from game.terrain import Biome
-from game.wild_archer import WildArcher
+from game.world.map import GameMap
+from game.world.terrain import Biome
 from server.model_selection import SelectedModel
 from server.serialization import serialize_state
 from tests.conftest import MapBuilder, clock_at

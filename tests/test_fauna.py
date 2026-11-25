@@ -2,10 +2,10 @@
 
 import pytest
 
-from game.fauna import Fauna, FaunaState, remove_dead_fauna
-from game.map import GameMap
-from game.sheep import Sheep
-from game.wild_archer import WildArcher
+from game.fauna.fauna import Fauna, FaunaState, remove_dead_fauna
+from game.fauna.sheep import Sheep
+from game.fauna.wild_archer import WildArcher
+from game.world.map import GameMap
 from tests.conftest import MapBuilder
 
 MEADOW = ["." * 30] * 30

@@ -4,20 +4,20 @@ from collections.abc import Callable
 
 import pytest
 
-from game.actions import Action, ActionType
-from game.archer import Archer
-from game.arrows import Arrow, Team, advance_arrows
-from game.clock import WorldClock
-from game.entities import Resource, WheatField
-from game.fauna import Fauna, FaunaState
-from game.map import GameMap
-from game.npc import NPC
+from game.combat.arrows import Arrow, Team, advance_arrows
+from game.fauna.fauna import Fauna, FaunaState
+from game.fauna.sheep import Sheep
+from game.fauna.wild_archer import WildArcher
+from game.npcs.actions import Action, ActionType
+from game.npcs.archer import Archer
+from game.npcs.npc import NPC
+from game.resources.entities import Resource, WheatField
+from game.resources.storage import ResourceStorage
 from game.settings import NPC_HUNGER_DAMAGE, NPC_HUNGER_DRAIN, WILD_ARCHER_GRACE_FRAMES
-from game.sheep import Sheep
 from game.simulation import advance_world
 from game.spawning import spawn_world
-from game.storage import ResourceStorage
-from game.wild_archer import WildArcher
+from game.world.clock import WorldClock
+from game.world.map import GameMap
 from tests.conftest import MapBuilder, clock_at
 
 FIELD = ["......"] * 4

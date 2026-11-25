@@ -1,6 +1,7 @@
-from game.archer import Archer
-from game.map import GameMap
-from game.npc import NPC
+from game.fauna.sheep import Sheep
+from game.fauna.wild_archer import WildArcher
+from game.npcs.archer import Archer
+from game.npcs.npc import NPC
 from game.settings import (
     ARCHER_SPAWN_MAX_DISTANCE,
     INITIAL_ARCHER_COUNT,
@@ -13,9 +14,8 @@ from game.settings import (
     STORAGE_HUT_COL,
     STORAGE_HUT_ROW,
 )
-from game.sheep import Sheep
 from game.spawning import spawn_world
-from game.wild_archer import WildArcher
+from game.world.map import GameMap
 from tests.conftest import MapBuilder
 
 

@@ -5,9 +5,9 @@ from collections import deque
 
 import pytest
 
-from game.archer import Archer
-from game.entities import Rock, Structure, spawn_resources
-from game.map import GameMap
+from game.fauna.wild_archer import WildArcher
+from game.npcs.archer import Archer
+from game.resources.entities import Rock, Structure, spawn_resources
 from game.settings import (
     HOME_MEADOW_RADIUS,
     INITIAL_ARCHER_COUNT,
@@ -19,8 +19,8 @@ from game.settings import (
     STORAGE_HUT_ROW,
 )
 from game.spawning import SpawnedWorld, spawn_world
-from game.terrain import Biome, TileType
-from game.wild_archer import WildArcher
+from game.world.map import GameMap
+from game.world.terrain import Biome, TileType
 
 SEEDS = range(8)
 

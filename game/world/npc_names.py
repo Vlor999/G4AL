@@ -21,8 +21,29 @@ class NPCName(StrEnum):
 NPC_NAMES: tuple[str, ...] = tuple(name.value for name in NPCName)
 """Display names of every ``NPCName``, in declaration order (the pick order)."""
 
-ARCHER_NAMES: tuple[str, ...] = ("Robin", "Artemis", "Hawke", "Fletcher", "Ygritte", "Legolas")
-WILD_ARCHER_NAMES: tuple[str, ...] = ("Bandit", "Outlaw", "Rogue", "Poacher", "Marauder", "Raider")
+
+class ArcherName(StrEnum):
+    ROBIN = "Robin"
+    ARTEMIS = "Artemis"
+    HAWKE = "Hawke"
+    FLETCHER = "Fletcher"
+    YGRITTE = "Ygritte"
+    LEGOLAS = "Legolas"
+
+
+ARCHER_NAMES: tuple[str, ...] = tuple(name.value for name in ArcherName)
+
+
+class WildArcherName(StrEnum):
+    BANDIT = "Bandit"
+    OUTLAW = "Outlaw"
+    ROGUE = "Rogue"
+    POACHER = "Poacher"
+    MARAUDER = "Marauder"
+    RAIDER = "Raider"
+
+
+WILD_ARCHER_NAMES: tuple[str, ...] = tuple(name.value for name in WildArcherName)
 
 
 class NamePool:

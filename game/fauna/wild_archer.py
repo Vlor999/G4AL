@@ -4,9 +4,9 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from game.arrows import Arrow, Team, build_arrow
-from game.clock import WorldClock
-from game.fauna import Fauna, FaunaState
+from game.combat.arrows import Arrow, Team, build_arrow
+from game.combat.targeting import find_nearest_living, find_walkable_tile_in_range, tile_distance
+from game.fauna.fauna import Fauna, FaunaState
 from game.settings import (
     ARCHER_FIRE_ANIM_TIME,
     WILD_ARCHER_CHASE_RANGE,
@@ -15,12 +15,12 @@ from game.settings import (
     WILD_ARCHER_RANGE,
     WILD_ARCHER_SHOOT_TIME,
 )
-from game.targeting import find_nearest_living, find_walkable_tile_in_range, tile_distance
+from game.world.clock import WorldClock
 
 if TYPE_CHECKING:
-    from game.entities import Resource
-    from game.map import GameMap
-    from game.npc import NPC
+    from game.npcs.npc import NPC
+    from game.resources.entities import Resource
+    from game.world.map import GameMap
 
 
 class WildArcher(Fauna):
@@ -28,6 +28,8 @@ class WildArcher(Fauna):
 
     kind = "wild_archer"
     wander_radius = 8
+    max_health = 50
+    speed = 1.5
 
     def __init__(
         self,
@@ -37,10 +39,6 @@ class WildArcher(Fauna):
         resources: list[Resource],
     ):
         super().__init__(x, y, game_map, resources, name=game_map.name_pools.wild_archers.pick())
-        self.speed = 1.5
-        self.health = 50
-        self.max_health = 50
-        self._shoot_duration = 0
         self._attack_target: NPC | None = None
         self._all_npcs: list[NPC] = []
         self._arrows: list[Arrow] = []
@@ -81,7 +79,7 @@ class WildArcher(Fauna):
 
     def _do_idle(self) -> None:
         self._timer += 1
-        if self._timer >= self._idle_duration:
+        if self._timer >= self._state_duration:
             self._timer = 0
             target, dist = self._find_nearest_npc()
             if target and dist <= WILD_ARCHER_RANGE:
@@ -95,7 +93,7 @@ class WildArcher(Fauna):
             if roll < 0.35:
                 self._start_wander()
             else:
-                self._idle_duration = self._map.rng.randint(90, 300)
+                self._state_duration = self._map.rng.randint(90, 300)
 
     def _do_wander(self) -> None:
         if self._path_index >= len(self._path):
@@ -121,10 +119,8 @@ class WildArcher(Fauna):
         self._walk_to(best_tile)
 
     def _start_shoot(self) -> None:
-        self.state = FaunaState.SHOOTING
-        self._timer = 0
-        self._shoot_duration = WILD_ARCHER_SHOOT_TIME
         self._is_firing = False
+        self._enter_timed_state(FaunaState.SHOOTING, WILD_ARCHER_SHOOT_TIME)
 
     def _do_shoot(self) -> None:
         self._timer += 1
@@ -135,7 +131,7 @@ class WildArcher(Fauna):
             self._start_idle()
             return
 
-        fire_start = self._shoot_duration - ARCHER_FIRE_ANIM_TIME
+        fire_start = self._state_duration - ARCHER_FIRE_ANIM_TIME
 
         if not self._is_firing and self._timer >= fire_start:
             self._is_firing = True
@@ -148,7 +144,7 @@ class WildArcher(Fauna):
             target.health = max(0, target.health - WILD_ARCHER_DAMAGE)
             self._arrows.append(build_arrow(shooter=self, target=target, team=Team.RED))
 
-        if self._timer >= self._shoot_duration:
+        if self._timer >= self._state_duration:
             self._is_firing = False
             if target.health > 0:
                 self._timer = 0

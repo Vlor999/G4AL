@@ -10,8 +10,8 @@ from api.constants import ORDERS_TOOL_NAME
 from api.interpreter import MistralOrderInterpreter
 from api.logger import PipelineLogger
 from api.order_contract import ORDERS_SCHEMA
-from game.actions import ActionType
-from game.orders import CommandRefused, NpcOrder, RefusalReason
+from game.npcs.actions import ActionType
+from game.orders.orders import CommandRefused, NpcOrder, RefusalReason
 from game.ports import OrderInterpretationError
 from tests.conftest import LlmEndRecords, MapBuilder
 from tests.test_orders import make_npcs

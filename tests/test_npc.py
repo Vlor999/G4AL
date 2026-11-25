@@ -4,11 +4,11 @@ from collections.abc import Callable
 
 import pytest
 
-from game.actions import Action, ActionType, State
-from game.archer import Archer
-from game.entities import Resource, Rock, Structure, Tree, WheatField
-from game.map import GameMap
-from game.npc import NPC
+from game.npcs.actions import Action, ActionType, State
+from game.npcs.archer import Archer
+from game.npcs.npc import NPC
+from game.resources.entities import Resource, Rock, Structure, Tree, WheatField
+from game.resources.storage import ResourceStorage
 from game.settings import (
     BUILD_COST_STONE,
     BUILD_COST_WOOD,
@@ -20,7 +20,7 @@ from game.settings import (
     STORAGE_BASE_CAPACITY,
     WHEAT_GROW_TIME,
 )
-from game.storage import ResourceStorage
+from game.world.map import GameMap
 from tests.conftest import MapBuilder
 
 OPEN_FIELD = ["......"] * 4
@@ -479,3 +479,20 @@ def test_hunger_drains_before_the_meal_that_ends_in_the_same_frame(
 
     assert npc.state == State.DONE
     assert npc.hunger == npc.max_hunger
+
+
+def test_pawn_has_a_starter_for_each_pawn_action() -> None:
+    assert set(NPC._START_BY_ACTION) == set(NPC.allowed_actions)
+
+
+@pytest.mark.parametrize("action_type", Archer.allowed_actions)
+def test_the_archer_reacts_to_each_archer_action(
+    build_map: MapBuilder, action_type: ActionType
+) -> None:
+    game_map = build_map(OPEN_FIELD)
+    archer = Archer(*game_map.tile_center(0, 0), game_map, [], ResourceStorage(), name="Robin")
+    archer.enqueue(Action(action_type, target=(3, 2)))
+
+    archer.update()
+
+    assert archer.state != State.IDLE or archer.visible_speech_text

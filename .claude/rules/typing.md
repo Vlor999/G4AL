@@ -16,8 +16,8 @@ allowed on an untyped third-party API.
 
 When a value ranges over a fixed set (an action, a state, a tile kind, a resource
 kind), give it an enum, not a bare string. Follow the existing examples:
-`game/actions.py` `State` / `ActionType`, `game/fauna.py` `FaunaState`,
-`game/map.py` `TileType`, `game/npc_names.py` `NPCName`.
+`game/npcs/actions.py` `State` / `ActionType`, `game/fauna/fauna.py` `FaunaState`,
+`game/world/terrain.py` `TileType`, `game/world/npc_names.py` `NPCName`.
 
 New string-valued sets use `enum.StrEnum`: members are `str`, so they serialize to
 the same JSON the client already reads.

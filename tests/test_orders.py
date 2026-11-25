@@ -1,11 +1,11 @@
 import pytest
 
-from game.actions import ActionType, State
-from game.archer import Archer
-from game.npc import NPC
-from game.orders import NpcOrder, OrderOutcome, apply_orders
+from game.npcs.actions import ActionType, State
+from game.npcs.archer import Archer
+from game.npcs.npc import NPC
+from game.orders.orders import NpcOrder, OrderOutcome, apply_orders
+from game.resources.storage import ResourceStorage
 from game.settings import TTS_MAX_SPEAKERS
-from game.storage import ResourceStorage
 from tests.conftest import MapBuilder
 
 OPEN_FIELD = ["......"] * 4

@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:abc67f8320553182d20daca5a690e49bc3891730a8db88da6bddcc00358aac9d",
+  "claims": [
+    {
+      "id": "claim_8d5944952a964cf4bb5327bc697d0298",
+      "statement": "The model catalog lists Mistral models with their vendor id, display name, voice input flag and USD prices per input token, output token and audio second; only Voxtral Small hears audio, and it is Mistral's default model.",
+      "evidence": [
+        {
+          "resource": "repo://api/model_catalog.py#L26-L106",
+          "version": "repo-lines-v1:sha256:6e9381924f1392456db718fd64c0eb09787fedfdc1619707276beee32a50035a:eyJzZWxlY3RlZExpbmVDb3VudCI6ODEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU4MjhiYTU4OWI0ODJiYTU5MDY0MmJkYzc3NTU2NWE1YTgzMGU2ZDNhOWEzN2QzYzUwYjRlOWI3Y2FlODhhMGMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjdlZDNlYTA3ZDY3MTcwNDc3NTMxN2ExOTBkYTFiMTE2NGYwMGI5ZGJjMmU0MDlmN2NhNmZiZWJhZjI5NDUwMjYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijg2NGNjMzk4YmI4ZGZlMDkwZGM1OTNkNWE3MDhlY2UxMTAxZjJjZGRmODEyMDdmN2M4YzM1ZDgxODQwMDA3MDciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_93066915a340457484237d9be9626efd",
+      "statement": "read_startup_models picks the start model from G4AL_LLM_MODEL or the default of G4AL_LLM_PROVIDER, makes available every catalog model whose provider key is set, and exits when the provider or model is unknown or the start model's provider has no key.",
+      "evidence": [
+        {
+          "resource": "repo://server/providers.py#L33-L85",
+          "version": "repo-lines-v1:sha256:94557a6fa3421ed0ddfca771cd5974243eb7281d6948730f926305e697fd7fe3:eyJzZWxlY3RlZExpbmVDb3VudCI6NTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY2OWExMzk3NWMyNTZlYzgzMjBlMjAxNjA4M2M5NmRmNjM3Y2EzZDM1YmViZGUyMzE0YmVlM2E0NzExYjU2Y2EiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY3OTg5MjY2MGFkN2JjMjkxYTYwOTdkN2Q2MjU5ZTU3ZmI0Njg2NjdhYjc5Mjc3Yzc2YTJiZmI5YmQ0MTNmOTYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImJkYjExOTUyZTlmNDFiOWQzYTBhODFiM2Y4MmNmMzk3NDk2OTY1MGI2ZjIxNWU5NWI5YjA3MWY2OWVkMGM5ZGMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjdkOTc2MzVmMDFmNTQ4ZjU5MmQ5YTA4NzE0OWJiN2Q2MDg0ZjQ0MDQ0MjBhZTMzNjI3M2NmZWYyODM0MjVmYTYifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_aaf66007dd0c4ceaaa0ba90d5922a696",
+      "statement": "build_order_interpreters builds a provider's text interpreter, optional voice interpreter and roster callback; for Mistral one MistralOrderInterpreter fills both interpreter roles.",
+      "evidence": [
+        {
+          "resource": "repo://server/model_selection.py#L18-L25",
+          "version": "repo-lines-v1:sha256:5f86bb34852e1228c71028b4d216a78ed1d6984b5194f59be132b78c0943053e:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZjY5YTEzOTc1YzI1NmVjODMyMGUyMDE2MDgzYzk2ZGY2MzdjYTNkMzViZWJkZTIzMTRiZWUzYTQ3MTFiNTZjYSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYzUwM2Q3YjcwOWUwNGVmOWE2MWQ2YmI1ZDE2NzExNGYwODg2ZjgyNDU0YTVlMDRmNzJmZjQ0Y2MyNmEzODk4YyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNjMzNjliZjIxMjJlNjc2YzcyZGYyYjkzODUzZDc0ZjgzNjRiNTI2YmVjMDM3OGU5MzVmODI1MmRhNDRhNmJmOCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNzBjZTNmMjRhYjQ3YzJmNWE5ZDMzN2YzNzdlZDg1NzNmYTU2NTg0MDc2NDAyZjFhZjA1NGEzZGVkNjE5NDYyZiJ9"
+        },
+        {
+          "resource": "repo://server/providers.py#L88-L98",
+          "version": "repo-lines-v1:sha256:3b9fb8ec737554663bad69961351d8af56e0f97fc704519247b84d1c6a058a1d:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjVlZGE5MWE0ZjZkYWIwMDU0YTVhYzI4NTc3MjUyMDc1Y2FhZTI3ODAzMzYzNjYyZDVmMjEwOThlZDE1Y2E5YzkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU1MDMyZTk2NGQwOTMyMzUxZTVkMTg1MjY5MjgxYjE3MWEzYTA5YjA4YjI4NmU2NjFlYTQ3MDMyM2M4MmViNGQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImI2YTE4YTNiMGYxNGRiNGQ1NmI0ZGFmMGFhMjgyYTVkMTM5OTE2NDk2OWFlZGY4OTdhYmM2YzIyM2YzYjU5ZDIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_b9f8031f1018480baedd777365c01bf2",
+      "statement": "ModelSelection is thread-safe; select refuses an id outside the available models, and selected() returns the voice interpreter only when the selected model has voice input.",
+      "evidence": [
+        {
+          "resource": "repo://server/model_selection.py#L38-L77",
+          "version": "repo-lines-v1:sha256:88d950baad0f9634833e62b8adaae0a644eb2fb0505d5b9591bbf18becfcd166:eyJzZWxlY3RlZExpbmVDb3VudCI6NDAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjgzZjRiYWUwZjA3NTY1M2IwMTMyNTQ3MDEzMjNhNzE2Y2ZkNmI5ZGU1NTQ0NWE2ZjE2MGM3YmM2OGZlZDc2MzMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU5MDlhNTNhNjE4ZDAyOGUxZDMwMDBjMGE3YWJjZWVjYmU1ZmIzN2Y0ZTUxMWVmZTQ2NjQzZmFkNmU2Njg3MmYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjBkMzAxYWJhZGYyODhlODc0YjljYzBkYWIyMGQ5ODVjYTZhYWNkZWVlNTIyZDgxZDk4NmU3OGNiODE4NDI2ZmYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_bafcb9b736a843299837e8e530611dc5",
+      "statement": "When the selected model has no voice input, send_audio_command returns False and the state reports hasVoiceInput false, while typed commands still go through.",
+      "evidence": [
+        {
+          "resource": "repo://server/engine.py#L166-L186",
+          "version": "repo-lines-v1:sha256:1a80f0337edd575be71b4cd9e6826f82e9c7ce36bae1fd61b0a009476d3c0f8f:eyJzZWxlY3RlZExpbmVDb3VudCI6MjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZlYWNiZGEwYjRkZTlkZTA5ZDkzZjQxM2MyMmViMDk3NjhiZTkwYWU0YWZmMTI1MjZmZGJjMzFiMjQwYzYwOTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQxMDQyNGJkZTNhZDkxZmY4ZGFlYTgxYTRhYTUwNGIyZmU5ZDM3OTIzZjU5Mzc5MTUyZDU0M2Q3YjRkZWFmNzEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjdiZTdjZGYwODRiNzYzMzJlOTkxNmFmZTNlMDRjNjFlM2YyY2VlZjEyMmY5MmZiMGRmZjdjYTQyN2YwMzU2MDkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImViZmZmYjUwZWM3YmY0ZWEyYTUyN2RlOTAyYTJjZTU2ZjgzODY0MTRhODc4NmRiODMxYmRlMTk1ZmM1MzBjZTAifQ"
+        },
+        {
+          "resource": "repo://server/serialization.py#L49-L51",
+          "version": "repo-lines-v1:sha256:c242be8ead6fb9ce7c5543a38fdb10f136761959201b44f47b01b59d49288cb9:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZmIxZjkzZDRiNjg4OTQ2Y2Q4ODBkNTY2MDczNjc3NTAwZWFjZDYzZTg4MWM5NmI3MGE1N2UyOGI0ZGRhYWE2MSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMTQ3NzA2NDRjZWM5ZDhjOThhNzQ3NzAzOTNjZjczNDU2MzcyODNlYjBjMWJmM2Q2ZGUwZGQ1NzFhM2JhZTMyNSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMjc1OGYwNzQxNTFjMzU5OTIxN2ZmNWIwNjlmNDM1MTNjYzg1MjRiYTc1ZWQwNmRiOTViMWEyYWQxMzRjZDc3YiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNGZiZDAwOTMxNGJjMjcwODQxNjczNGEwMmFlNWZmMzlhMWU0OGEwNTBiZTkxZjQzYjJmYWE5MjAwMmM2MmJmYyJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_885b6676742f4b2a94dd9f1b8bdfc028",
+      "statement": "A command already sent keeps the model it was sent to: the engine binds the selected model id when the command is sent.",
+      "evidence": [
+        {
+          "resource": "repo://server/engine.py#L161-L186",
+          "version": "repo-lines-v1:sha256:40c77534e926dc5b06c880c589fd9d079d638ec9b50ea8dad41ee94e5d7b6cab:eyJzZWxlY3RlZExpbmVDb3VudCI6MjYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjhjOTY5MzUyOTBjZTU5ZWRmNjhmZmZhMmFiMDBiMDdmNDMwMDE5MDhjNDRjOTliZWQwMmEzNjU1YzJiMGQxNTMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQxMDQyNGJkZTNhZDkxZmY4ZGFlYTgxYTRhYTUwNGIyZmU5ZDM3OTIzZjU5Mzc5MTUyZDU0M2Q3YjRkZWFmNzEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjRhMTRhZDQzMGNhNmEyN2JmNjdmYjI5Y2E5MjczY2Y3MTdmNzAwYzk2ODM5MDc5MmVkYjMwYmQyMTkwN2UwOGEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImViZmZmYjUwZWM3YmY0ZWEyYTUyN2RlOTAyYTJjZTU2ZjgzODY0MTRhODc4NmRiODMxYmRlMTk1ZmM1MzBjZTAifQ"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.5.2",
+    "at": "2026-11-25T15:38:15.273Z"
+  }
+}

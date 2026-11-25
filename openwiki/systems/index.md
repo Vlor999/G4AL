@@ -1,8 +1,10 @@
 # Files
 
-- [Adapters, Voxtral, ElevenLabs and logging](adapters.md) - The api/ package that implements the domain ports with Mistral Voxtral, ElevenLabs plus the pygame mixer, and a JSONL pipeline logger, plus the NPC roster that feeds both.
-- [Browser client](browser-client.md) - How the static/ client is organised as classic scripts sharing one global namespace, what each script owns, and how it talks to the server.
-- [Domain model](domain-model.md)
-- [Fauna, wild archers and combat](fauna-and-combat.md) - How sheep, the cat and hostile wild archers behave, how player archers shoot and defend, and how both sides share one arrow list.
-- [HTTP and Socket.IO contract](http-and-socketio-contract.md) - The routes and events the browser uses, how request bodies are validated at the boundary, and the 400, 403 and 413 behaviour, including the origin guard.
-- [Pathfinding](pathfinding.md) - How NPCs and fauna find paths on the tile grid with A*, how blocked tiles and unwalkable goals are handled, and how a path is followed frame by frame.
+- [Adapters, Mistral, ElevenLabs and logging](adapters.md) - The api/ package that implements the domain ports with Mistral (typed and Voxtral audio commands), ElevenLabs plus the pygame mixer, and a JSONL pipeline logger, plus the provider-neutral order contract and the NPC roster.
+- [Browser client](browser-client.md) - How the static/ client is organised as classic scripts sharing one global namespace, what each script owns, and how it talks to the server, including the chat panel, the model picker and push-to-talk.
+- [Domain model](domain-model.md) - The game/ simulation, sub-package by sub-package - the NPC action machine, how a player order becomes an action, harvesting and the storage-full rule, resources and storage, orders and their outcome values, chat values, spawning and the world clock.
+- [Fauna, wild archers and combat](fauna-and-combat.md) - How sheep, the cat and hostile wild archers behave, how wild archers wait out a grace period at the start of the game, how player archers shoot and defend, and how both sides share one arrow list.
+- [HTTP and Socket.IO contract](http-and-socketio-contract.md) - The routes and events the browser uses, how request bodies are validated at the boundary, the Host allowlist and origin guard, and the 400, 403 and 413 behaviour.
+- [LLM models and providers](llm-models-and-providers.md) - Which LLM models can interpret orders, how the start model and the available models come from the environment, how the player switches model in game, what a text-only model changes, and how to add a provider.
+- [Pathfinding](pathfinding.md) - How NPCs and fauna find paths on the tile grid with A*, how blocked tiles and unwalkable goals are handled, how free tiles near an order are found, and how a path is followed frame by frame.
+- [World and map generation](world-and-map-generation.md) - How a new map is generated from one seed - biome regions, lakes, dirt patches and fords - how biomes drive where resources and sheep appear, how object sizes and heights are defined, and how NPC names are drawn.

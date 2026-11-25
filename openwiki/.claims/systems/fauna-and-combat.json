@@ -1,76 +1,126 @@
 {
   "schemaVersion": 1,
-  "pageVersion": "sha256:af4ee2d3755022ec9fb57ac08aa72323269ea9cf42cc2feb47ba079ff8a45e5c",
+  "pageVersion": "sha256:11d45e47d95a8b32ac31d80d6a60f7e4f3bb24c30f5d31c5384b9ac31e5a3cee",
   "claims": [
     {
       "id": "claim_fd2fcf7b8ce741d5b6a21f677fb488c7",
-      "statement": "Fauna ids start above 10000 and sheep and the cat are autonomous or stationary fauna; the Cat's update does nothing.",
+      "statement": "Fauna ids start above 10000 so they never collide with NPC ids; sheep idle, graze and wander, and the Cat's update does nothing.",
       "evidence": [
         {
-          "resource": "repo://game/creatures.py#L239-L300",
-          "version": "repo-lines-v1:sha256:44ad363a8806af735f927f3c1395282c6198e97e4f846e4b32c10b653b8d0aef:eyJzZWxlY3RlZExpbmVDb3VudCI6NjIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJlZWZkMDM5YjlmYmY4ZGRjYzMzOTA2YTZhYjliYzg3MDQ0YTBjMWQwNWRmZTE2MWQ0MGMwMjlkZjExY2U4NzAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjhkMzlkNjdiOTVmYzk1NjIwNjRmYjUyM2U1YzNiMjM2N2JkOTA4MTU3YWU2NTkxMjI4YTUwMzVhMmIxZWY1ZjMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImYwMzQyZGM2NWI3MjAyZTdkYTFiY2Y0NTc1ZGMxYjBjODJjNmU4NWQ5YjA0YWJkMjg5M2MyODRjZDRhNGYyNGYifQ"
+          "resource": "repo://game/fauna/cat.py#L8-L15",
+          "version": "repo-lines-v1:sha256:0f9a5812b48cda41b613dbb2e21c8fd3e063bb0fd9c6c40d33d216ed4bbf4fff:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZWI5NDUwZGZjMjE3MWIyZmMyMjQ3YmJjMmU0ODRmZWM1NDA1YmU3NTA0NmEwNTNkNDUxNTYyMTA0YmRlODNkNCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZjA2MmU1OGVhMGIwZmQxOTViYTA3NjYxM2I2MzBkNTllNjdiZDQ3MGJiMTllOTdhMjBjOTAyMzY2ZTViYTBlNiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiYmNmNTBiOWFlZWMwYTkyNTRmOGM0NWJjNGFlZDdlMjJjYTBkZGMzYTQ4MTQ4MjkwMGJhMzdkOThjZTFmMzM3NiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjAsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSJ9"
         },
         {
-          "resource": "repo://game/creatures.py#L56-L135",
-          "version": "repo-lines-v1:sha256:841fbbaf4f34f346f77ebf38853eecb484039a6953b3505075bfac85cb3eb335:eyJzZWxlY3RlZExpbmVDb3VudCI6ODAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNjMWM3YjdmN2MyOGFlNmUwYmQyMmNkMzUzNzViMTk1OGYyNzg2MTg2YTgzMTZkY2JmNWU5YmE5OTk1YWYxN2QiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQzNjM5ODA1MTFhODRhMjJmZmFlNjVmNzY3NTFkODI3YWVjMmFiZmU4NWZmMjRjNjU3OTA0NjAxNmIyODAzYTAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImE5YWNjMThlN2ZiZDQzMDk2ZTQ5YWZkMzVhOGQ3Zjg2Yjk2YjU2YTJmZDhjYzAyNjY5ZjY4M2RjZGQyNWZmNzMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjM3ZjQwMTI3YjFlYjUyODJiOGVhY2RjYjcwMzUwNDYxYjc2ZTFkYWNmNWM0MGZlMDFhNzFmYWZlODBlOWQ4OWEifQ"
+          "resource": "repo://game/fauna/fauna.py#L23-L30",
+          "version": "repo-lines-v1:sha256:545f1bdcc2c730c22249d39f69aead1c92ad29d3d4bc2b2584047ba70a84c616:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZjJjNGQ0YjM2ZDU4MGNlMmRkNmRkYjAwNWJhYzg0OTkxZmFiMDBjZTFmNjhlZGFmNjZmZjdiNjUxZjk2NzE5YSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZWE3Nzc0MzJiZWY4ZDI5NTdkYTYyNDNlY2E4NGEyYjBiZGQxNzVkOTI0NTUyNjdiMmZhNzYyNjNiYjhkMDg0NCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiN2U2NTg0ODk0MTNhMDEzMDgwMzMxNWRlMWRmNTAzZDBkNDk0NWI1ZmUxZDg2ZDE0YWE1NWE3M2VjNWUxNzUwZSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYzA3YjkyZjJlYzBkZDEwMDBjODNiMGIyZDA4M2UzMTE1ZGVlMzkxYjM1ZTc0YWZkZDYxNmVkMjRmNWJmMzk2YSJ9"
+        },
+        {
+          "resource": "repo://game/fauna/fauna.py#L75-L132",
+          "version": "repo-lines-v1:sha256:3f02d0153893774460031bdb116b26a6e92ad8262442159fd718dac062ab2b52:eyJzZWxlY3RlZExpbmVDb3VudCI6NTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjcwNTEyMDE5ZWNmYzFlOTAxN2UwMGMzODJmNDFjNDk0M2Q3ZWMxZjlmMzUxZTIzZjgxYmExYWI3YzgyMzEzMDciLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZmYWMzZWRmNjJlNjcxMTcyZjk1MjE1Y2NiZGRmYjExZDU5ODYyMTk1YzkzYjdlMTUyNTdjMmI4NTNhMDFkMDIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjJmYjliOGZjZTJiNjJmMTkxYzNjZDQxNTUxNjRhZWJkZDEwNWFjNjJkZDQ4YmE0OGU5NmM0YjNkN2E5ZTM0NzkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImQwZmFkMzg1YjRjMDQzODYwZDMyNjliYzg5ZGUzYWQ5ZThlMDdmMWMwNzY3M2M5ZDkxZTAzMWM3YWNkYTgzNGIifQ"
+        },
+        {
+          "resource": "repo://game/fauna/sheep.py#L14-L28",
+          "version": "repo-lines-v1:sha256:7217375714f31b0a1bce1cbc46d8f4aefff60c88ea4de030fca37c1a16108ba2:eyJzZWxlY3RlZExpbmVDb3VudCI6MTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJlZWZkMDM5YjlmYmY4ZGRjYzMzOTA2YTZhYjliYzg3MDQ0YTBjMWQwNWRmZTE2MWQ0MGMwMjlkZjExY2U4NzAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg4Njk4Zjk5YmQ3NDhjYWJmZDExZDgwNjI1MTFmODYxMWY3NGEyN2IyYmEzMWE0YmNiNmE3MzNlOTFiNTI1MDgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjNkNGExMWIxYTVkMDY1MjkxZGU3MzE0NDZkY2Q1ZjQ1NDE5YTA1MjUwMTU1YTJhYzQyZmEyZWUzYmEyZjBlYjQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
         }
       ]
     },
     {
       "id": "claim_556a65aa13314fe8bb1f2ba073702530",
-      "statement": "A WildArcher shoots the nearest living NPC within range, chases within six tiles, patrols otherwise, applies damage and appends a red arrow at the fire phase of its shoot cycle unless the target left range.",
+      "statement": "When idle a WildArcher shoots the nearest living NPC within WILD_ARCHER_RANGE, chases one within WILD_ARCHER_CHASE_RANGE, and otherwise patrols or idles; while wandering it starts shooting as soon as a target is in range.",
       "evidence": [
         {
-          "resource": "repo://game/creatures.py#L463-L492",
-          "version": "repo-lines-v1:sha256:151073633d3fac71c2b78fe6dacd1a282be154b226c73901b9b6c03ed8a0decc:eyJzZWxlY3RlZExpbmVDb3VudCI6MzAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjIxYjc0Nzk0MzUyMzAwN2ZiOWUwZTlkNmM0MTRmMzY3NTAxNzEwN2VlOGFlZWRhYmQ2MzA0OThiOWM2MjliY2QiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjhkYzdhN2FhMDliMzAxYWUzNjE4YjdhNzcwOWE3NjM0OGZkZjI4ZWFjZjZiYjlhN2ZjYjRjNDkzMTc3ZTIzOGMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImU1Njc3ZTY2MGRmNDI1NDlhZjJmMDgwYmM2ZTBhNjdhNWE1M2Y4ZTVmNjVkMmFhZjEzODRiOTA2NmQ0MDQ3NWUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjJiNWExYzYwYjkzYzk3MGRiYWNjYTNmODE1MTVkODZjYTZmMmIwYTFmMmYzMTA5ZGU5YTU0OTMzYmFkYzMyNDQifQ"
+          "resource": "repo://game/fauna/wild_archer.py#L80-L119",
+          "version": "repo-lines-v1:sha256:91d5462d00b56901791a819c091ff94a9fbb901f0a7d13264752575756e53fc3:eyJzZWxlY3RlZExpbmVDb3VudCI6NDAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM3NzVhMzdiY2Q3NDcwNzE2ZjI5YmFhY2M1MmEwNTkwZDFhN2Q4YzFhMGM4MmM5Mzg5NTBhMmI2MzQzOGZmNjYiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI3ZTZlMTU1OWI5MzA5NTEyNGVjZmZlMDcyYzU3NGI4OWEyYTcwYzdhMDNhZmExYzczZThkMzEyZDM2YmEyY2UiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjM0N2E0ZjRjMjhlODIwZWRmY2ZiZjVlMTJiZTU5ODcwMTFlYzQxNjUyOWJjYzAwMDNlMDM2NDNmMzExMTMwMDkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijg2ODBkOTlhZDM4YzllMjM4ZjdlMjY2YzdiNzg1OTJjNDEzYjYwMDYyZmZiZmM4NGRkMWIxYmFiMDQzOTljYmYifQ"
         }
       ]
     },
     {
       "id": "claim_422d4bf080374243b35662d05762b0a5",
-      "statement": "Archer.enqueue cancels defend mode, and a defending idle archer rescans for enemies within ARCHER_DEFEND_SCAN_RADIUS every update.",
+      "statement": "Archer.enqueue cancels defend mode, and a defending idle archer with an empty queue rescans for enemies within ARCHER_DEFEND_SCAN_RADIUS every update.",
       "evidence": [
         {
-          "resource": "repo://game/archer.py#L181-L193",
-          "version": "repo-lines-v1:sha256:1535fd976ce2bb6ab1edd7a83512b7ce4e3f2c25f942a7aff685d2fb27bfe273:eyJzZWxlY3RlZExpbmVDb3VudCI6MTMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjgxNTcwY2Q5ZDIyMzhiZTBmYjYyODQzODZjZDU5ZjdiMWNkMmY0NDg2Mjk1NTI4NmNjNjM1YjhkNWExZWI2YWQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjhkNmM3ZDA2NmU5Y2I0ZmVjNTJhYTlkZTY0OGNiOTRjODkwMzVkYTFkYWE3ZDc4ZGFhM2NlY2ExZTAxMzE0MWQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImZkMzNhZDNiYTA2ZDM5M2RhZmJmY2VjZjNiOWNkZjViOGI3ZDQ3MjUyZTMxOTc1NTlmOGViODUzOWYyYmRkNzIifQ"
+          "resource": "repo://game/npcs/archer.py#L135-L141",
+          "version": "repo-lines-v1:sha256:bb41a1badfff1f9703279975423301a4d7b9374728c3777a50016facf226cdc3:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiODE1NzBjZDlkMjIzOGJlMGZiNjI4NDM4NmNkNTlmN2IxY2QyZjQ0ODYyOTU1Mjg2Y2M2MzViOGQ1YTFlYjZhZCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMDFiYTQ3MTljODBiNmZlOTExYjA5MWE3YzA1MTI0YjY0ZWVlY2U5NjRlMDljMDU4ZWY4Zjk4MDVkYWNhNTQ2YiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiOGQ2YzdkMDY2ZTljYjRmZWM1MmFhOWRlNjQ4Y2I5NGM4OTAzNWRhMWRhYTdkNzhkYWEzY2VjYTFlMDEzMTQxZCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYzE0N2VkMGVjMDY5ZGUzOTZmMThkNDk2YWM4MjliODYwMzVkZjBhZTc1YWVmYWQ5MzczZDIzMWE3NjIzY2FjMSJ9"
         },
         {
-          "resource": "repo://game/archer.py#L96-L156",
-          "version": "repo-lines-v1:sha256:d49a518b990a364d452ab0efa6d03f4724154b485c52fef9855a0c79bdd8b283:eyJzZWxlY3RlZExpbmVDb3VudCI6NjEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVkMjM3NmU4ZTRjYzNjMDliNmE3MGI4OTRkMjdkOTU2ZGUwN2M4ODc2MTAyNmRmNDljM2FlNjg4OWY1NTQ2NDUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRjY2NlOTQ2ZGQ0NGMxODc3YzM3MTJjNTY1OGI3MjEyMjhjMWRmY2JkZmYxNWFhOWI3ZGU1ZjVhYTcyOWFmOTgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImIwMmQ1ZDY4ODc3ZDllN2IwMDY2YzE2ODgyZDQ3NTEzOTE4ODkzZDJkMWZlZGNhZWQ5MTk3Y2MyYTdkMTFmZWIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijk1OTRiMDkzNzhkZTU5MWVkYWU4N2Y0MzM4MjM4YmQ2MWZhYTQxNDQ2NmM0YzRjMzE4NDM0NTYzZGFiYWRiZTgifQ"
+          "resource": "repo://game/npcs/archer.py#L80-L93",
+          "version": "repo-lines-v1:sha256:53f64713bafc0e5369b1a4a9bea966daa43971483591e897a4989c1b59b5d41e:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVkMjM3NmU4ZTRjYzNjMDliNmE3MGI4OTRkMjdkOTU2ZGUwN2M4ODc2MTAyNmRmNDljM2FlNjg4OWY1NTQ2NDUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZlMjU2ODViZDE4ZmFkZjg5NDAxNWI4NTM3MTg1ZGFlMWZkZjg1NmU2OWQyODM0NjZhZjMyNzk2MTI0NjdhMmEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk0NmFlODViM2IyOTZkMDI0MDkxOTRhZjcyYWZkYzMxMjFkNGVmNGE4MzlhYzY3YjMxMzI1MDA5ZTI3NjUwOGEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImU0ZjY2ODJkYmQ4MTdhNDc1NjJkMDVkZjAwZTk2MThlZjEwMDdmNWZiODJlZTA2NmFmNmZjY2JiN2YyZTQ1MGEifQ"
         }
       ]
     },
     {
       "id": "claim_7159615c54e749f095579c11e59de0ef",
-      "statement": "An archer's shot applies ARCHER_ARROW_DAMAGE and appends a blue arrow when the fire phase starts, ARCHER_FIRE_ANIM_TIME frames before the end of the ARCHER_SHOOT_TIME cycle, and it keeps shooting while the enemy lives and stays in range.",
+      "statement": "An archer's shot applies ARCHER_ARROW_DAMAGE and appends a blue arrow when the fire phase starts, ARCHER_FIRE_ANIM_TIME frames before the end of the ARCHER_SHOOT_TIME cycle, and it shoots again while the enemy lives and stays in range, otherwise follows it.",
       "evidence": [
         {
-          "resource": "repo://game/archer.py#L257-L274",
-          "version": "repo-lines-v1:sha256:cd270debb81e8c43c112eb063b20501f691f70a4f0fb5e87e4b4fc56f710188a:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI3MjNjMGRkMDA0MjdkMjZhNjE5ZTU0NDUwZGVlZWEwMGYyNzZjZjJkNTM2ZDU0ZTRjNDgxZGMwOWY4MGRkZTkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQwMDEwNWUwYTY4NTIxYzNkMzMyNjE1MzkwZTg1OWUzOWNmMjQxMjc0YTdkNzgxZDE5NmEzYWRhMDdiMTBmZDciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjFlZTBhNzI3MmY5NTM4ZDcwMjdlZmFiZGUwNjRlYWUyNDgxMTRlNjUxMDZmNDkxOTdlODEwNmQyZWEwYjlkZDQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjM1OWEyN2IxMTVhZjI4ZDMzOGQxNzE3YmExODg0MGM4MDhhMDQ5MWE4ODhmNWUwNzYyNzU2YTI5NjBiN2JjYTIifQ"
+          "resource": "repo://game/npcs/archer.py#L177-L200",
+          "version": "repo-lines-v1:sha256:0af855192875f35c7b1c81850bf5b3b66ca80da6d7b3542530efd688a3861178:eyJzZWxlY3RlZExpbmVDb3VudCI6MjQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImNiNjUzYmE1OTU2ZGVmNzhlNDgyNjE1NzgzMWVlZjJmY2EyZWE4MGRkOWRmMDhmYjYxZDM0OWMwNzc0NDA2NDUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQ2MWRlZDc1YzRmMzVlOTFkMzJmMzhiMDRlYmE0MzQ4NjJmNDk0NjBmNzdiNjQ0OGM0YzQzMTAwYzM4MDVkMTciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjEzOGUzOTMzNDU5MWRkNGIxODg1MTk4ZGQ0MWYzZWQ4ZTZhNDI0ZTE3YTQzYTRlNDBjOGI1YjA4ZWI5MmQ5ZDQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQwYjIxZWYxNjVlZTc0ZTBhMTAwZjJiN2YxODc1OTkwZDg5NTczMDMyOGFmYTExZTUzOThkY2U0ODJjYmY5YTgifQ"
         },
         {
-          "resource": "repo://game/settings.py#L34-L35",
-          "version": "repo-lines-v1:sha256:fd74c8c1feb0451d1919f5f01a5c8cc953bf2193376bcebef5063194b09c2b15:eyJzZWxlY3RlZExpbmVDb3VudCI6MiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMzIyN2JjNzJhMmFlZTUxNGVmMjQ1ZTdhMWE1M2FjYzE5ZjQ0ZWZjYWU0YWFmNDNjOThkM2ZhNWZjZmFkZWUxYyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYWY2ZjA3MGE3YjA5YTA4NDFlYjEwMTUxYWI5N2ZmMTFkMzA2ZDEzYWY3ZWRiNzI4ZDY1ZWM1MzVkZjE3NjIyNiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiY2UzYjMzYTQ1NDRlYThhMDZiMGQ0ZjU0NjJmZmFmOWM5ZDVlZjAwNGY5MTY5YWY1NjFlMzM0Y2UyODNlZTgzMCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiY2MzNTRhMjgwYWVjMzc3YmMwZDYyZmE0M2UyMzY0NDM4YWI3ZGFkNDQ4NWIzMmQzMWNiYWQ0MmRiYWI0NGYxZiJ9"
+          "resource": "repo://game/settings.py#L56-L59",
+          "version": "repo-lines-v1:sha256:fa636a7656781d0348ececaec1a71679d76ad330403c9f23224b03557cd9722c:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMzIyN2JjNzJhMmFlZTUxNGVmMjQ1ZTdhMWE1M2FjYzE5ZjQ0ZWZjYWU0YWFmNDNjOThkM2ZhNWZjZmFkZWUxYyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZjU3MmEwMWQ2MjA2MGM0ZWM0ZDVkZDEzY2I3YjYzNjBhZmVmMDJjYTU5NTg0NTcwZDQ0OGE3MDNkYWVjMTFjMCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZGFkYTJjOWJiZDIzYWMzNWI5ZTNkOGNkZWNhNGI2YTZhN2Q3NTRkYjE4ZDA2NzVmMGFmYWQ2NzYwZThkNzIyYSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNGNkMTZmMjE3YjBlZDQxY2FkODM2OTdiMTE2OGY0MGNjZTg1ODliZjQ4ZTBiZWVkZDZlZmU4M2E0MWJkNWQyMCJ9"
         }
       ]
     },
     {
-      "id": "claim_ef47d1a3987149b6bb35a5d57d637cf5",
-      "statement": "The engine updates the NPC and arrow lists shared with archers and wild archers in place, but rebinds self.fauna to a new list each tick, so archers keep the fauna list they were given at spawn.",
+      "id": "claim_740ead438b3245cbb43f4351a8816c17",
+      "statement": "During the first WILD_ARCHER_GRACE_FRAMES world frames a wild archer finds no target, so it neither chases nor shoots; it reads the elapsed frames from the WorldClock linked at spawn.",
       "evidence": [
         {
-          "resource": "repo://game/spawning.py#L130-L157",
-          "version": "repo-lines-v1:sha256:fc8c8641da6b00fbf8e050645a52dd7567e225cf4b6fb02bb5ccb9d7ae3ec37d:eyJzZWxlY3RlZExpbmVDb3VudCI6MjgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjYzM2U2ZmE3YTA4ZDRlNGRkZWVjZjQzYjMwODAyZWQwODE4ZDcwMjFlNTZlZTRiNTE1OGQ4ODQ0NzExY2ExZWIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjVjOGE4NTA2YWFmMDU5MzE2MzExN2UxOGQ0YzZmODQ2ZjM0ZjQzZmM5N2MwNTBiODdmNGUwZjA0ZGY5ZjkyMjUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+          "resource": "repo://game/fauna/wild_archer.py#L53-L78",
+          "version": "repo-lines-v1:sha256:f67a6c8674e27383cb5516934ae57e8b092a33bdaae20c8f20edc19a5063d1f7:eyJzZWxlY3RlZExpbmVDb3VudCI6MjYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjVlOTY4Mjg0OTU3NTI2YWE0MGJlZWI1ZDFiNzQxZWE2NGIwNjliZGU4YWMzMzdkN2Q0MWQ0MWZhYjM1YjY1OGEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjgyYjUzN2VjZjhjYThhNjQ0YmU0ODdhZDMzN2JlYjNhZjM3MzY5MTcyYjhjNDM4NDg4ZGRkOWU0MWFkNTRmMTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjllNWRjY2NjZDNjZTI5YzMwYjU0MGYxZDRhNjkzOTY0NjljY2U5NTAxZmQ3MDllOTMyZGY4NzY0YTdlYzM4Y2IiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjBiNzRiN2E0OTM1MDhmZTM3NmVkZjg3YjFmMDI5YTU2NTdhYjY0MGQ5NzlkY2JiOWY3NzRlNTBkN2JhZjY2YjgifQ"
         },
         {
-          "resource": "repo://server/engine.py#L66-L79",
-          "version": "repo-lines-v1:sha256:5181b75b464cba5e753eb67d255ff37a47eb2197771c2a8560e0e99b36d694e8:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJjZjFiY2UyMmVkNzY1ZGU3MzViNWRhOTJlY2ZlMTVmZDI5Yjc1NmI0MmYwYzc2Yzc3OTVhMTk3NTBmNTQ4OTMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImMzMTIzNGY2ODI3NjA1NGY0NzQ2ZTk5NDdiZmJkZGRlNDg3ZjVjYTU5NmE4MzE3Mjc3ZmZlZmZiZTRmYjgxZGIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjFhNmU5ZmY5MGY5ZGUxMmRhMTYzNjdmYzRiY2VjZmU4ZDZmNzM0MzFmYTY4NWE1YTljMThmNmI0ZmFlMzIwYmIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijk2YmQwNzFlODg1NjJjM2JhODIwZGUzOTNjZjBiYjY0MDUxYTBjZmIxY2I4YjZlYzk1N2JlNDgxYzdiNDNlNjkifQ"
+          "resource": "repo://game/settings.py#L68-L68",
+          "version": "repo-lines-v1:sha256:f26f34c7f6e3123b60034e9d44891762ead676b0a9dbd00fc74bfb0e016d9bff:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZjI2ZjM0YzdmNmUzMTIzYjYwMDM0ZTlkNDQ4OTE3NjJlYWQ2NzZiMGE5ZGJkMDBmYzc0YmZiMGUwMTZkOWJmZiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZjI2ZjM0YzdmNmUzMTIzYjYwMDM0ZTlkNDQ4OTE3NjJlYWQ2NzZiMGE5ZGJkMDBmYzc0YmZiMGUwMTZkOWJmZiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZWQzMWYzZTg2MjVjM2Q0NTAxZDZiNjk5ZjUwNzg2OWRjOWEzMzY1NTliYzY0YjI0MWY5MWYzMTRkMTI4ZDYxNiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiOWNjZjI5Nzk5NDM5NGM4MTM2MDUzZDNmMzBiMDI5ODU2MzliZjg4OWZkMDMwMDEyOWU4ZGRhY2MyZDFhNmZmOCJ9"
+        },
+        {
+          "resource": "repo://game/spawning.py#L148-L154",
+          "version": "repo-lines-v1:sha256:9491fb40cd5ce6c0275d30c7533cb8d230c0424bf9f9ff8f89cd77889d68f5fd:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiODY3N2NhYjc3YmM0ODQ1YmNmM2VhZjM1YjhhYTNmMjJmMDg4ZDFmMWYwZGFjMDk5YjUxMzc0ZDY2ZDlmMjAzNSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiOWUwZjlmOGNjZWRlYWM2YzJkN2JjNDE1ODg3NTIyZTYxYjU5NDhjYzU1M2RkMmQ4M2Y4ZTNiOGM4YWU4MTcyNSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiY2ZhN2QyMzIzZDk0MGIyOTUwYmQxYmM4ODhjMTVhOTQ1MjYzYmU0Y2MwMzIzYTAzYmE4NjFkOWFjNDBiOWEzMiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjAsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_2b104b9bfb244594b85cb908924df942",
+      "statement": "A wild archer's shot deals WILD_ARCHER_DAMAGE and adds a red arrow at the fire phase unless the target left range, in which case it goes idle; the cycle repeats while the target lives.",
+      "evidence": [
+        {
+          "resource": "repo://game/fauna/wild_archer.py#L121-L153",
+          "version": "repo-lines-v1:sha256:902ab3e879e31ee879356ba9130619eca592589e3c814652bfbde8e5f58a9195:eyJzZWxlY3RlZExpbmVDb3VudCI6MzMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjZiOWNlOGY1YWVkMzU4ZjcyYWI0YzNlZjZlZWU5Zjg0MzI4YmUzMjVkMDY1YTg3NDUyODkxMDM3Yzk4YmIwZDQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImVjODBlMzc0ZmY5YjFhNDkzNDgxYzk1OGViODA5MWM2NzcwMjVkZThiMmY5MWJlM2ZjYjdlMGZhMTBkNTk3Y2QiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImVjZmE4ZDEyODY1YjI5YjZmNTlmMTY2MjRhMjhlNjgzNDI3ODVhZGQ0NjdlZDVjNDI4ODNhMzBiY2VjMWUzYzYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_a1453524fe0b4289b22817fed0b517dd",
+      "statement": "advance_world mutates the shared arrow, fauna and NPC lists in place, so archers and wild archers keep seeing the current lists.",
+      "evidence": [
+        {
+          "resource": "repo://game/combat/arrows.py#L48-L53",
+          "version": "repo-lines-v1:sha256:d19e3e07fc0469f1a592003831c1d90ce225136feaaec6f600e00396ab7f5bbc:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZGNiODBlNDI0ZmNkMjkyMDY4NzEyMzk2NDE4MTAxOTBkODI1ZjY1YTUwOGUzZjgyYjM2MDMyYzUyMzJhN2RiYyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMzY1OTU3YWNiNjk5YjEzZGFmZTQyNzEzMTVhZDQ1NTJmYzEwOGI1YjVmMzdmNDNmYzA1MWFkMGFlZmY5YTQ1ZCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNGZiZDAwOTMxNGJjMjcwODQxNjczNGEwMmFlNWZmMzlhMWU0OGEwNTBiZTkxZjQzYjJmYWE5MjAwMmM2MmJmYyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjAsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSJ9"
+        },
+        {
+          "resource": "repo://game/fauna/fauna.py#L194-L196",
+          "version": "repo-lines-v1:sha256:965c1586b45c403bb83f0ba10a32f73aae427efdde0f10f2c85e31288797e996:eyJzZWxlY3RlZExpbmVDb3VudCI6MywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZmNhNWIyMzYzNWI4MmZmNWEzM2UwYjg5YWJkMmMxMTAzZTE2Y2Y0YmQ1MzYxNDc4MWViMTA0ZGMwY2ExNjIwYyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZTQyMTMxNWY2ZmY0YjM0MmUxYmI3MzJjZjlkMjE1OTEyN2RmZGNiN2QzMDU3YzNlM2IzNGZhNWRmY2ZkYzc3ZSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiOWNmZTBlMzg0NDQyY2FlYTkzNGMwMzUzNWFkYmUyOWMzZTUzMjY4MGM0ZTViYjU4NTU2NDY2NDAyNDNkYjAwNSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjAsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSJ9"
+        },
+        {
+          "resource": "repo://game/simulation.py#L17-L53",
+          "version": "repo-lines-v1:sha256:5868438b52285038b36e18a7ff58546e00dea4942f9f82c61e5ee0fce242ff66:eyJzZWxlY3RlZExpbmVDb3VudCI6MzcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk1MTNkMmU0Yjc3NTlkYjgxMzA4OWQxZjVkNzhhNmI0MjI3NTE1M2ExODJlYWVhYmVlY2JmYWNiYTFjNDc3NzIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjhlZjhiMzJkMDgzYTBhNWQzNzc3MWIxNDM3ZGE0Yzk1NTRkNTAxYWYwMDdmMDEyMTA4OTkzMGJkMDc3NWQ2YWIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjlhNDM0ZjgzMzQyNWY0MmFhNGM2ZmNiNzFhNDkxYmE1MWE0NzI4ZjllNGE2OTk3YjA1ZjNmNGNkN2QxMDIyZTQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_2bc56346b3fe43018fce9b3f4e4fe961",
+      "statement": "When its target dies an archer says Target down! and rescans when defending, otherwise ends the order.",
+      "evidence": [
+        {
+          "resource": "repo://game/npcs/archer.py#L202-L208",
+          "version": "repo-lines-v1:sha256:1d58ed3f591edf2cd30f7ea8abfda09b6f22e49da1368e6619519ab4202897ec:eyJzZWxlY3RlZExpbmVDb3VudCI6NywiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNWM3ZmVlMTRlOTdkNmI1MmMyNzUxZDQ5YTdiNTRjNTIzNDMwNDRmZGQzYjA5ZThlNzdlYjAzYzc1NzFlZTc1MyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZGNjY2U5NDZkZDQ0YzE4NzdjMzcxMmM1NjU4YjcyMTIyOGMxZGZjYmRmZjE1YWE5YjdkZTVmNWFhNzI5YWY5OCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiY2EwYjUzMzRlNWUxMDhjMGMwOTM1N2ExMjc3YjlhYWZhYzg4NDFiNjI5MjIxYWVlOWZlY2U3YmE4ZGU3MDI3YSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjAsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSJ9"
         }
       ]
     }
   ],
   "verification": {
     "by": "openwiki/0.5.2",
-    "at": "2026-11-18T09:41:00.050Z"
+    "at": "2026-11-25T16:09:17.330Z"
   }
 }

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "pageVersion": "sha256:0c098b5e58f65693df9a7c4060383b0de89ae839445de1a04636fb90dd5b3561",
+  "pageVersion": "sha256:326f91e996b0c367bba897f738d23c9614942aae675a0be327f20d9889bdfbbe",
   "claims": [
     {
       "id": "claim_01922ab1fcfe410a8a5f0ff8bfee174b",
@@ -14,51 +14,89 @@
     },
     {
       "id": "claim_2995045eb8ac486caf43e537ca9cab94",
-      "statement": "game/ports.py declares two Protocols, OrderInterpreter (interpret) and VoiceLineSpeaker (speak); only the interpreter port has an error, OrderInterpretationError.",
+      "statement": "game/ports.py declares three Protocols: TextOrderInterpreter (interpret_text), VoiceOrderInterpreter (interpret_voice) and VoiceLineSpeaker (speak); the two interpreter ports share one error, OrderInterpretationError, and the speaker port has none.",
       "evidence": [
         {
-          "resource": "repo://game/ports.py#L14-L43",
-          "version": "repo-lines-v1:sha256:50bdb803f6da07a1c82818bf5e271a21ccbcb2f56468572ebfe80e393f35f0e2:eyJzZWxlY3RlZExpbmVDb3VudCI6MzAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU2MjBkODVkZTRlZDdhYjgwMjFiNGE4ZGQ0ZmExNWVjNTE5MjVjZGZjY2RlMTgwNTg5NWE0YzhhM2MzYmE0OGMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjIxODk2MzkwNGVkOWFiZjBmNmM0YTdhZjE3NTFkOTk3MjFkY2ExMTg5NzdhYjY5YTQ3Y2Q5ZmFmZGUxYmQwZTkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+          "resource": "repo://game/ports.py#L16-L60",
+          "version": "repo-lines-v1:sha256:e7e47bf385836c9c3aed77bf82e9fa50cfe36baf8407396c6bd45dd4924836c2:eyJzZWxlY3RlZExpbmVDb3VudCI6NDUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE0MDU2NWY3M2JjN2JjYzgwOGYyYjg0MzRiYjI5YzVkOGY5NGU5ZWQ1MDU4OWQ5ODQ4M2Y3MThlNzI4MjFkMzEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU2MjBkODVkZTRlZDdhYjgwMjFiNGE4ZGQ0ZmExNWVjNTE5MjVjZGZjY2RlMTgwNTg5NWE0YzhhM2MzYmE0OGMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQ3MGVhN2ZjY2UzNDZjZWNhN2MwOTYwZWJmNjA3ZGU2YThiOWNiOWQ0MzU1NjcwZGE2Nzg1YmNmNTRmMmQ2ZDIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
         }
       ]
     },
     {
       "id": "claim_48c1cb99d0074f6c89a977622d80d26c",
-      "statement": "GameEngine takes the interpreter and speaker as keyword-only constructor arguments, so adapters are injected rather than imported.",
+      "statement": "GameEngine takes model_selection, speaker and run_in_background as keyword-only constructor arguments, so adapters and the background runner are injected rather than imported.",
       "evidence": [
         {
-          "resource": "repo://server/engine.py#L30-L44",
-          "version": "repo-lines-v1:sha256:df467b5b63265cf46208a7215f2b6d4a8e729737b8d7b790d03cb3a80ae57f7c:eyJzZWxlY3RlZExpbmVDb3VudCI6MTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI1MTk1ODI3YjBmYTIwYzMxM2EwMmI5NDVkMjJhMjJjZmM3NWJhNTQxNGM0ZmQ5OWE3NmVhZjRkNWY3YjU1YTIiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjJiZjMxMzA1YjBlMmFkNDJlNDYxMGFjZjQ1ZmI5OGY4ODkwODFiNzk1Yjc4NjM1NDc1ZTEwZWQ5YWUyZDI2MTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQ5ZTg2MWJmZThiYThkN2ZmYTFlOGJhMDhiNTViOTIxYjdlYWIzNmM3NDU3MDMxYTc0M2NjMjFhNjkxOTA4YTYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImYwZmQ5ZjhmYzQxYzZhOTQ0ZjQzMmIyMDdkNmNmMWNmZGJkNWE3NDE1YWRiMzViYzA3NzNiMmM1YTMxMjc2NTAifQ"
+          "resource": "repo://server/engine.py#L50-L73",
+          "version": "repo-lines-v1:sha256:817d39749e77e440f27c018d654f34985890d600ff2db4f7aebb36aa14a2f51c:eyJzZWxlY3RlZExpbmVDb3VudCI6MjQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjlmZDdhMDdhODNkZDE5OTZmYjUxNjg0YjQyYWVjYWY0ZTkwZmI3OGJhNzIzMGU1NDJlZDdiZDAxZDQyMzAxYmUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjgxZGYwNzk3OTFjM2JlOWI1N2YwYWQ0ZTZkMDc3OWQ0NzM5MzE4NDM0MDVjODhjMzAzNjExZGZiNjNkYjg5Y2UiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjhhNWEzYzE5ZTY0N2JlNmQxZTY2NTdkYjA3NTcxNDI3OTU2MGM1ZWVhZjgzMTUxMjhlOGUzYzU5MzhhNGY4YTYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImNmZDc2MTRhMTc1ZjBmYTQwOWRjYzk0OGQ4NDgyYjAwOTNmNWM0NDBhY2I1ZmZjNDdhYWFhMWQ5ZmU1Yjk5OTIifQ"
         }
       ]
     },
     {
       "id": "claim_6d31ae563fb241998814fac30f1be14d",
-      "statement": "server/app.py main() loads .env, builds the Voxtral interpreter and TTS engine, injects them into GameEngine, starts the game loop in a daemon thread and serves on port 8000 of G4AL_HOST, default 127.0.0.1; create_app starts no thread.",
+      "statement": "server/app.py main() loads .env, validates G4AL_HOST and the startup model before any side effect, builds the TTS engine and the engine through build_engine, starts the game loop in a daemon thread and serves on port 8000 of the normalised host; create_app starts no thread.",
       "evidence": [
         {
-          "resource": "repo://server/app.py#L21-L67",
-          "version": "repo-lines-v1:sha256:f0c8808dd2c93a08536b0ae4bc75903f7700de19aaff9578fdaf30646221022a:eyJzZWxlY3RlZExpbmVDb3VudCI6NDcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImIxZWVmNTNiNGYyNDgxNmQ5YWY5MjIxYzRlYzRiZmVlZDEzOWQ4NmI2NjBjZWUzZjA4NDUyYjA1MGIyN2YzZjQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFlYzQ1OTIyNzJkMjdlZmY3NDQ4ZTU0ZDNlY2EwZDVjYjI3MjEyOTI3M2MxMGIyOTE1M2VmZjVlY2QxNjM5N2UiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImVlMzZkOTBlZjA4YmJhZmNlMTdiMmYzNjg1NzBiM2ZmNGZkMDY5Y2E1Y2MwMTIxNDhjMDEwZTI3Yjg3YWUxYzIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+          "resource": "repo://server/app.py#L36-L117",
+          "version": "repo-lines-v1:sha256:58b69722fb7eb3fc02ea0712b8827aedcf96ed7df28691901d53ebd786fd90cc:eyJzZWxlY3RlZExpbmVDb3VudCI6ODIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjYyYzRjZmIyZTdjZjM3NTI4MjFiN2MzMWJkNDI2N2ViYTQ2ODZhMzMyZTMyZWQ0ZWY2NzE0MmMwODkwMDhiNDUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjEwZjE3NjhmNjljMzg1ZTYyNGI5OWZlZmFhZDI2MDI5ZDI3OTI1NDZiY2U1ZTFjYjE1MDBlYTk2NGZmM2MyODciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjkyOTkxNmI0ZDVmYzY2ZTg2NmMwN2RhZDU4YTg5YzVhNDdjZDEzOGJjZGE3NDM2Y2NkMGViY2YxZjNiNTg3NTciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjkwYWJhOGE0MDY2MTljOTAyMWZiOTFlYmNkMjQyMDAwZDFlNWVjOTg0OWM1ZTBkYmI2MmY4NDYwNTBlYjVmMjYifQ"
         }
       ]
     },
     {
       "id": "claim_a6882e69fdfa4725bab0fa69a1fac8a1",
-      "statement": "Socket.IO runs with async_mode threading, and each voice command is interpreted in its own daemon worker thread.",
+      "statement": "Socket.IO runs with async_mode threading, and each typed or spoken command is interpreted through the engine's run_in_background, a daemon thread by default.",
       "evidence": [
         {
-          "resource": "repo://server/app.py#L29-L29",
-          "version": "repo-lines-v1:sha256:092b3f8be5e3b17a2b8fd526ac62c451a796bf5c6253c7565e2809c128862f02:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMDkyYjNmOGJlNWUzYjE3YTJiOGZkNTI2YWM2MmM0NTFhNzk2YmY1YzYyNTNjNzU2NWUyODA5YzEyODg2MmYwMiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMDkyYjNmOGJlNWUzYjE3YTJiOGZkNTI2YWM2MmM0NTFhNzk2YmY1YzYyNTNjNzU2NWUyODA5YzEyODg2MmYwMiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNGIyMDFiM2JlNjEyNTYyYjVkNzk5YmI3MDg4ZGIxNWFmNzc2ZDczOGI5NGE2MTcyNjY5YjQzYmI1ZTZlM2E4OCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNjUxNmQyNTVlZGM0M2FjZDYwYmJmNDRiODQxNmM3ZjIyNjM4Y2E3OWRlZTM5YjlkNmNkYjM5M2EzNjZjNDZiYiJ9"
+          "resource": "repo://server/app.py#L47-L47",
+          "version": "repo-lines-v1:sha256:092b3f8be5e3b17a2b8fd526ac62c451a796bf5c6253c7565e2809c128862f02:eyJzZWxlY3RlZExpbmVDb3VudCI6MSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMDkyYjNmOGJlNWUzYjE3YTJiOGZkNTI2YWM2MmM0NTFhNzk2YmY1YzYyNTNjNzU2NWUyODA5YzEyODg2MmYwMiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMDkyYjNmOGJlNWUzYjE3YTJiOGZkNTI2YWM2MmM0NTFhNzk2YmY1YzYyNTNjNzU2NWUyODA5YzEyODg2MmYwMiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNjE1OGY0OTlmOWU3ZGZjYTJlZTJiZjhjYmVlZjcxMzlkMDU0YjdmNTVlNDQyNTVlMDMxODVkYTM0MjgwMTJjZSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNWU3OTU2ZDJlMGZjZjZlNzhlZDZlMTYzMmNmNDQ3NjgyNjc5ZDVhNmJmMTYxNDQ5ZjViZmUyNTY3NTc4ZDUwNSJ9"
         },
         {
-          "resource": "repo://server/engine.py#L143-L150",
-          "version": "repo-lines-v1:sha256:c4a08c2d7b650eecc06f9a7b363c7c03f3add6cdd3c7b8c8dee8657c677db914:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMDFiYTQ3MTljODBiNmZlOTExYjA5MWE3YzA1MTI0YjY0ZWVlY2U5NjRlMDljMDU4ZWY4Zjk4MDVkYWNhNTQ2YiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMDFiYTQ3MTljODBiNmZlOTExYjA5MWE3YzA1MTI0YjY0ZWVlY2U5NjRlMDljMDU4ZWY4Zjk4MDVkYWNhNTQ2YiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZTYzMDdkYWM4MmFkMDY2ZDBjY2Y2OGI0ZDQyYzExN2M3NWNlNTQ2ZTk4MjhhYjgwNTc3ZDQyZjYzMjRkNWRiNSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMDhhNDA3NDdkNDc0ODIxNDgxMzQxMzZlZTY0NDQyZmQ3NTI3OWRhYjQ1NTQyYzFhYTA2M2E4OTM2NTY1ZTJhNSJ9"
+          "resource": "repo://server/engine.py#L188-L206",
+          "version": "repo-lines-v1:sha256:9a4fbc381da4f0a0cf036a33b3cd29e6702604be0876c190b5a50ec40f1b2e67:eyJzZWxlY3RlZExpbmVDb3VudCI6MTksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE2MmNlZmRmZTUzZmU4NWYyZGRmM2EwNzA0NjNiZDU0ZjE0YzFlMzkzNGU3MGRiNzBhMDNmOTU3OWRmZThjNmEiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU0YmI4ZjYzZDgzZThlOWMwZjZjOTk2NTlhNGFiYmQxYzI2YmE4ODkxNTZkMjYxM2IyZDhmZjEzYzYxZTM3ZDIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjM5NTRjOTA3NzJlNTc5MTJiY2M2N2Y4M2QyNzNiNjU1ZGI4Y2M2YjBiNzNjZTRlZTFlNzYxYWYyYjc1ZmMzMTIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjhjNDMyZjljMjRhZGVmYzQzZDBkZWMyYTc4Y2I2Njk3YWQ4NzE4OGI2NWIxMDNiYmE5Yzk4NmQwMDc0MjVlNjgifQ"
+        },
+        {
+          "resource": "repo://server/engine.py#L37-L38",
+          "version": "repo-lines-v1:sha256:bda75f6f18ed7d48d676de6506e48ed2938a69e7334d300f17a29884e950f40c:eyJzZWxlY3RlZExpbmVDb3VudCI6MiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMDNlNDg1ZTQ0NDhhNzQ3MjZiMTVlMDkyNzQ1MzhlMWRmZTNjMjc1N2JhYzJjZWM2MTE1NDdkYzU3MmQyZTA0MiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNGJmNGFlMDE1OThkYzc4NGNkOTRiZDdhMzllYzQwMTU1NjY3ZmYyOGI4NmIwOGY2ODIzYzgzOTJmNDNiZTEwMCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZDljNjg0NTYwMGRiNTBkNDZhMTRlZjk1ZmEzNjY1MTA1NjVjYzdmZTZhZDAzMzE3MzViZjQwOTkwOTNjOGJkOCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYTFiMjQ3MzU5OTg2OTk0ZDFlNWExNjRmNGVhMzcyMWY5YzI1YWNjN2Q2OWQ4NDE5YzgwMTdlYTgyODc0Y2QxMiJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_53dff939bf15427a87724683d0c6997e",
+      "statement": "A layers contract in pyproject.toml lets each game sub-package import only the ones below it: spawning/simulation/ports, then orders, then npcs and fauna sharing a layer, then combat, resources and world.",
+      "evidence": [
+        {
+          "resource": "repo://docs/adr/0004-game-sub-packages.md#L9-L30",
+          "version": "repo-lines-v1:sha256:c9cd34e8454b928a6cc3d0509036c5158f59a465aecacc8c84cd6f1b3742b2af:eyJzZWxlY3RlZExpbmVDb3VudCI6MjIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjdkM2RiYzRlN2U3Y2JlNWRkYzg5MWIwODA3MTJmNjM1MWM5NGI3MjhlYzhiZDg1NTZmNDYxMmIwNzBkMjdiNDAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijk2OGE4NTMzZjNiZmViYjdiODY5Y2NlYzc1Yjg2MjQ5YjkxMmQ4NWI1MWJjY2NlY2JlY2MzMDI3M2VlMGRmNDciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImMxNTI0MTQ5ZjM4OTZmNjQ5NTNhZDg0ZTQ2Y2Q5YTMxNDk3NmZlZGQzMWMzNGI3OGVjMGFhOTVmOTRhNzEyMzAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImEyMDRhY2IyZmRlYjEzY2E4YTQ0MmRiOGU2ZWZkMTI0NDg1ZjFiZGMwMWQyMjE1ODg1OTUyMDMyNWQxYzlmMjMifQ"
+        },
+        {
+          "resource": "repo://pyproject.toml#L83-L96",
+          "version": "repo-lines-v1:sha256:405cad9ee92a9d9b66c532aea8915502d6342b16b58eae213bea8d1dbc9843f1:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjEwNWJhZjc2NDQ1ZjliZmNjZjdkOWMxYTM1NTUyMjdmOGUzOWY3OTIzZTM5Y2EwYTg4ODgyM2ViZDNkMDIyZGUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY5NDE2ZTA5Zjc4YmEzMTZjMDMyNTY4MjEzYjg1NWVlNzU2ZTQxNTY1ZDkxOGYwOTUxOWM4MWZkNjIwZjQwNjAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijk4NmEyYzZjYmNiMGRmMjA1MDgxN2NmY2Y3OTcxZTI5NTkzNGE2YzRiOTA0OTI3OWUzMTQxZjJlMmJmMTY4NmMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_485d672d90e347db9182a288e29b9773",
+      "statement": "create_app wraps the whole WSGI app, Socket.IO included, in HostAllowlistMiddleware built from the served host.",
+      "evidence": [
+        {
+          "resource": "repo://server/app.py#L36-L53",
+          "version": "repo-lines-v1:sha256:4fb7df4b2ec0746cceebbc9a54795768bc30ecdff20dd5df7ea7f3942f087816:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjYyYzRjZmIyZTdjZjM3NTI4MjFiN2MzMWJkNDI2N2ViYTQ2ODZhMzMyZTMyZWQ0ZWY2NzE0MmMwODkwMDhiNDUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6Ijg4MWM1ZmNjYTMzMWJlNTk1OTMxODIzNGM2MTI4MjNmN2Y3NmM4MTg2ODkwZjJmYTRhM2I5MTI2NTU5OWRlNTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjkyOTkxNmI0ZDVmYzY2ZTg2NmMwN2RhZDU4YTg5YzVhNDdjZDEzOGJjZGE3NDM2Y2NkMGViY2YxZjNiNTg3NTciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImY4NzhlYjQyOTc4MDFjZTFlY2I0OGJmNmIxYzk3YTZmNDQ5ZTI4M2Y5ODQxYTUxZTJlMjNjMmQ0NjEyODY5NjEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_1f775b9290d34e7b9761171850df0cbe",
+      "statement": "build_engine builds the order interpreters of every provider whose API key is set, wraps them in a ModelSelection, and registers the new world's NPCs as the roster of each provider's interpreters.",
+      "evidence": [
+        {
+          "resource": "repo://server/app.py#L98-L117",
+          "version": "repo-lines-v1:sha256:3fc088fbe0429f29c792f98f7ecd9583ab6176e57e0ebecea7dfa00394eeaab7:eyJzZWxlY3RlZExpbmVDb3VudCI6MjAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI4ZDNmZjBhMWIyNmY1Mjc0ZGE2YzUzZjE0ZmE2YmEyNjllMTQwNmNkNzFkMmRkMTU0ZjM1MWZlOTIxNGU5YjAiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjEwZjE3NjhmNjljMzg1ZTYyNGI5OWZlZmFhZDI2MDI5ZDI3OTI1NDZiY2U1ZTFjYjE1MDBlYTk2NGZmM2MyODciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImRlODUyYTlhM2FlMjVjNjI2ZjU0OTBiZWJmMjg2OGY2ZDZiYWFlYzYwMDY4OWFmOGNkYmY3NTYwYzYzODY1YTAiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjkwYWJhOGE0MDY2MTljOTAyMWZiOTFlYmNkMjQyMDAwZDFlNWVjOTg0OWM1ZTBkYmI2MmY4NDYwNTBlYjVmMjYifQ"
         }
       ]
     }
   ],
   "verification": {
     "by": "openwiki/0.5.2",
-    "at": "2026-11-18T09:41:00.050Z"
+    "at": "2026-11-25T15:38:15.273Z"
   }
 }

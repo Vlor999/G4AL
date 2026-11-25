@@ -60,6 +60,7 @@ ARCHER_DEFEND_SCAN_RADIUS = 6  # tiles – how far a defending archer detects en
 
 # ── Wild Archer (enemy AI) ───────────────────────────────────────────────
 WILD_ARCHER_RANGE = 1  # tiles – attack range for wild archers
+WILD_ARCHER_CHASE_RANGE = 6  # tiles – a wild archer chases an NPC this close
 WILD_ARCHER_DAMAGE = 8  # HP per arrow hit on our units
 WILD_ARCHER_SHOOT_TIME = 80  # frames between shots (~1.3 s)
 

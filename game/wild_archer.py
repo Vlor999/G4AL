@@ -8,6 +8,7 @@ from game.arrows import Arrow, Team, build_arrow
 from game.fauna import Fauna, FaunaState
 from game.settings import (
     ARCHER_FIRE_ANIM_TIME,
+    WILD_ARCHER_CHASE_RANGE,
     WILD_ARCHER_DAMAGE,
     WILD_ARCHER_RANGE,
     WILD_ARCHER_SHOOT_TIME,
@@ -78,7 +79,7 @@ class WildArcher(Fauna):
                 self._attack_target = target
                 self._start_shoot()
                 return
-            if target and dist <= 6:
+            if target and dist <= WILD_ARCHER_CHASE_RANGE:
                 self._chase_target(target)
                 return
             roll = self._map.rng.random()

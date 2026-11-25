@@ -5,10 +5,13 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from game.arrows import Arrow, Team, build_arrow
+from game.clock import WorldClock
 from game.fauna import Fauna, FaunaState
 from game.settings import (
     ARCHER_FIRE_ANIM_TIME,
+    WILD_ARCHER_CHASE_RANGE,
     WILD_ARCHER_DAMAGE,
+    WILD_ARCHER_GRACE_FRAMES,
     WILD_ARCHER_RANGE,
     WILD_ARCHER_SHOOT_TIME,
 )
@@ -41,6 +44,7 @@ class WildArcher(Fauna):
         self._attack_target: NPC | None = None
         self._all_npcs: list[NPC] = []
         self._arrows: list[Arrow] = []
+        self._clock = WorldClock()
         self._is_firing: bool = False
         self._start_idle()
 
@@ -48,10 +52,12 @@ class WildArcher(Fauna):
     def is_firing(self) -> bool:
         return self._is_firing
 
-    def link_battlefield(self, *, npcs: list[NPC], arrows: list[Arrow]) -> None:
-        """Share the world's lists by reference: targets come from *npcs*, shots go to *arrows*."""
+    def link_battlefield(self, *, npcs: list[NPC], arrows: list[Arrow], clock: WorldClock) -> None:
+        """Share the world's state by reference: targets come from *npcs*, shots go to
+        *arrows*, and *clock* tells when the grace period of the game start is over."""
         self._all_npcs = npcs
         self._arrows = arrows
+        self._clock = clock
 
     def update(self) -> None:
         if self.health <= 0:
@@ -64,6 +70,10 @@ class WildArcher(Fauna):
             self._do_shoot()
 
     def _find_nearest_npc(self) -> tuple[NPC | None, float]:
+        """Nearest living NPC and its distance; none during the grace period of the game
+        start, so the wild archer neither chases nor shoots."""
+        if self._clock.elapsed_frames < WILD_ARCHER_GRACE_FRAMES:
+            return None, float("inf")
         target = find_nearest_living(self.tile_pos, self._all_npcs)
         if target is None:
             return None, float("inf")
@@ -78,7 +88,7 @@ class WildArcher(Fauna):
                 self._attack_target = target
                 self._start_shoot()
                 return
-            if target and dist <= 6:
+            if target and dist <= WILD_ARCHER_CHASE_RANGE:
                 self._chase_target(target)
                 return
             roll = self._map.rng.random()

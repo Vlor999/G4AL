@@ -90,6 +90,16 @@ initial spawning (`game/spawning.py`), the frame step (`game/simulation.py`), or
 application (`game/orders.py`), storage discard and storage dismissal live in
 `game/`; each HTTP route calls one public `GameEngine` method.
 
+The world clock (`game/clock.py`, `WorldClock`) counts the frames since the game
+started. `spawn_world` creates it, `advance_world` advances it at the end of each
+frame (during the n-th frame it reads n - 1), and the wild archers read it through
+`link_battlefield`. For the first
+`WILD_ARCHER_GRACE_FRAMES` frames (7200, 2 minutes at 60 FPS) the wild archers ignore
+the NPCs: they idle and wander but neither chase nor shoot, so the player has time to
+learn the voice commands. The grace period follows the world clock, not each archer's
+age, so a wild archer spawned later gets none of its own. `GameEngine._frame_count`
+only paces the state push and plays no part in this rule.
+
 A pawn that reaches a full storage keeps the part of its load that does not fit and
 waits, queued orders included, until space frees or `/api/dismiss_storage` is called.
 

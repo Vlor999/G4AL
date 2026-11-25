@@ -62,6 +62,7 @@ class GameEngine:
         self.npcs = world.npcs
         self.fauna = world.fauna
         self.arrows = world.arrows
+        self.clock = world.clock
         self._model_selection = model_selection
         self._speaker = speaker
         self._run_in_background = run_in_background
@@ -82,7 +83,11 @@ class GameEngine:
             while self._pending_answers:
                 self._apply_answer(self._pending_answers.popleft())
             advance_world(
-                npcs=self.npcs, fauna=self.fauna, resources=self.resources, arrows=self.arrows
+                npcs=self.npcs,
+                fauna=self.fauna,
+                resources=self.resources,
+                arrows=self.arrows,
+                clock=self.clock,
             )
 
     def give_direct_order(self, order: DirectOrder) -> DirectOrderOutcome:

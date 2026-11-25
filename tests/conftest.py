@@ -5,6 +5,7 @@ import pytest
 from loguru import logger
 
 from api.logger import has_event
+from game.clock import WorldClock
 from game.map import GameMap
 from game.terrain import Biome, TileType
 
@@ -17,6 +18,14 @@ _TILE_BY_SYMBOL = {
 
 MapBuilder = Callable[[list[str]], GameMap]
 LlmEndRecords = list[tuple[str, dict[str, Any]]]
+
+
+def clock_at(elapsed_frames: int) -> WorldClock:
+    """A world clock that has advanced *elapsed_frames* frames."""
+    clock = WorldClock()
+    for _ in range(elapsed_frames):
+        clock.advance()
+    return clock
 
 
 @pytest.fixture

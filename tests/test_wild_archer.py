@@ -2,28 +2,38 @@
 
 from collections.abc import Callable
 
+import pytest
+
 from game.arrows import Arrow
 from game.fauna import FaunaState
 from game.map import GameMap
 from game.npc import NPC
-from game.settings import ARCHER_ARROW_FLIGHT, WILD_ARCHER_DAMAGE
+from game.settings import ARCHER_ARROW_FLIGHT, WILD_ARCHER_DAMAGE, WILD_ARCHER_GRACE_FRAMES
 from game.storage import ResourceStorage
 from game.wild_archer import WildArcher
-from tests.conftest import MapBuilder
+from tests.conftest import MapBuilder, clock_at
 
 FIELD = ["." * 10] * 4
 MAX_FRAMES = 3000
 
 
 class Ambush:
-    """A wild archer and the pawns and arrows lists it shares."""
+    """A wild archer and the pawns, arrows and clock it shares; the grace period is over
+    unless *elapsed_frames* says otherwise, and the clock stays still."""
 
-    def __init__(self, game_map: GameMap, archer_tile: tuple[int, int]) -> None:
+    def __init__(
+        self,
+        game_map: GameMap,
+        archer_tile: tuple[int, int],
+        elapsed_frames: int = WILD_ARCHER_GRACE_FRAMES,
+    ) -> None:
         self.game_map = game_map
         self.pawns: list[NPC] = []
         self.arrows: list[Arrow] = []
         self.archer = WildArcher(*game_map.tile_center(*archer_tile), game_map, [])
-        self.archer.link_battlefield(npcs=self.pawns, arrows=self.arrows)
+        self.archer.link_battlefield(
+            npcs=self.pawns, arrows=self.arrows, clock=clock_at(elapsed_frames)
+        )
 
     def add_pawn(self, tile: tuple[int, int]) -> NPC:
         pawn = NPC(*self.game_map.tile_center(*tile), self.game_map, [], ResourceStorage())
@@ -36,6 +46,22 @@ class Ambush:
                 return True
             self.archer.update()
         return is_reached()
+
+
+@pytest.mark.parametrize(
+    ("elapsed_frames", "pawn_is_shot"),
+    [(0, False), (WILD_ARCHER_GRACE_FRAMES - 1, False), (WILD_ARCHER_GRACE_FRAMES, True)],
+)
+def test_the_wild_archer_chases_and_shoots_a_pawn_only_after_the_grace_period(
+    build_map: MapBuilder, elapsed_frames: int, pawn_is_shot: bool
+) -> None:
+    ambush = Ambush(build_map(FIELD), (5, 1), elapsed_frames)
+    pawn = ambush.add_pawn((0, 1))
+
+    ambush.run_until(lambda: False)
+
+    assert bool(ambush.arrows) == pawn_is_shot
+    assert (pawn.health < pawn.max_health) == pawn_is_shot
 
 
 def test_the_wild_archer_shoots_the_nearest_living_pawn(build_map: MapBuilder) -> None:

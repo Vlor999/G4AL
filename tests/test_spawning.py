@@ -93,3 +93,4 @@ def test_spawn_world_shares_the_combat_lists_between_archers_and_wild_archers(
         if isinstance(creature, WildArcher):
             assert creature._all_npcs is world.npcs
             assert creature._arrows is world.arrows
+            assert creature._clock is world.clock

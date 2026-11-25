@@ -7,25 +7,29 @@ import pytest
 from game.actions import Action, ActionType
 from game.archer import Archer
 from game.arrows import Arrow, Team, advance_arrows
+from game.clock import WorldClock
 from game.entities import Resource, WheatField
 from game.fauna import Fauna, FaunaState
 from game.map import GameMap
 from game.npc import NPC
-from game.settings import NPC_HUNGER_DAMAGE, NPC_HUNGER_DRAIN
+from game.settings import NPC_HUNGER_DAMAGE, NPC_HUNGER_DRAIN, WILD_ARCHER_GRACE_FRAMES
 from game.sheep import Sheep
 from game.simulation import advance_world
 from game.spawning import spawn_world
 from game.storage import ResourceStorage
 from game.wild_archer import WildArcher
-from tests.conftest import MapBuilder
+from tests.conftest import MapBuilder, clock_at
 
 FIELD = ["......"] * 4
 MAX_FRAMES = 1000
 
 
 class World:
+    """A hand-built world whose grace period is over."""
+
     def __init__(self, game_map: GameMap) -> None:
         self.game_map = game_map
+        self.clock = clock_at(WILD_ARCHER_GRACE_FRAMES)
         self.npcs: list[NPC] = []
         self.fauna: list[Fauna] = []
         self.resources: list[Resource] = []
@@ -38,7 +42,11 @@ class World:
 
     def advance(self) -> None:
         advance_world(
-            npcs=self.npcs, fauna=self.fauna, resources=self.resources, arrows=self.arrows
+            npcs=self.npcs,
+            fauna=self.fauna,
+            resources=self.resources,
+            arrows=self.arrows,
+            clock=self.clock,
         )
 
     def advance_until(self, is_reached: Callable[[], bool]) -> bool:
@@ -72,6 +80,31 @@ def test_advance_arrows_ages_each_arrow_and_drops_the_landed(
     advance_arrows(arrows)
 
     assert [arrow["frame"] for arrow in arrows] == expected_frames
+
+
+class ClockWatcher(Sheep):
+    """A sheep that records the elapsed frames it reads on the world clock each frame."""
+
+    def __init__(self, game_map: GameMap, clock: WorldClock) -> None:
+        super().__init__(*game_map.tile_center(4, 3), game_map, [])
+        self.clock = clock
+        self.elapsed_frames_read: list[int] = []
+
+    def update(self) -> None:
+        self.elapsed_frames_read.append(self.clock.elapsed_frames)
+
+
+def test_the_world_clock_advances_once_at_the_end_of_each_frame(build_map: MapBuilder) -> None:
+    world = World(build_map(FIELD))
+    world.clock = WorldClock()
+    watcher = ClockWatcher(world.game_map, world.clock)
+    world.fauna.append(watcher)
+
+    world.advance()
+    world.advance()
+
+    assert watcher.elapsed_frames_read == [0, 1]
+    assert world.clock.elapsed_frames == 2
 
 
 def test_a_frame_grows_wheat_and_removes_dead_fauna(build_map: MapBuilder) -> None:
@@ -137,7 +170,7 @@ def test_npcs_act_before_fauna(build_map: MapBuilder) -> None:
     world = World(build_map(FIELD))
     pawn = world.add_pawn((0, 1))
     wild_archer = WildArcher(*world.game_map.tile_center(1, 1), world.game_map, [])
-    wild_archer.link_battlefield(npcs=world.npcs, arrows=world.arrows)
+    wild_archer.link_battlefield(npcs=world.npcs, arrows=world.arrows, clock=world.clock)
     world.fauna.append(wild_archer)
     assert world.advance_until(lambda: wild_archer.state == FaunaState.SHOOTING)
     pawn.hunger = 0.0
@@ -167,7 +200,11 @@ def play_seeded_game(seed: int) -> Snapshot:
             world.fauna.append(Sheep(x, y, game_map, world.resources))
             world.fauna.append(WildArcher(x, y, game_map, world.resources))
         advance_world(
-            npcs=world.npcs, fauna=world.fauna, resources=world.resources, arrows=world.arrows
+            npcs=world.npcs,
+            fauna=world.fauna,
+            resources=world.resources,
+            arrows=world.arrows,
+            clock=world.clock,
         )
     return [(being.name, being.x, being.y) for being in [*world.npcs, *world.fauna]]
 

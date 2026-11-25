@@ -9,13 +9,14 @@ from game.entities import Structure
 from game.fauna import Fauna
 from game.map import GameMap
 from game.npc import NPC
+from game.settings import WILD_ARCHER_GRACE_FRAMES
 from game.sheep import Sheep
 from game.storage import ResourceStorage
 from game.terrain import Biome
 from game.wild_archer import WildArcher
 from server.model_selection import SelectedModel
 from server.serialization import serialize_state
-from tests.conftest import MapBuilder
+from tests.conftest import MapBuilder, clock_at
 from tests.fakes import VOICE_MODEL, ScriptedOrderInterpreter
 
 FIELD = ["......"] * 4
@@ -107,7 +108,9 @@ def test_a_wild_archer_shows_its_shot_and_a_sheep_never_fires(build_map: MapBuil
     pawn = NPC(*game_map.tile_center(0, 1), game_map, [], ResourceStorage())
     arrows: list[Arrow] = []
     wild_archer = WildArcher(*game_map.tile_center(2, 1), game_map, [])
-    wild_archer.link_battlefield(npcs=[pawn], arrows=arrows)
+    wild_archer.link_battlefield(
+        npcs=[pawn], arrows=arrows, clock=clock_at(WILD_ARCHER_GRACE_FRAMES)
+    )
     sheep = Sheep(*game_map.tile_center(5, 3), game_map, [])
     for _ in range(MAX_FRAMES):
         if arrows:

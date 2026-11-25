@@ -6,6 +6,7 @@ from dataclasses import dataclass, field
 
 from game.archer import Archer
 from game.arrows import Arrow
+from game.clock import WorldClock
 from game.entities import Resource, Structure, spawn_resources
 from game.fauna import Fauna
 from game.fauna_spawning import spawn_fauna
@@ -31,8 +32,9 @@ from game.wild_archer import WildArcher
 class SpawnedWorld:
     """The settlement at frame zero.
 
-    ``resources`` includes ``storage_hut``. The lists are shared by reference with the
-    NPCs and creatures that read them: mutate them in place to keep those links.
+    ``resources`` includes ``storage_hut``. The lists and the clock are shared by
+    reference with the NPCs and creatures that read them: mutate them in place to keep
+    those links.
     """
 
     storage: ResourceStorage
@@ -41,6 +43,7 @@ class SpawnedWorld:
     npcs: list[NPC] = field(default_factory=list)
     fauna: list[Fauna] = field(default_factory=list)
     arrows: list[Arrow] = field(default_factory=list)
+    clock: WorldClock = field(default_factory=WorldClock)
 
 
 def spawn_world(game_map: GameMap) -> SpawnedWorld:
@@ -154,4 +157,4 @@ def _link_combatants(world: SpawnedWorld) -> None:
             npc.link_battlefield(fauna=world.fauna, arrows=world.arrows)
     for creature in world.fauna:
         if isinstance(creature, WildArcher):
-            creature.link_battlefield(npcs=world.npcs, arrows=world.arrows)
+            creature.link_battlefield(npcs=world.npcs, arrows=world.arrows, clock=world.clock)

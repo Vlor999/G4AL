@@ -9,7 +9,7 @@ when it is installed; this file wins where they differ.
 
 | Layer | Lives in | Holds | Imports |
 |---|---|---|---|
-| Domain | `game/` | the simulation: map, NPCs and their action queue, fauna, resources, storage, pathfinding, game rules and tuning (`game/settings.py`) | `game/` only, standard library |
+| Domain | `game/` | the simulation: map, NPCs and their action queue, fauna, resources, storage, pathfinding, game rules and tuning (`game/settings.py`), in the sub-packages of [ADR 0004](../../docs/adr/0004-game-sub-packages.md) | `game/` only, standard library; a sub-package only the ones below it |
 | Ports | `game/ports.py` (create it with the first one) | every `Protocol` the domain needs from the outside world (an order source, a voice line sink, a clock) and their errors | domain types |
 | Adapters | `api/` | one module per external system: Mistral Voxtral (`interpreter.py`), ElevenLabs + pygame mixer (`tts.py`), log files (`logger.py`) | ports, domain types, constants |
 | Entry point | `server/`, `main.py` | builds the adapters, owns the game loop thread, maps HTTP/Socket.IO payloads to domain calls and domain state to JSON | everything |
@@ -82,7 +82,7 @@ make check
 ```
 
 It runs `ruff format --check`, `ruff check`, `lint-imports` (the `game/` import
-contract in `pyproject.toml`), `mypy` (strict), `vulture` and `pytest` with coverage.
+contracts in `pyproject.toml`: no adapter or I/O library, sub-packages depend downward), `mypy` (strict), `vulture` and `pytest` with coverage.
 When `ub-mode` is installed, also run its CRAP and duplication gates on the changed
 files:
 

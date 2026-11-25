@@ -11,7 +11,7 @@ Browser (static/: Canvas renderer, input, push-to-talk, chat)
    ▼
 server/: app.py (create_app, main), routes.py (Flask + Socket.IO),
          engine.py (GameEngine, game loop thread, 60 FPS), serialization.py
-   ├── game/        pure simulation: map, NPCs, fauna, resources, storage
+   ├── game/        pure simulation: world, resources, combat, npcs, fauna, orders
    ├── api/interpreter.py  text or WAV → Mistral → NPC orders (worker thread)
    ├── api/tts.py          voice line → ElevenLabs → pygame mixer (worker thread)
    └── api/logger.py       JSONL logs with timing, tokens and cost
@@ -33,9 +33,9 @@ server/: app.py (create_app, main), routes.py (Flask + Socket.IO),
    text for a typed command. The model must answer by calling the
    `give_npc_orders` function once (`tool_choice="any"`,
    `parallel_tool_calls=False`), whose JSON schema takes its actions from
-   `game.orders.VOICE_ORDER_ACTIONS`: every `ActionType` but `move_to`, whose target
+   `game.orders.orders.VOICE_ORDER_ACTIONS`: every `ActionType` but `move_to`, whose target
    tile a voice order does not carry (the player gives it with a right-click). The
-   adapter validates the arguments into `game.orders.NpcOrder` values
+   adapter validates the arguments into `game.orders.orders.NpcOrder` values
    (`api.order_contract.parse_orders`, shared by every provider). Mistral
    documents audio input with a forced tool call, but not with
    `parallel_tool_calls=False`; that combination is untested against the live API.
@@ -50,7 +50,7 @@ server/: app.py (create_app, main), routes.py (Flask + Socket.IO),
    error text.
 3. Answers queue in `GameEngine` as their worker threads finish. On its next tick the
    game loop takes every queued answer in arrival order and, for a list of orders,
-   calls `game.orders.apply_orders`, which enqueues the actions and returns one
+   calls `game.orders.orders.apply_orders`, which enqueues the actions and returns one
    `OrderOutcome` per order (accepted, spoken).
 4. `GameEngine` logs each reply, adds it to the chat (`docs/api.md` § Chat), and
    sends the spoken ones to the injected
@@ -85,12 +85,28 @@ Nothing changes in `game/` or `static/`.
 
 ## Layers
 
-See [`.claude/rules/architecture.md`](../.claude/rules/architecture.md). Today
+See [`.claude/rules/architecture.md`](../.claude/rules/architecture.md).
+
+`game/` is split into sub-packages that import only downward, from the top layer to
+the bottom one ([ADR 0004](adr/0004-game-sub-packages.md)). `lint-imports` enforces
+the order:
+
+| Layer | Package | Holds |
+|---|---|---|
+| top | `game/spawning.py`, `game/simulation.py`, `game/ports.py` | the starting world, one frame of the world, the ports |
+| orders | `game/orders/` | voice and direct orders, chat messages |
+| actors | `game/npcs/`, `game/fauna/` | pawns, archers, their actions; sheep, cat, wild archers, fauna spawning |
+| combat | `game/combat/` | arrows, target and firing tile searches |
+| resources | `game/resources/` | trees, rocks, structures, wheat fields, storage |
+| world | `game/world/` | map, terrain, map generation, pathfinding, dimensions, name pools, world clock |
+
+`game/settings.py` and `game/constants.py` sit outside the layers: every package
+reads them. Today
 initial spawning (`game/spawning.py`), the frame step (`game/simulation.py`), order
-application (`game/orders.py`), storage discard and storage dismissal live in
+application (`game/orders/orders.py`), storage discard and storage dismissal live in
 `game/`; each HTTP route calls one public `GameEngine` method.
 
-The world clock (`game/clock.py`, `WorldClock`) counts the frames since the game
+The world clock (`game/world/clock.py`, `WorldClock`) counts the frames since the game
 started. `spawn_world` creates it, `advance_world` advances it at the end of each
 frame (during the n-th frame it reads n - 1), and the wild archers read it through
 `link_battlefield`. For the first

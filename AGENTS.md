@@ -10,7 +10,7 @@ HTML5 Canvas client every 3rd tick (~20 Hz).
 
 | Path | Role |
 |---|---|
-| `game/` | Domain: pure simulation (map, NPCs and action queue, fauna, resources, storage, pathfinding, tuning in `settings.py`). No I/O. |
+| `game/` | Domain: pure simulation, no I/O. Sub-packages from the bottom layer up: `world/` (map, terrain, pathfinding, clock), `resources/` (entities, storage), `combat/` (arrows, targeting), `npcs/` and `fauna/`, `orders/`; on top `spawning.py`, `simulation.py`, `ports.py`. Tuning in `settings.py`. |
 | `api/` | Adapters: Mistral Voxtral (`interpreter.py`), ElevenLabs + pygame mixer (`tts.py`), structured logs (`logger.py`), NPC personalities (`roster.py`). |
 | `server/` | Entry point: `app.py` (`create_app`, `main`: loads `.env`, builds the adapters), `engine.py` (`GameEngine` and its game loop thread), `routes.py` (Flask routes, Socket.IO), `serialization.py` (client JSON). |
 | `main.py` | Starts the server (`server.app.main`). |

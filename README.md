@@ -105,29 +105,40 @@ api/
   logger.py         pipeline logging, written to logs/
 
 game/
-  map.py            tile map and its look-ups
-  terrain.py        tile types and biomes
-  map_generation.py biome terrain generation
-  actions.py        NPC actions and action-machine states
-  npc_base.py       shared NPC core: stats, queue, movement, hut trips
-  npc.py            pawn action planning
-  archer.py         archer combat
-  pathfinding.py    A* on the tile grid
-  npc_names.py      name pools of pawns, archers and wild archers
-  ports.py          protocols the domain needs from the outside world
-  chat.py           chat messages: the player's commands, the NPCs' voice lines
-  entities.py       trees, rocks, structures, wheat fields
-  dimensions.py     footprint, height and sprite box of each object kind
-  fauna.py          autonomous creatures: idle, graze, wander
-  sheep.py          sheep
-  cat.py            the cat
-  wild_archer.py    hostile red archers
-  fauna_spawning.py fauna placement on a new map
-  simulation.py     one frame of the world
-  targeting.py      nearest target and firing tile searches
-  arrows.py         arrows in flight
-  storage.py        resource storage (wood, stone, gold, wheat)
-  settings.py       game constants
+  settings.py          game tuning, in frames and tiles
+  constants.py         shared literals
+  ports.py             protocols the domain needs from the outside world
+  simulation.py        one frame of the world
+  spawning.py          initial population: resources, storage hut, NPCs, fauna
+  world/
+    map.py             tile map and its look-ups
+    terrain.py         tile types and biomes
+    map_generation.py  biome terrain generation
+    pathfinding.py     A* and nearest free tile on the tile grid
+    dimensions.py      footprint, height and sprite box of each object kind
+    npc_names.py       name pools of pawns, archers and wild archers
+    clock.py           frames since the game started
+  resources/
+    entities.py        trees, rocks, structures, wheat fields
+    storage.py         resource storage (wood, stone, gold, wheat)
+  combat/
+    targeting.py       nearest target and firing tile searches
+    arrows.py          arrows in flight
+  npcs/
+    actions.py         NPC actions and action-machine states
+    npc_base.py        shared NPC core: stats, queue, movement, hut trips
+    npc.py             pawn action planning
+    archer.py          archer combat
+  fauna/
+    fauna.py           autonomous creatures: idle, graze, wander
+    sheep.py           sheep
+    cat.py             the cat
+    wild_archer.py     hostile red archers
+    fauna_spawning.py  fauna placement on a new map
+  orders/
+    orders.py          voice orders applied to the NPCs
+    direct_orders.py   orders given to one NPC with the mouse or an action button
+    chat.py            chat messages: the player's commands, the NPCs' voice lines
 
 static/
   game.js           client entry point, Socket.IO, camera

@@ -8,7 +8,7 @@ exist, and a seed did not replay the map once anything else drew from `random`.
 
 ## Decision
 
-- Four biomes (`Biome` in `game/terrain.py`); every tile carries one next to its
+- Four biomes (`Biome` in `game/world/terrain.py`); every tile carries one next to its
   `TileType`, and the state sends it (`map.biomes`, `docs/api.md`).
 
   | Biome | Ground (tileset of its grass) | Elevation range (ADR 0002 unit) | Walkable | Trees / rocks per free tile | Gold share of rocks | Fauna | Decorations |

@@ -53,14 +53,14 @@ when it was sent, even if the player switches before its answer arrives.
 
 `map.biomes` is a `rows × cols` array of strings, indexed `[row][col]` like
 `map.tiles`: the biome of each tile, one of `meadow`, `forest`, `highland`, `lake`
-(`game/terrain.py`, generation in
+(`game/world/terrain.py`, generation in
 [ADR 0003](adr/0003-biome-map-generation.md)). The client picks the grass tileset and
 the bushes from it.
 
 ### Object dimensions
 
 Every entry of `resources`, `npcs` and `fauna` carries the size of its kind
-(`game/dimensions.py`, model in [ADR 0002](adr/0002-object-dimensions-and-height-model.md)).
+(`game/world/dimensions.py`, model in [ADR 0002](adr/0002-object-dimensions-and-height-model.md)).
 All values are in tiles; the client multiplies them by `map.tileSize`.
 
 | Field | Type | Meaning |
@@ -92,7 +92,7 @@ body once (`server/request_bodies.py`) and answers:
 | Route | Body | Effect |
 |---|---|---|
 | `GET /api/state` | none | returns the full game state |
-| `POST /api/action` | `{"npcId": int, "action": str, "target"?: [col, row]}` | enqueues an action on an NPC; `action` is an `ActionType` value of `game/actions.py`; `target`, when given, must be two integers inside the map, whatever the action; `move_to` needs one, `build` and `plant_wheat` without one aim at the NPC's tile, the other actions do not use it. An action the NPC is not allowed to do still answers 200: the NPC says so in the game |
+| `POST /api/action` | `{"npcId": int, "action": str, "target"?: [col, row]}` | enqueues an action on an NPC; `action` is an `ActionType` value of `game/npcs/actions.py`; `target`, when given, must be two integers inside the map, whatever the action; `move_to` needs one, `build` and `plant_wheat` without one aim at the NPC's tile, the other actions do not use it. An action the NPC is not allowed to do still answers 200: the NPC says so in the game |
 | `POST /api/select` | `{"npcId": int}` or `{}` | selects an NPC, or deselects all |
 | `POST /api/move` | `{"npcId": int, "col": int, "row": int}` | enqueues a `move_to` |
 | `POST /api/discard` | `{"wood"?: int, "stone"?: int, "gold"?: int, "wheat"?: int}`, amounts ≥ 0, no other key | discards resources from storage; returns `discarded` |

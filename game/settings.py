@@ -34,6 +34,8 @@ NPC_HUNGER_MAX = 100
 NPC_HUNGER_DRAIN = 0.005  # hunger lost per frame (≈ 1 per ~67 frames ≈ ~1.1s at 60 fps)
 NPC_EAT_TIME = 60  # frames to eat
 NPC_EAT_RESTORE = 35  # hunger restored when eating
+NPC_PLANT_SEARCH_RADIUS = 5  # tiles searched around the order's tile for a free field
+NPC_BUILD_SEARCH_RADIUS = 8  # tiles searched around the order's tile for a free footprint
 EAT_WHEAT_COST = 2  # wheat consumed per eat action
 NPC_HUNGER_DAMAGE = 0.05  # HP lost per frame when hunger == 0
 

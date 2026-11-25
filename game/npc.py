@@ -2,58 +2,75 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
+from typing import ClassVar
+
 from game.actions import PAWN_ACTIONS, Action, ActionType, State
-from game.dimensions import find_building_dimensions
+from game.dimensions import ObjectDimensions, find_building_dimensions
 from game.entities import Resource, Rock, Structure, Tree, WheatField
 from game.npc_base import NPCBase
+from game.pathfinding import find_nearest_tile
 from game.settings import (
     BUILD_COST_STONE,
     BUILD_COST_WOOD,
     EAT_WHEAT_COST,
+    NPC_BUILD_SEARCH_RADIUS,
     NPC_BUILD_TIME,
     NPC_COLLECT_UNIT_TIME,
     NPC_EAT_RESTORE,
     NPC_EAT_TIME,
+    NPC_PLANT_SEARCH_RADIUS,
     WHEAT_PLANT_TIME,
 )
 
 
 class NPC(NPCBase):
-    """Playable pawn – receives voice/click commands and has an action queue."""
+    """Playable pawn: takes voice and click orders into its action queue."""
 
     kind: str = "pawn"
     controllable: bool = True
     allowed_actions: list[ActionType] = PAWN_ACTIONS
+    _START_BY_ACTION: ClassVar[dict[ActionType, Callable[[NPC, Action], None]]] = {
+        ActionType.CHOP_WOOD: lambda npc, action: npc._start_harvest(
+            action, Tree, unavailable_message="No trees nearby!"
+        ),
+        ActionType.MINE_ROCK: lambda npc, action: npc._start_harvest(
+            action, Rock, unavailable_message="No rocks nearby!"
+        ),
+        ActionType.BUILD: lambda npc, action: npc._start_build(action),
+        ActionType.MOVE_TO: lambda npc, action: npc._start_move_to(action),
+        ActionType.EAT: lambda npc, _action: npc._start_eat(),
+        ActionType.PLANT_WHEAT: lambda npc, action: npc._start_plant_wheat(action),
+        ActionType.COLLECT_WHEAT: lambda npc, action: npc._start_collect_wheat(action),
+    }
+    _WORK_TIME_BY_ACTION: ClassVar[dict[ActionType, int]] = {
+        ActionType.CHOP_WOOD: NPC_COLLECT_UNIT_TIME,
+        ActionType.MINE_ROCK: NPC_COLLECT_UNIT_TIME,
+        ActionType.BUILD: NPC_BUILD_TIME,
+        ActionType.PLANT_WHEAT: WHEAT_PLANT_TIME,
+        ActionType.COLLECT_WHEAT: NPC_COLLECT_UNIT_TIME,
+    }
 
     def _next_action(self) -> None:
         if self.is_carrying:
             self._start_return_to_hut()
             return
-
         if not self.action_queue:
             self.state = State.IDLE
             return
         self._release_reservation()
         action = self.action_queue.popleft()
         self._current_action = action
+        self._start_action(action)
 
-        if action.action_type == ActionType.CHOP_WOOD:
-            self._start_harvest(action, Tree, unavailable_message="No trees nearby!")
-        elif action.action_type == ActionType.MINE_ROCK:
-            self._start_harvest(action, Rock, unavailable_message="No rocks nearby!")
-        elif action.action_type == ActionType.BUILD:
-            self._start_build(action)
-        elif action.action_type == ActionType.MOVE_TO:
-            if isinstance(action.target, tuple):
-                self._plan_move_to(*action.target)
-            else:
-                self.state = State.DONE
-        elif action.action_type == ActionType.EAT:
-            self._start_eat()
-        elif action.action_type == ActionType.PLANT_WHEAT:
-            self._start_plant_wheat(action)
-        elif action.action_type == ActionType.COLLECT_WHEAT:
-            self._start_collect_wheat(action)
+    def _start_action(self, action: Action) -> None:
+        self._START_BY_ACTION[action.action_type](self, action)
+
+    def _start_move_to(self, action: Action) -> None:
+        if isinstance(action.target, tuple):
+            self._plan_move_to(*action.target)
+        else:
+            self.state = State.DONE
 
     def _start_harvest(
         self, action: Action, kind: type[Resource], *, unavailable_message: str
@@ -78,14 +95,9 @@ class NPC(NPCBase):
             self._start_new_structure(action)
 
     def _start_new_structure(self, action: Action) -> None:
-        if isinstance(action.target, tuple):
-            col, row = action.target
-        else:
-            col, row = self.tile_pos
+        origin = action.target if isinstance(action.target, tuple) else self.tile_pos
         btype = "house1"
-        dimensions = find_building_dimensions(btype)
-        gw, gh = dimensions.footprint_width, dimensions.footprint_depth
-        resolved = self._find_free_area(col, row, gw, gh)
+        resolved = self._find_free_area(origin, find_building_dimensions(btype))
         if resolved is None:
             self.say("No space to build!", 120)
             self.state = State.DONE
@@ -115,16 +127,13 @@ class NPC(NPCBase):
             self.state = State.DONE
             return
         self._storage.spend("wheat", EAT_WHEAT_COST)
-        self._perform_timer = 0
-        self._perform_duration = NPC_EAT_TIME
-        self.state = State.PERFORMING
+        self._start_performing(NPC_EAT_TIME)
 
     def _start_plant_wheat(self, action: Action) -> None:
-        if isinstance(action.target, tuple):
-            col, row = action.target
-        else:
-            col, row = self.tile_pos
-        resolved = self._find_nearby_free_tile(col, row)
+        origin = action.target if isinstance(action.target, tuple) else self.tile_pos
+        resolved = find_nearest_tile(
+            origin, max_radius=NPC_PLANT_SEARCH_RADIUS, is_suitable=self._is_free_tile
+        )
         if resolved is None:
             self.say("No space to plant!", 120)
             self.state = State.DONE
@@ -149,61 +158,37 @@ class NPC(NPCBase):
         self._plan_move_to(target.col, target.row)
 
     def _on_arrival(self) -> None:
-        if self._current_action is None:
+        action_type = self.current_action_type
+        if action_type is None or action_type not in self._WORK_TIME_BY_ACTION:
             self.state = State.DONE
             return
-
-        at = self._current_action.action_type
-        if at == ActionType.CHOP_WOOD or at == ActionType.MINE_ROCK:
-            self._perform_timer = 0
-            self._perform_duration = NPC_COLLECT_UNIT_TIME
-            self.state = State.PERFORMING
-        elif at == ActionType.BUILD:
-            self._perform_timer = 0
-            self._perform_duration = NPC_BUILD_TIME
-            self.state = State.PERFORMING
-        elif at == ActionType.PLANT_WHEAT:
-            self._perform_timer = 0
-            self._perform_duration = WHEAT_PLANT_TIME
-            self.state = State.PERFORMING
-        elif at == ActionType.COLLECT_WHEAT:
-            self._perform_timer = 0
-            self._perform_duration = NPC_COLLECT_UNIT_TIME
-            self.state = State.PERFORMING
-        elif at == ActionType.MOVE_TO:
-            self.state = State.DONE
-        else:
-            self.state = State.DONE
+        self._start_performing(self._WORK_TIME_BY_ACTION[action_type])
 
     def _perform(self) -> None:
         self._perform_timer += 1
+        if self._advance_target_work():
+            return
+        if self._perform_timer < self._perform_duration:
+            return
+        if self.current_action_type == ActionType.EAT:
+            self._finish_eating()
+        else:
+            self.state = State.DONE
 
+    def _advance_target_work(self) -> bool:
+        """Advance the work on the current action's resource; True when this frame is
+        fully handled."""
         action = self._current_action
-        target = action.target if action else None
+        if action is None or not isinstance(action.target, Resource) or action.target.depleted:
+            return False
+        return self._advance_resource_work(action.action_type, action.target)
 
-        if (
-            action is not None
-            and isinstance(target, Resource)
-            and not target.depleted
-            and self._advance_resource_work(action.action_type, target)
-        ):
-            return
-
-        if (
-            self._current_action
-            and self._current_action.action_type == ActionType.EAT
-            and self._perform_timer >= self._perform_duration
-        ):
-            self.hunger = min(self.max_hunger, self.hunger + NPC_EAT_RESTORE)
-            self.say("Mmm, delicious!", 90)
-            self.state = State.DONE
-            return
-
-        if self._perform_timer >= self._perform_duration:
-            self.state = State.DONE
+    def _finish_eating(self) -> None:
+        self.hunger = min(self.max_hunger, self.hunger + NPC_EAT_RESTORE)
+        self.say("Mmm, delicious!", 90)
+        self.state = State.DONE
 
     def _advance_resource_work(self, action_type: ActionType, target: Resource) -> bool:
-        """Advance work on *target*; return True when this frame is fully handled."""
         if action_type in (ActionType.CHOP_WOOD, ActionType.MINE_ROCK):
             self._collect_unit_when_ready(action_type, target)
             return True
@@ -245,85 +230,34 @@ class NPC(NPCBase):
                 self._storage.register_house()
             self.state = State.DONE
 
-    def _entity_at_tile(self, col: int, row: int) -> Resource | None:
-        """Return the first non-depleted entity sitting on (col, row), or None.
-        Supports multi-tile structures."""
-        for r in self._resources:
-            if r.depleted:
-                continue
-            if isinstance(r, Structure):
-                for dc in range(r.dimensions.footprint_width):
-                    for dr in range(r.dimensions.footprint_depth):
-                        if r.col + dc == col and r.row + dr == row:
-                            return r
-            else:
-                if r.col == col and r.row == row:
-                    return r
-        return None
+    def _entity_at_tile(self, tile: tuple[int, int]) -> Resource | None:
+        return next(
+            (
+                resource
+                for resource in self._resources
+                if not resource.depleted and tile in resource.occupied_tiles
+            ),
+            None,
+        )
 
-    def _find_nearby_free_tile(
-        self, col: int, row: int, max_radius: int = 5
-    ) -> tuple[int, int] | None:
-        """BFS outward from (col, row) to find the nearest tile that is
-        walkable AND has no non-depleted entity on it."""
-        from collections import deque as _deque
-
-        visited: set[tuple[int, int]] = set()
-        queue: _deque[tuple[int, int]] = _deque()
-        if self._map.is_walkable(col, row) and self._entity_at_tile(col, row) is None:
-            return (col, row)
-        visited.add((col, row))
-        queue.append((col, row))
-        while queue:
-            c, r = queue.popleft()
-            for dc, dr in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
-                nc, nr = c + dc, r + dr
-                if (nc, nr) in visited:
-                    continue
-                if abs(nc - col) > max_radius or abs(nr - row) > max_radius:
-                    continue
-                visited.add((nc, nr))
-                if self._map.is_walkable(nc, nr) and self._entity_at_tile(nc, nr) is None:
-                    return (nc, nr)
-                queue.append((nc, nr))
-        return None
+    def _is_free_tile(self, tile: tuple[int, int]) -> bool:
+        return self._map.is_walkable(*tile) and self._entity_at_tile(tile) is None
 
     def _find_free_area(
-        self, col: int, row: int, gw: int, gh: int, max_radius: int = 8
+        self, origin: tuple[int, int], dimensions: ObjectDimensions
     ) -> tuple[int, int] | None:
-        """BFS to find the nearest origin (c, r) where a gw×gh block of
-        tiles is entirely walkable and free of entities."""
-        from collections import deque as _deque
+        """Nearest top-left tile, from *origin*, of a footprint whose tiles are all free."""
 
-        def _area_free(c: int, r: int) -> bool:
-            for dc in range(gw):
-                for dr in range(gh):
-                    tc, tr = c + dc, r + dr
-                    if not self._map.is_walkable(tc, tr):
-                        return False
-                    if self._entity_at_tile(tc, tr) is not None:
-                        return False
-            return True
+        def is_footprint_free(corner: tuple[int, int]) -> bool:
+            return all(
+                self._is_free_tile((corner[0] + dc, corner[1] + dr))
+                for dc in range(dimensions.footprint_width)
+                for dr in range(dimensions.footprint_depth)
+            )
 
-        visited: set[tuple[int, int]] = set()
-        queue: _deque[tuple[int, int]] = _deque()
-        if _area_free(col, row):
-            return (col, row)
-        visited.add((col, row))
-        queue.append((col, row))
-        while queue:
-            c, r = queue.popleft()
-            for dc, dr in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
-                nc, nr = c + dc, r + dr
-                if (nc, nr) in visited:
-                    continue
-                if abs(nc - col) > max_radius or abs(nr - row) > max_radius:
-                    continue
-                visited.add((nc, nr))
-                if _area_free(nc, nr):
-                    return (nc, nr)
-                queue.append((nc, nr))
-        return None
+        return find_nearest_tile(
+            origin, max_radius=NPC_BUILD_SEARCH_RADIUS, is_suitable=is_footprint_free
+        )
 
     def _find_nearest(self, kind: type[Resource]) -> Resource | None:
         best: Resource | None = None

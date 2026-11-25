@@ -1,4 +1,4 @@
-"""Harvestable world entities: trees, rocks, and buildable structures."""
+"""Map objects the NPCs work on: trees, rocks, structures and wheat fields."""
 
 from __future__ import annotations
 
@@ -27,7 +27,7 @@ if TYPE_CHECKING:
 
 
 class Resource:
-    """Base class for any harvestable map object sitting on a tile."""
+    """A map object anchored at the tile (``col``, ``row``), its top-left corner."""
 
     kind: str = "resource"
 
@@ -36,11 +36,9 @@ class Resource:
         self.row = row
         self.hp = hp
         self.max_hp = hp
-        self.yields = yields  # {"wood": 10, …}
+        self.yields = yields
         self.depleted = False
-        self.reserved_by: int | None = None  # NPC id that claimed this resource
-
-        # Per-unit collection tracking
+        self.reserved_by: int | None = None  # id of the NPC that claimed it
         self.remaining_yields: dict[str, int] = dict(yields)
         self._total_units: int = sum(yields.values())
 
@@ -48,17 +46,19 @@ class Resource:
     def dimensions(self) -> ObjectDimensions:
         return OBJECT_DIMENSIONS[ObjectKind(self.kind)]
 
-    def collect_one_unit(self) -> tuple[str, int] | None:
-        """Collect a single unit from this resource.
+    @property
+    def occupied_tiles(self) -> list[tuple[int, int]]:
+        """Every tile the object covers: its anchor tile, or the whole footprint of a
+        structure."""
+        return [(self.col, self.row)]
 
-        Returns ``(resource_type, 1)`` or *None* if nothing remains.
-        Marks the resource as depleted once all units are gone.
-        """
+    def collect_one_unit(self) -> tuple[str, int] | None:
+        """Take one unit: ``(resource_type, 1)``, or None when nothing remains. Lowers
+        ``hp`` in proportion and sets ``depleted`` once the last unit is taken."""
         for res_type in list(self.remaining_yields.keys()):
             if self.remaining_yields[res_type] > 0:
                 self.remaining_yields[res_type] -= 1
                 total_left = sum(self.remaining_yields.values())
-                # Update HP proportionally for visual feedback
                 self.hp = max(0, round(self.max_hp * total_left / max(1, self._total_units)))
                 if total_left <= 0:
                     self.depleted = True
@@ -90,7 +90,7 @@ class Rock(Resource):
 
 
 class Structure(Resource):
-    """A player-built structure (e.g. storage hut). Placeholder for v1."""
+    """A building the pawns raise: ``built`` once ``build_progress`` reaches 100."""
 
     kind = "structure"
 
@@ -102,7 +102,7 @@ class Structure(Resource):
         building_type: str = "house1",
     ) -> None:
         super().__init__(col, row, hp=100, yields={})
-        self.build_progress = build_progress  # 0..100
+        self.build_progress = build_progress
         self.built = False
         self.building_type = building_type
 
@@ -112,7 +112,6 @@ class Structure(Resource):
 
     @property
     def occupied_tiles(self) -> list[tuple[int, int]]:
-        """Return every (col, row) this structure covers."""
         tiles: list[tuple[int, int]] = []
         for dc in range(self.dimensions.footprint_width):
             for dr in range(self.dimensions.footprint_depth):
@@ -126,14 +125,14 @@ class Structure(Resource):
 
 
 class WheatField(Resource):
-    """A plantable wheat field that grows over time and can be harvested."""
+    """A field a pawn plants: it grows one frame at a time and is harvested once
+    ``fully_grown``."""
 
     kind = "wheat"
 
     def __init__(self, col: int, row: int) -> None:
-        # Growth is tracked separately by self.growth.
         super().__init__(col, row, hp=10, yields={"wheat": WHEAT_YIELD})
-        self.growth = 0  # 0..WHEAT_GROW_TIME
+        self.growth = 0  # frames, up to WHEAT_GROW_TIME
         self.fully_grown = False
 
     @property
@@ -141,7 +140,7 @@ class WheatField(Resource):
         return min(1.0, self.growth / WHEAT_GROW_TIME)
 
     def grow_tick(self) -> None:
-        """Call every frame. The field grows passively."""
+        """Grow by one frame; nothing happens once depleted or fully grown."""
         if self.depleted or self.fully_grown:
             return
         self.growth += 1

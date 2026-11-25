@@ -196,6 +196,12 @@ class NPCBase:
         """
         raise NotImplementedError
 
+    def _start_performing(self, duration: int) -> None:
+        """Enter PERFORMING for *duration* frames, counted by ``_perform_timer`` from 0."""
+        self._perform_timer = 0
+        self._perform_duration = duration
+        self.state = State.PERFORMING
+
     def _plan_move_to(self, col: int, row: int) -> None:
         start = self.tile_pos
         blocked = self._occupied_by_structures()
@@ -307,17 +313,13 @@ class NPCBase:
                 target.reserved_by = None
 
     def _occupied_by_structures(self) -> set[tuple[int, int]]:
-        """Return set of tiles occupied by non-depleted multi-tile structures."""
-        tiles: set[tuple[int, int]] = set()
-        for r in self._resources:
-            if r.depleted:
-                continue
-            if isinstance(r, Structure):
-                for t in r.occupied_tiles:
-                    tiles.add(t)
-            else:
-                tiles.add((r.col, r.row))
-        return tiles
+        """Every tile a non-depleted resource covers, structure footprints included."""
+        return {
+            tile
+            for resource in self._resources
+            if not resource.depleted
+            for tile in resource.occupied_tiles
+        }
 
     def _adjacent_to_structure(self, struct: Structure) -> tuple[int, int] | None:
         """Return the nearest walkable tile *cardinally* adjacent to the

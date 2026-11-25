@@ -70,13 +70,7 @@ def spawn_world(game_map: GameMap) -> SpawnedWorld:
 
 
 def _occupied_entity_tiles(resources: list[Resource]) -> set[tuple[int, int]]:
-    entity_tiles: set[tuple[int, int]] = set()
-    for resource in resources:
-        if isinstance(resource, Structure):
-            entity_tiles.update(resource.occupied_tiles)
-        else:
-            entity_tiles.add((resource.col, resource.row))
-    return entity_tiles
+    return {tile for resource in resources for tile in resource.occupied_tiles}
 
 
 def _spawn_pawns_near_center(

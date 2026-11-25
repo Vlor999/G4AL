@@ -13,7 +13,6 @@ from game.settings import (
     ARCHER_FIRE_ANIM_TIME,
     ARCHER_RANGE,
     ARCHER_SHOOT_TIME,
-    NPC_EAT_RESTORE,
     NPC_SPEED,
 )
 from game.targeting import find_nearest_living, find_walkable_tile_in_range, tile_distance
@@ -27,8 +26,6 @@ if TYPE_CHECKING:
 
 
 class Archer(NPC):
-    """Playable archer – ranged unit with shoot action."""
-
     kind: str = "archer"
     controllable: bool = True
     allowed_actions: list[ActionType] = ARCHER_ACTIONS
@@ -81,30 +78,19 @@ class Archer(NPC):
         return tile_distance(self.tile_pos, enemy.tile_pos)
 
     def enqueue(self, action: Action) -> bool:
-        """Override: cancel defend mode when a new action is enqueued."""
+        """Leave defend mode and drop the current target, then queue *action* as
+        ``NPCBase.enqueue`` does."""
         self._defending = False
         self._shoot_target = None
         self._is_firing = False
         return super().enqueue(action)
 
     def update(self) -> None:
-        """Override: while defending and idle, keep scanning for enemies."""
+        """Advance one frame; a defending archer with nothing queued then looks for an
+        enemy in ``ARCHER_DEFEND_SCAN_RADIUS``."""
         super().update()
         if self._defending and self.state == State.IDLE and not self.action_queue:
             self._defend_scan()
-
-    def _next_action(self) -> None:
-        """Start a queued MOVE_TO, SHOOT, EAT or DEFEND; any other action ends DONE."""
-        if self.is_carrying:
-            self._start_return_to_hut()
-            return
-        if not self.action_queue:
-            self.state = State.IDLE
-            return
-        self._release_reservation()
-        action = self.action_queue.popleft()
-        self._current_action = action
-        self._start_action(action)
 
     def _start_action(self, action: Action) -> None:
         if action.action_type == ActionType.MOVE_TO:
@@ -115,14 +101,6 @@ class Archer(NPC):
             self._start_eat()
         elif action.action_type == ActionType.DEFEND:
             self._start_defending()
-        else:
-            self.state = State.DONE
-
-    def _start_move_to(self, action: Action) -> None:
-        if isinstance(action.target, tuple):
-            self._plan_move_to(*action.target)
-        else:
-            self.state = State.DONE
 
     def _start_shooting(self) -> None:
         enemy = self._find_nearest_enemy()
@@ -138,7 +116,6 @@ class Archer(NPC):
         self._defend_scan()
 
     def _engage(self, enemy: Fauna) -> None:
-        """Shoot *enemy* from here when in range, else walk into range first."""
         self._shoot_target = enemy
         if self._enemy_tile_distance(enemy) <= ARCHER_RANGE:
             self._start_shoot_perform()
@@ -146,7 +123,6 @@ class Archer(NPC):
             self._walk_toward_enemy(enemy)
 
     def _walk_toward_enemy(self, enemy: Fauna) -> None:
-        """Pathfind to a tile within ARCHER_RANGE of the enemy."""
         best_tile = find_walkable_tile_in_range(
             self._map, origin=self.tile_pos, target=enemy.tile_pos, shooting_range=ARCHER_RANGE
         )
@@ -157,7 +133,6 @@ class Archer(NPC):
         self._plan_move_to(*best_tile)
 
     def _defend_scan(self) -> None:
-        """Scan for enemies within defend radius and engage if found."""
         enemy = self._find_nearest_enemy(max_range=ARCHER_DEFEND_SCAN_RADIUS)
         if enemy is None:
             self.state = State.IDLE
@@ -165,13 +140,10 @@ class Archer(NPC):
         self._engage(enemy)
 
     def _start_shoot_perform(self) -> None:
-        self._perform_timer = 0
-        self._perform_duration = ARCHER_SHOOT_TIME
         self._is_firing = False
-        self.state = State.PERFORMING
+        self._start_performing(ARCHER_SHOOT_TIME)
 
     def _on_arrival(self) -> None:
-        """Override: after walking toward enemy, start shooting."""
         if (
             self._current_action
             and self._current_action.action_type in (ActionType.SHOOT, ActionType.DEFEND)
@@ -188,10 +160,6 @@ class Archer(NPC):
                 self._walk_toward_enemy(enemy)
             return
 
-        if self._current_action and self._current_action.action_type == ActionType.MOVE_TO:
-            self.state = State.DONE
-            return
-
         self.state = State.DONE
 
     def _perform(self) -> None:
@@ -206,13 +174,7 @@ class Archer(NPC):
         if self._perform_timer >= self._perform_duration:
             self.state = State.DONE
 
-    def _finish_eating(self) -> None:
-        self.hunger = min(self.max_hunger, self.hunger + NPC_EAT_RESTORE)
-        self.say("Mmm, delicious!", 90)
-        self.state = State.DONE
-
     def _advance_shot(self) -> None:
-        """Aim, release the arrow at the end of the cycle, then shoot again or follow."""
         enemy = self._shoot_target
         if enemy is None or enemy.health <= 0:
             self._is_firing = False
@@ -238,7 +200,6 @@ class Archer(NPC):
             self._walk_toward_enemy(enemy)
 
     def _lose_target(self) -> None:
-        """The target is down: watch for the next one when defending, else end the order."""
         self.say("Target down!", 60)
         self._shoot_target = None
         if self._defending:

@@ -479,3 +479,20 @@ def test_hunger_drains_before_the_meal_that_ends_in_the_same_frame(
 
     assert npc.state == State.DONE
     assert npc.hunger == npc.max_hunger
+
+
+def test_pawn_has_a_starter_for_each_pawn_action() -> None:
+    assert set(NPC._START_BY_ACTION) == set(NPC.allowed_actions)
+
+
+@pytest.mark.parametrize("action_type", Archer.allowed_actions)
+def test_the_archer_reacts_to_each_archer_action(
+    build_map: MapBuilder, action_type: ActionType
+) -> None:
+    game_map = build_map(OPEN_FIELD)
+    archer = Archer(*game_map.tile_center(0, 0), game_map, [], ResourceStorage(), name="Robin")
+    archer.enqueue(Action(action_type, target=(3, 2)))
+
+    archer.update()
+
+    assert archer.state != State.IDLE or archer.visible_speech_text

@@ -24,14 +24,18 @@ the same JSON the client already reads.
 
 ```python
 # Don't
-if action == "chop_wood": ...
+if action == "chop_wood":
+    ...
+
 
 # Do
 class ResourceKind(StrEnum):
     WOOD = "wood"
     STONE = "stone"
 
-if kind == ResourceKind.WOOD: ...
+
+if kind == ResourceKind.WOOD:
+    ...
 ```
 
 When an enum mirrors an external list (the actions the LLM may return in

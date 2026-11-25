@@ -1,18 +1,22 @@
 {
   "schemaVersion": 1,
-  "pageVersion": "sha256:ef035734490be33f78fd815e9e04f6f20fdf745d987e4a9e96ed5a9a5e5f9450",
+  "pageVersion": "sha256:c628d71310b38e8220e014eb661b316e4e64294a97478c8275967ab0bfe54577",
   "claims": [
     {
       "id": "claim_fcbd7fb9499c457c9b80276a2b5d42e7",
-      "statement": "The client loads classic scripts in a fixed order from index.html that share one global namespace window.G4AL, with game.js as the entry point.",
+      "statement": "The client loads classic scripts in a fixed order from index.html (details, sprites, map_image, renderer, ptt, ui, chat, input, game) that share one global namespace window.G4AL, with game.js as the entry point.",
       "evidence": [
         {
-          "resource": "repo://static/game.js#L1-L8",
-          "version": "repo-lines-v1:sha256:dbe7da3065359840f3f3ab236b64a78536a874d83ac1fa974ea42fd73e61565f:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNDYzNmFjNDVjZmJiNmVhNGZiY2M1NzVkNDNiZTYxNjVjMWIyNjAyMDNkYWQ2ZjA2OTkzMmJkMDM0Y2I2YTZhZCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMDFiYTQ3MTljODBiNmZlOTExYjA5MWE3YzA1MTI0YjY0ZWVlY2U5NjRlMDljMDU4ZWY4Zjk4MDVkYWNhNTQ2YiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjAsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNWM5NjliNzRhZmZhNzhmZWJlMGYyZjczMDE3NjRjMWNkYzYxOTM0ZTU4NDU5NmZhNTI5YWFhYTJiOGIyZDUxYiJ9"
+          "resource": "repo://static/game.js#L1-L63",
+          "version": "repo-lines-v1:sha256:1eef23f80cb94d1ca6d85129d51ee396d9d8bf87b8d9c59e938c6a7e3c177538:eyJzZWxlY3RlZExpbmVDb3VudCI6NjMsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ2MzZhYzQ1Y2ZiYjZlYTRmYmNjNTc1ZDQzYmU2MTY1YzFiMjYwMjAzZGFkNmYwNjk5MzJiZDAzNGNiNmE2YWQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJkODVhMzg2NzY4ZTUzOTI4ZDJkOTA0YzQ1MjA4ZjVmNGJmN2E2OGJjMzE4NGQyYTA5YWMxYmVkODRiODYyZmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjowLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
         },
         {
-          "resource": "repo://static/index.html#L299-L306",
-          "version": "repo-lines-v1:sha256:0f280270f8ad3d5a8ef35927bb96b32652a2605ee44c9a12e6def896ddd26239:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNGVkOTI0NTMyY2M1MTgxZjEwOTliNGQ3YzQxMDk0OWFjMDQyYTIwMzdiODdjMTZkZjI4YmI0ZWRiNWE2YjI1NCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiYTc1Y2I5ZGI2ZjM4M2FmMTllYTk4YTlkM2Y4ODVlNDZiYjIwNzkxNjM5ZjM5YzhmNzhhMDVjMWI2NzNiMDNiNyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMzBkMWNkMDU3OGNkYjVmM2E2NmVlMDJhMTViMWM5ZWYzNWM0MGUwMDYxNjBjNzJiZTkxNGU4NDc5OTk4YWY1ZiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZWM4ZmIxMTAzMDg1MWM0M2E4OGI2MDc0ZDM4ODRhYzU3MWQwNzJlMjliMzcxNGVkNDJmMDM5NmQxZWFjN2VjNCJ9"
+          "resource": "repo://static/index.html#L313-L322",
+          "version": "repo-lines-v1:sha256:43d259ff61a340545e66a9be78e36f06b8f5f0e774d533a8ecb228e04823d0b8:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRlZDkyNDUzMmNjNTE4MWYxMDk5YjRkN2M0MTA5NDlhYzA0MmEyMDM3Yjg3YzE2ZGYyOGJiNGVkYjVhNmIyNTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImE3NWNiOWRiNmYzODNhZjE5ZWE5OGE5ZDNmODg1ZTQ2YmIyMDc5MTYzOWYzOWM4Zjc4YTA1YzFiNjczYjAzYjciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjMwZDFjZDA1NzhjZGI1ZjNhNjZlZTAyYTE1YjFjOWVmMzVjNDBlMDA2MTYwYzcyYmU5MTRlODQ3OTk5OGFmNWYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImVjOGZiMTEwMzA4NTFjNDNhODhiNjA3NGQzODg0YWM1NzFkMDcyZTI5YjM3MTRlZDQyZjAzOTZkMWVhYzdlYzQifQ"
+        },
+        {
+          "resource": "repo://static/sprites.js#L5-L12",
+          "version": "repo-lines-v1:sha256:8e9a7d6ee17f3e55a5cde73510504fdb5ed96268a62973c89d2882ff873cc429:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMTAzZTgwZDZlZjI1NzVhMzA4YzViYjY1ZGFiMjNiOTY2MGJkNDgxYTdmZjEzY2U3ZWY5MGIyNDU4OWE5NWU0ZiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMTk5ZTljMzg1YzM1N2E0MGZlMjc0NmNkNDdmMDI1MTkzYTQ0MWFkYjE5ZjMwNGMwOWQwNjI3Y2RmYTc4MDk5OCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiM2I1MTM1OGMzMDgwMzZiNWNjNjEyMzhhYWI3ODAwMGUxYTczZmNkZmY5NWI0OTkyZmEyNmRiOGVhYmE4MDY5OSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZGYxOWQyYTI3Yjc1MDE0YmNhNTAwNWNjOGQ2MTgzOWI4MGUyMjc2ZWUzNzUzODdiYzQxYWQ5MGQyZWU0NGQzZCJ9"
         }
       ]
     },
@@ -28,11 +32,11 @@
     },
     {
       "id": "claim_4e88804b381f4b0a97688aad42f53aae",
-      "statement": "Input handlers select NPCs, move the selected NPC and trigger actions by posting to /api/select, /api/move and /api/action, and hold G for push-to-talk.",
+      "statement": "Input handlers select NPCs, move the selected NPC and trigger actions by posting to /api/select, /api/move and /api/action; holding G starts push-to-talk only when the state reports hasVoiceInput, and keys typed in a form field are ignored.",
       "evidence": [
         {
-          "resource": "repo://static/input.js#L8-L89",
-          "version": "repo-lines-v1:sha256:411cebf9a145bb4cafe5540c8a4d457d5f540687c7c286683d10fad720188549:eyJzZWxlY3RlZExpbmVDb3VudCI6ODIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU4NDk3ZmY5MGRkNzE1MTM0MDI1M2JhYWQ5NjA1NmViODdkMDNhZGMxZTAyZDRmMWE2YzZlOWQwYzQyZGE1MWQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImJkODVhMzg2NzY4ZTUzOTI4ZDJkOTA0YzQ1MjA4ZjVmNGJmN2E2OGJjMzE4NGQyYTA5YWMxYmVkODRiODYyZmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjVjOTY5Yjc0YWZmYTc4ZmViZTBmMmY3MzAxNzY0YzFjZGM2MTkzNGU1ODQ1OTZmYTUyOWFhYWEyYjhiMmQ1MWIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+          "resource": "repo://static/input.js#L8-L105",
+          "version": "repo-lines-v1:sha256:f4093f394736c835fc8ac3b9e8b4bfe4e7ecc5001576dba1b57599ddea9a6be0:eyJzZWxlY3RlZExpbmVDb3VudCI6OTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImU4NDk3ZmY5MGRkNzE1MTM0MDI1M2JhYWQ5NjA1NmViODdkMDNhZGMxZTAyZDRmMWE2YzZlOWQwYzQyZGE1MWQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjIyZDExY2FmNDNlOTdlZjM2OWU2YmVlZDFhMjY4YmQwNTgzOGYyOWI5ZGQyNTRiZjY5YmE2NDg4NDE0NzIzNGEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjVjOTY5Yjc0YWZmYTc4ZmViZTBmMmY3MzAxNzY0YzFjZGM2MTkzNGU1ODQ1OTZmYTUyOWFhYWEyYjhiMmQ1MWIiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoyLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImM4OTg2ZmQ0YWQ4MzlmY2YxZWMwYzVkODA2NjgyZjQyNWRlN2NkYjU3NTM2YTQ0ODE4OGI0YmMzYTIzNTk3MWMifQ"
         }
       ]
     },
@@ -45,10 +49,34 @@
           "version": "repo-lines-v1:sha256:a643bf9b27870746dd35fe54b7d185ae0f5f400e28c0386f6432ccb6d4b009dd:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAyLCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiI0ZWEyMWYyNzY1YmY0MzYwOTdjMTM5NTgyYTc4NzI2OTEyYTc5YmYxMTJmYmMwM2Y1N2EzNWUyMTA5MmE5YjFiIiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiJiZDg1YTM4Njc2OGU1MzkyOGQyZDkwNGM0NTIwOGY1ZjRiZjdhNjhiYzMxODRkMmEwOWFjMWJlZDg0Yjg2MmZiIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiIzMWMyYjNkYjkwN2U1MGNjNmJjNjJjYzEzZDllNDcyNmY1NmE1ZTk5M2NhZjAyYTM0OGJkZDgyNmVlZWEzNDYwIiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MCwiZm9sbG93aW5nQ29udGV4dEhhc2giOiJlM2IwYzQ0Mjk4ZmMxYzE0OWFmYmY0Yzg5OTZmYjkyNDI3YWU0MWU0NjQ5YjkzNGNhNDk1OTkxYjc4NTJiODU1In0"
         }
       ]
+    },
+    {
+      "id": "claim_7d5a0d6c45a94b8098445d27d861ce8f",
+      "statement": "chat.js posts typed commands to /api/command and model picks to /api/model, renders the state's chat list with HTML escaping, and leaves the picker alone while it has focus.",
+      "evidence": [
+        {
+          "resource": "repo://static/chat.js#L15-L64",
+          "version": "repo-lines-v1:sha256:e46ea39c927182b3836e0491a9e6d8343bf8ee121631641fb5b253b1d6655ede:eyJzZWxlY3RlZExpbmVDb3VudCI6NTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNjMDk4MmQ0ZGQzOGU2MjVhZTM1MWE4NDIzNjdmYTcyYmRiMTU0YjQ3ZGRjNzQ3Yjg5NWIwOTg5Y2ZhNGYxMWUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImFkOWUxMjU0NjQyNTU3NmQzZGVhZThjOWI5ZGJmMTI4ZDVkNmRkYWY1ZDdmZTg1NzkzNDkyN2RlZmZhM2I5ZGQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjgzNmE1M2Y1NWJkYzliNTMyOTdiYmIwZDEyZDA3MDIyMjk2MmNjOTQ3ODc5OTNmM2E5ZDBiYTlmYzVhNjMzY2QiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjoyLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImM4OTg2ZmQ0YWQ4MzlmY2YxZWMwYzVkODA2NjgyZjQyNWRlN2NkYjU3NTM2YTQ0ODE4OGI0YmMzYTIzNTk3MWMifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_0be5600bccaf448da49fc05bb314182b",
+      "statement": "The renderer places sprites from the footprint and sprite box the server sends for each object.",
+      "evidence": [
+        {
+          "resource": "repo://server/serialization.py#L154-L165",
+          "version": "repo-lines-v1:sha256:b88e55acae798b2eaddac8c9bc0c0d339b690752d1739055c88384ae7d63e84f:eyJzZWxlY3RlZExpbmVDb3VudCI6MTIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImNhNzg0OTNjZDU5OTRmOTIwMTk2ZTk0NTljYTMwMDYzMjliMmQwYTAxMzllOWY4YmEwNDIzYjFiYTMwMzI2NjMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTNmNDBlMzc4MWViODk2YzgyZDA0NmEwODA2N2ExMWUzNWNkZjJmMWRmYWYyNmZlYTkwYjhkYjY2NzY0MTMiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjRmYmQwMDkzMTRiYzI3MDg0MTY3MzRhMDJhZTVmZjM5YTFlNDhhMDUwYmU5MWY0M2IyZmFhOTIwMDJjNjJiZmMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjM4YmI3MzgxMmJhZTBmYmFlZjMwNmZhZjJkOWU1NDQzOGE3OWIzNzM5OWMzZjA3M2FlZWJjYWZlYjU1YTU2NWIifQ"
+        },
+        {
+          "resource": "repo://static/renderer.js#L252-L265",
+          "version": "repo-lines-v1:sha256:8ce2e178ecd3dc0dc2605c7a1ae0db9ddff963ed524f975c272b3d22021a15a8:eyJzZWxlY3RlZExpbmVDb3VudCI6MTQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjMxOTg2ODk5NGE1OTY0MTM2NTE4ZTY2YmE0ZmZiMDk5MjVjMDk4MGI0NWRlZmM2MTI2MjZmMDgxNDYwY2ZlNDkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjNjYjhiNmZkNWYwN2MzY2ExYTliYWRjZDk1NmJiNzZkZGYxNThkMTliYjExNDk4MzgxOGZhNzk1M2M5YmNiZmUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjYwNDljNmIzNDZkM2RlNDFlMmU0M2IwOTRkYWU4MTQ3M2U0YzM1MGEzYTMwNzYzY2U2ZWJjZjI0YzJjMTM5ZTYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjMxNTU5ZDY2MTJhODMzZDNkZGE2NTk5MWZhMGE1MzViOTkwNTU2NDA2YTI2ZmEyMDYyNTVjNGI0MGEzMzYzNzIifQ"
+        }
+      ]
     }
   ],
   "verification": {
     "by": "openwiki/0.5.2",
-    "at": "2026-11-18T09:30:24.405Z"
+    "at": "2026-11-25T15:38:15.273Z"
   }
 }

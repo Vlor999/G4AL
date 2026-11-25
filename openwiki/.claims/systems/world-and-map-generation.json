@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 1,
+  "pageVersion": "sha256:59c9e0b9f85a1bdaa1d38398ba8aae5aea2ec33a5765542dae4a9df2d2c21f39",
+  "claims": [
+    {
+      "id": "claim_7610a85820284f9d9a10fe63d608b7e2",
+      "statement": "GameMap keeps one random.Random built from its seed; the terrain, spawning, NPC name pools and fauna behaviour all draw from it, so one seed replays the same game.",
+      "evidence": [
+        {
+          "resource": "repo://game/world/map.py#L13-L36",
+          "version": "repo-lines-v1:sha256:f1ce6863c82b446f0ec1ed5cfa4120952ac93fcfe4fa70b229e8c2c693af6388:eyJzZWxlY3RlZExpbmVDb3VudCI6MjQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjhlMjA5OTQ0OGE5NmNlM2M3NzFlYmUzYjcxZGE5MjNkZjE1NThmMzVjZWVmMzgzM2NkZDMzNWZkMWRlMmNlZDgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAzNzYzMmFlNWYyZWU5OWM4NDhkMjhhZjc4MTlhYWM3YjlkOGQzODM2NzUwMmEzNGExODlkZDMzODU0Y2Q1OWUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjY4ZThjMjNhMDVjOTVjNjExNmYyMWUzNWQ1MDE5ZWYxM2RhOWVjM2JiYjY1M2Q0OGIzMGM1ZTA0OTk4OTJkNmQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijk1MTJiYTFiZDhhNmE4Y2Q1N2Q0MDc1YTc3NmZmNWQ0OGNjNmJkZmRkMjc5ZDgxMjlhNzIxNGM3ZGM2Y2EyNGEifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_84ce4f3d964e4fb88473735e344fbf24",
+      "statement": "generate_terrain assigns Voronoi biome regions around a meadow at the map centre, stamps lakes with sand shores away from the home meadow, adds dirt patches per biome, then turns water into sand fords so every walkable tile is reachable from the centre.",
+      "evidence": [
+        {
+          "resource": "repo://game/world/map_generation.py#L55-L172",
+          "version": "repo-lines-v1:sha256:b2fd6c2737f2f6c13fa7b19f9982c4438df3126b3581965669df98b9ea6a4e22:eyJzZWxlY3RlZExpbmVDb3VudCI6MTE4LCJmaXJzdFNlbGVjdGVkTGluZUhhc2giOiJlM2MzZDY0MzI5MWQ2YmE1MDg5NWM1YTRkZDRkYmUwOTk3Y2E1YWVkOTE4OTY5YTJiNmFlNzI5MWM5MDc2MjI2IiwibGFzdFNlbGVjdGVkTGluZUhhc2giOiIxMzdhYTFmY2Y0NGU3ZTUzNDUxYmVmY2RiMDlmOWI1NmFkYTExYzA3NTRhNzI2MmFiNTQ1ZmNjODc5N2U0NjcwIiwicHJlY2VkaW5nQ29udGV4dExpbmVDb3VudCI6MywicHJlY2VkaW5nQ29udGV4dEhhc2giOiIzYzgxMTRkM2FiOTlhMDg0Y2NhODJhODcwN2JhYWJkMzk1OWNjNzk0YmJhYzRjMGIwMTc4NmRkN2U1MDVkYTEyIiwiZm9sbG93aW5nQ29udGV4dExpbmVDb3VudCI6MywiZm9sbG93aW5nQ29udGV4dEhhc2giOiJkMzY3NGVlZjhmZjhlZjg3NDk2ZmM1OTFlMjQ3MzE4MDk3NzlhN2UxNWU2MDRkMGQ1NjA0YjRjZmE5MTQ0MDM2In0"
+        }
+      ]
+    },
+    {
+      "id": "claim_8633cc30675c46a880b4aef20ed4e158",
+      "statement": "spawn_resources rolls each free walkable tile inside the map border against its biome's tree and rock densities, with a biome share of gold rocks.",
+      "evidence": [
+        {
+          "resource": "repo://game/resources/entities.py#L151-L175",
+          "version": "repo-lines-v1:sha256:82655a466bace09c4f02b029c358dbad3008873c5aea987c151665a8c85775aa:eyJzZWxlY3RlZExpbmVDb3VudCI6MjUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM2ZjkyNjk0NThiZjYxYjQ3Mzk4YTNlOGM2MGNjNTU1N2I2MTdkYmUyZjljNTc0OGJiNzA3ZjlmZjgyNjQ5NjUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQ4OTYwMGE3M2QyZTAyZjM1MmI5MGZlZjFkOGQ2MzgxMWJhNGE4ZWUwYzFiZWFhN2FlNDY1OGYzNmFhMmUxOTgiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjJlNDBlYjA5ZWQzZmUyZWNmOWRkNTAzY2U5YmYxOWM2ODAwYWQ4NmE3OTk1ZjJkNGMwNTMxMjVkYTUzYTBmNWEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        },
+        {
+          "resource": "repo://game/settings.py#L23-L27",
+          "version": "repo-lines-v1:sha256:29c296f5fbad1c3f0c3becda12808e4d54e2b640949ff3a4daa9b2521b937b51:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiOTBlMDBhODgyMGI4OWM1NTQ1OGI5NjRiOTliZjE2YmQ5MmQyZTQ2Yjc0OWYxN2NiM2IyYzk0MmRmYzRiNGJmNiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZWQ5ZmM5NTU3NmVmMDQyNGI2ZmU3YjA4NTA2MTJlOWFiZTUzY2RiNTJhZDE1YjU2ZTAyMTg2MzRiNWI3ZDUzZSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiOTA1ZDFkMDE4ZjJmODhiMDcwNTk5YTMzOWFhODc4MThhZmY3NGEwY2Q1MzQ2MzNkZDM5ZDhiNTNjY2MxOGIzMiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYmE1MzBhNDJhMTE2NGJmZmRkOTE1Y2RkNWVkZDJkM2ZlMmEzZGIxZjgzNTA0MDQyOTk0MjMxNTExMGY2MWU1NiJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_2efe7e714f3f4b2c94d3496afa3b9310",
+      "statement": "OBJECT_DIMENSIONS gives every object kind a footprint, a height in half-tile steps and a sprite box; invalid footprints, heights or sprite boxes raise at construction.",
+      "evidence": [
+        {
+          "resource": "repo://game/constants.py#L8-L9",
+          "version": "repo-lines-v1:sha256:a7cfec5155e213b3717a65225a7a5285d8ad5e745a5bd171db3dbcfdf6dea80a:eyJzZWxlY3RlZExpbmVDb3VudCI6MiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNjhlMTViY2RhYjJjODk1MmYzZDY5MTA5Y2FiMGVkNjk2NzE0ZTEyNzY5NjAwMmUxZWI5YjE5NmVkZWNlZmZlMiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZDVmMGZjNTE4Njg5OTUxM2FkMzg1YWRlYjg3Zjg5Mjc4NDZlOWZiZjJjZTA5YzA0MjA5MGNiZTg5ZDU2OGMxMyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNzMwOWJhMzQ3NTkxZmY2NzdhYjYzMzRhOTNkNDEzYjNhNmQzN2M1MDNhMjQ0M2Q5ZGUxMDdhZjI4NzgyODdmYyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjAsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3ODUyYjg1NSJ9"
+        },
+        {
+          "resource": "repo://game/world/dimensions.py#L39-L103",
+          "version": "repo-lines-v1:sha256:666401eaff843271fb49a12dbcf3dfef7129562434a8760ce747853fc465ca70:eyJzZWxlY3RlZExpbmVDb3VudCI6NjUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImY2OWExMzk3NWMyNTZlYzgzMjBlMjAxNjA4M2M5NmRmNjM3Y2EzZDM1YmViZGUyMzE0YmVlM2E0NzExYjU2Y2EiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQxMmNhMzQ1Y2NmNzViZjljMDgwNmJjZTY5NWJlOGRlODA4Yjc5OTg0MjUxYTdhNTRkMjAyY2Y2MTAxZGQ0NTEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjBiYTQ3MTU2OWM4M2ZiNjVjNDM3M2MyNzZiMzMzOTE2OGVkN2EzZGVlOWVjMGE4NWExNDdmZWRlNTNmOTc4ZTciLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjE1OTA3NmRmY2I0ZGY3MmUxNWE0NTJlMjA0YmU5YWY5NGU0NjE5NjI0NjM1NmEwMDNlZmI2ZTQzYmEyYWE0OWQifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_a4968d9d57f143169e547dc7e79c1448",
+      "statement": "A NamePool draws an unused name from the map's rng and recycles the whole pool once every name is used.",
+      "evidence": [
+        {
+          "resource": "repo://game/world/npc_names.py#L49-L73",
+          "version": "repo-lines-v1:sha256:95c1e827ccd30b8f9a7666aa13ea6a182d7e0a81cc35ff99aaa98423645e92f7:eyJzZWxlY3RlZExpbmVDb3VudCI6MjUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjViZGRjNTJiYzM4YzE0Y2YxODAxODg0OTA3Mzk1ODUwMGM2ZGNlNzdiNGNkZGRkYjcyOGEwNDg5MDFiNjE3YWUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjUyMmUyZjJjNTc5MjMyMzgxZjJlZmU4YmUzYmY1Y2RkYTY5NDhkYmJiYTU5Zjk5MzdlNzhjYzljNzgxNWQyYjUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjM4MTk4YjBmZjdkMTgzZjQ5ZDJkZDAzMjI1MDIyMzU0ODFkMTk4ZDUyZmIxNTkyODc2MmFiYjYyMzI5YWE2ZTMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+        }
+      ]
+    },
+    {
+      "id": "claim_77f8de33236745489ae0d4aeb2ce1721",
+      "statement": "Sheep spawn on free grass in a meadow when one is left, otherwise on any free grass.",
+      "evidence": [
+        {
+          "resource": "repo://game/fauna/fauna_spawning.py#L19-L29",
+          "version": "repo-lines-v1:sha256:2f234c4a1366deb873adedb23c1fa04daf19e85f9029756a4f136509d2977a22:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRiNDgxMWM0NGZiN2FjMzAwODM1NzhlNjgwMjQwOTA4YzcwYjRiOWZjMjViMTFiYTFjNjVkNGRhYmJlYmE4YTUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjdhNjY0OTEzNzM2YzQwOGIxMjc5MDYzY2FkMjIyZWJhYTNmNjIzODYyMDhlYmYyNzFhNWNlNGE5ODU0N2UwMjQiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjNkNGExMWIxYTVkMDY1MjkxZGU3MzE0NDZkY2Q1ZjQ1NDE5YTA1MjUwMTU1YTJhYzQyZmEyZWUzYmEyZjBlYjQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjdjZjkzMGI5YjMxOGRhYTBjOTBhYjA4ZTg0NTIyMGYyOGZkMzk3ZjUzZDEyNDY0ODIyZDg5ODg5ZDJmODViNDkifQ"
+        }
+      ]
+    }
+  ],
+  "verification": {
+    "by": "openwiki/0.5.2",
+    "at": "2026-11-25T16:09:17.330Z"
+  }
+}

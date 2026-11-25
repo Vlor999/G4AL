@@ -1,38 +1,32 @@
 {
   "schemaVersion": 1,
-  "pageVersion": "sha256:7b8d481ec628d4eb60cca319cf4f30285552cf146ad79a704c0b0f7a2746456c",
+  "pageVersion": "sha256:4917f2ec08a18575333adfb245700b14272273f2f4328ee7405290db73edd554",
   "claims": [
     {
       "id": "claim_ad25e5d4ff5b48a3bd49ee91ca898d57",
-      "statement": "/api/audio returns immediately after starting a daemon worker thread through GameEngine.send_audio_command, which logs Listening.",
+      "statement": "/api/audio and /api/command return at once after GameEngine logs the command, adds it to the chat and starts its interpretation through run_in_background with the model selected at send time.",
       "evidence": [
         {
-          "resource": "repo://server/engine.py#L144-L149",
-          "version": "repo-lines-v1:sha256:5fa665cfd6f2e02922d25dac55fe9faaea53fec01b42d776f11c0dbfe55d941d:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNGJlYzEzMzMxMzk5ZjhlZWQxZDU2NWQ3YmRlYTk2MjNmZjE5ZGNlNGY0ZmY5OWNkYjJmMjg0NmQ3OGJhYmQ0MyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNWE0ZGIwOGYyZGZlZmE3MWFiZTY4MzVmZjNiNWU4MjBjOTBiMTYzYjgyMmZjMjU2NmI2YTlhYTU4YzJjOGQ3ZiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNWUwOTczYTQ3MmVkMzliZmU2NzljNzk5ZGMxZDY0ZWU3ZDcxM2EwNmU2MGYyNDQzOTJiZDFhMjcwN2VlNTdhZSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZWNkMjUwZWFjZDc5YTY5MjU3M2FmNDgyY2JkMDk0NTk2NGQ2MDQ1ZWNhMTJkMDZkODJkMDdkOThmNjRmNGJhNCJ9"
+          "resource": "repo://server/engine.py#L166-L194",
+          "version": "repo-lines-v1:sha256:75a3b8cf040b57fd85d1dcbcdfb8bb4259746d9e19c8e9b904ed4592c8d1e3a1:eyJzZWxlY3RlZExpbmVDb3VudCI6MjksImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZlYWNiZGEwYjRkZTlkZTA5ZDkzZjQxM2MyMmViMDk3NjhiZTkwYWU0YWZmMTI1MjZmZGJjMzFiMjQwYzYwOTQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImM4YTAwODYxMjhhZjQ4ODAzYTEyNzA5YTc5OGY2MmU3YmEyMTYxNGI3M2JiNjMwYTdhYzQ5YzY5YzU2MTk0MzYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjdiZTdjZGYwODRiNzYzMzJlOTkxNmFmZTNlMDRjNjFlM2YyY2VlZjEyMmY5MmZiMGRmZjdjYTQyN2YwMzU2MDkiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjM2MGQ0NmZiNGZkMzc2ZjgwZDE4YjQxY2I0MTU1NjNlZmJmNzA2YmQ5OWQ0ODQ4YjQ1YTg2ZjEzZWU3ZWRmZTAifQ"
         },
         {
-          "resource": "repo://server/routes.py#L86-L95",
-          "version": "repo-lines-v1:sha256:557deca5672bee8afd0b31c9339ce8e6bfcb949c0c93ccd0cd8206c2ffd42fca:eyJzZWxlY3RlZExpbmVDb3VudCI6MTAsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQyMTE0MDQ4NzJmYWExOWFkOGUxYzViYTBjMWE2YzE0NjllZjJiNDY3ZjE1MzIxNWM2NmNkMDM2N2U5MWE3YzQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQ5OWZhODEzZjUwYWI3OThhNWZiOWJmMDU1Y2MyOTUyNDg2ZmE1NTk4ODVhMzE2MGQ2YjUxYWZjNzgzYmI0YWMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImZhZjk1YjE2MTcwYjI5YzBmMDNkZmVmY2RlNGM0NmIyNjk2NGIxYWYwN2EwMWQ1MTMyZTQ5NGJlODMyMjQxMmMifQ"
+          "resource": "repo://server/routes.py#L88-L104",
+          "version": "repo-lines-v1:sha256:9c9840403a09d5de75cbeb1e71ce8cbbfe989241c4f12b9910455bce40a4fa3f:eyJzZWxlY3RlZExpbmVDb3VudCI6MTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQyMTE0MDQ4NzJmYWExOWFkOGUxYzViYTBjMWE2YzE0NjllZjJiNDY3ZjE1MzIxNWM2NmNkMDM2N2U5MWE3YzQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRjM2UyZDZjOGJlZGYyYTYxMDU0ZWQzOTcyYTE2MzAzZmE2ZDlkMzZhZDcxMDNjMTBmZjlkMjZkOTg4Y2M4ZWYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImQ5OWZhODEzZjUwYWI3OThhNWZiOWJmMDU1Y2MyOTUyNDg2ZmE1NTk4ODVhMzE2MGQ2YjUxYWZjNzgzYmI0YWMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImMxMjRiYjUwNjIyOTcwMzE2OWI2ZGQ2NmEyNDBkY2NjZGRiYWVhYjQ1ZDc3NTdjYzNjMGNiOTVkYjhiMDAyZDUifQ"
         }
       ]
     },
     {
       "id": "claim_d8841e3b7c304e8babd985471618c6bd",
-      "statement": "The worker stores interpreter results in _pending_orders under the lock, replacing any unapplied result, and logs a warning and leaves the game unchanged on OrderInterpretationError.",
+      "statement": "The background work appends each interpreter answer to _pending_answers under the lock; on OrderInterpretationError it logs a server warning and queues a failure marker that the next tick reports as Command failed, try again.",
       "evidence": [
         {
-          "resource": "repo://server/engine.py#L151-L165",
-          "version": "repo-lines-v1:sha256:c9fc2ce4c60a29e22f87fdb2bd723659d95669960463b9a9dcd72e72ee776277:eyJzZWxlY3RlZExpbmVDb3VudCI6MTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjkyZmIwOTk5MmM3NWQ4NGNkMGZlM2Y5MDU0NWJhNjA1ZDQ1ZWYxMDg0YjkxNzFiYTU4YzNiNzc4ZjhjMmMzMzQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQ1MWYzNDBmYzY2YzA2YjMzOGU2OTUwODA4NWNlNGYyODI5Zjc4NTE4MjlhOGU2Y2JjNGVkMDY5YmNlZDMxYjMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjQ0YWUyNTExMmVjM2U1MmY1MjllZjBhYzhjYzA4MmMzNThhZTU1NWMyZjZkOWZjMGNiM2JjMjc5NGY5ZTBmZjIifQ"
-        }
-      ]
-    },
-    {
-      "id": "claim_b4f7c9df80524012ad482d905051db74",
-      "statement": "Pending orders are applied on the game loop thread: a refusal logs the reason, an empty list logs no actions understood, and each outcome that is spoken goes to the VoiceLineSpeaker before being logged.",
-      "evidence": [
+          "resource": "repo://server/engine.py#L111-L114",
+          "version": "repo-lines-v1:sha256:6b6faa7ff83ace2e2aa46e90f95f60b9d7fae796b017f7b40d879d6be58ceab9:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMThkOWJkYWU3MzYzNzMyNDBlN2U3ZmNmM2Y5YzMxMDQyNDJmNGY5NWRiYWJlNzU1NmE3NmE5NDJmYzQyZGNjNSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNWU3YmNkMzZlZjUzYjQ0NTIzZTY1ZTk4ZDE5NDQ5OTNlMGZmMTc0NmY1NTM2YzFhNTExNzQ2ZjNlMDFlNzU2ZiIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNDk4MGUyMTg0MmIyNzA0MDVlZTc3ZTAzNjU0YjZkYjRlZmVmNWE2ZTkyZjM0ZTk0MWM3MmJjZWMyM2ZlZWM0NiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiZWY4MDQ0NGFhZTI2Yjk3MDgyMGRiN2NkNDNjYzEzYTdiZTUzZTIzYTczZGM5Y2IxMjYxZjNjMTJhODNkODllMCJ9"
+        },
         {
-          "resource": "repo://server/engine.py#L99-L114",
-          "version": "repo-lines-v1:sha256:cdbacdb7e819531127a7175f3be554b71b581bb15fb02e9e6ff3163236443f7d:eyJzZWxlY3RlZExpbmVDb3VudCI6MTYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI2ZWI3YzExMjU4MzAxODMzNDA1MWIzYzU4YTEzODhmMzY2MzVhZjc1M2RhMzM1MzMzN2NlMjM5YWViYzE2NWMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQ5ODBlMjE4NDJiMjcwNDA1ZWU3N2UwMzY1NGI2ZGI0ZWZlZjVhNmU5MmYzNGU5NDFjNzJiY2VjMjNmZWVjNDYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjJhNWI3ZjYwYzk5NmY3YjI0MGM5OTE3Y2NlYmQ4ZWI4NmY4YzZjZTRhNTM5YjVjNWZkMDFiZmRhMjFmYjk4OWEifQ"
+          "resource": "repo://server/engine.py#L196-L206",
+          "version": "repo-lines-v1:sha256:b013c6ffca67556e844372c32e37f8847c533973b602adef12162381a337b4c3:eyJzZWxlY3RlZExpbmVDb3VudCI6MTEsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjFlY2U5ZGUwZWRlYjkzZjM3YjJkYmQ2MDgyOWZhZTk3M2U5NDE0NWRmOWQyMDZlMTU5YTM5OTA5ZjdhZmRkNTMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjU0YmI4ZjYzZDgzZThlOWMwZjZjOTk2NTlhNGFiYmQxYzI2YmE4ODkxNTZkMjYxM2IyZDhmZjEzYzYxZTM3ZDIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6Ijg5OTYzOWQ4NmQ4NGMxYTliZGEyNTNhNmJkZjI3ZjhhZWU1NjdiZjNmOTFkY2U3MWY3YWU0ZmNiZWEzYzgwZmMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjhjNDMyZjljMjRhZGVmYzQzZDBkZWMyYTc4Y2I2Njk3YWQ4NzE4OGI2NWIxMDNiYmE5Yzk4NmQwMDc0MjVlNjgifQ"
         }
       ]
     },
@@ -41,34 +35,52 @@
       "statement": "apply_orders gives at most TTS_MAX_SPEAKERS accepted orders a spoken reply and sets a speech bubble on accepted orders.",
       "evidence": [
         {
-          "resource": "repo://game/orders.py#L50-L75",
-          "version": "repo-lines-v1:sha256:b824c990a5f9d3440c9e7b7ad4fd368d838e26cd23e0df043462637986b21a51:eyJzZWxlY3RlZExpbmVDb3VudCI6MjYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRjYzIzOTBjZTRiOWZkMzBhNDYxMmRmMmQzYWRiZWVmNGNjZmY4NzNkNjVhYzZhMjZhNjU0NjNiOGU3OTdiNjkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImRhYTM2MjQ1ZGU4YzIzYzRmNWVmOWJhM2E2NDIxZGFmMGUwYjMzNDQyYmQ4NTJlNWExMWIyNzM0OGMyNmNiZDYiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImE4YzM0OGE0NjUwMmRjZWI3OGVkYzNmYTA4NTZiODAzM2M0ZjM3NjJlODdjZjM1MDQ3YmViNzI0M2M4YzhhYWUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
+          "resource": "repo://game/orders/orders.py#L67-L88",
+          "version": "repo-lines-v1:sha256:f1c0726cf00a8678d55daa50a298aea4d2bebdf7ac613ddc1c6315629b23f9d7:eyJzZWxlY3RlZExpbmVDb3VudCI6MjIsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjRjYzIzOTBjZTRiOWZkMzBhNDYxMmRmMmQzYWRiZWVmNGNjZmY4NzNkNjVhYzZhMjZhNjU0NjNiOGU3OTdiNjkiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImIwYmI3NWY2MzMyMjczMDY3ZGUwMzgwZTkwMmUwYTI5NGYzYjBlY2JkYTQ3MjkzNWM0OWM4Y2M2N2QwY2VhNDUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6ImE4YzM0OGE0NjUwMmRjZWI3OGVkYzNmYTA4NTZiODAzM2M0ZjM3NjJlODdjZjM1MDQ3YmViNzI0M2M4YzhhYWUiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjowLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImUzYjBjNDQyOThmYzFjMTQ5YWZiZjRjODk5NmZiOTI0MjdhZTQxZTQ2NDliOTM0Y2E0OTU5OTFiNzg1MmI4NTUifQ"
         }
       ]
     },
     {
       "id": "claim_bc22493854154bc6a9085f71628a1c02",
-      "statement": "RefusalReason has four values: no orders given, malformed answer, unknown action and unknown npc.",
+      "statement": "RefusalReason has five values: no orders given, malformed answer, unknown action, unknown npc and action needs a target tile.",
       "evidence": [
         {
-          "resource": "repo://game/orders.py#L21-L38",
-          "version": "repo-lines-v1:sha256:97a6c9747dcd0e4024ccac8b1cf8f5c6de51c30847c5baf8234940e03d0f66b3:eyJzZWxlY3RlZExpbmVDb3VudCI6MTgsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjQyZjBlNWM0NDc2NDM1N2MwNmM5YzcwYzcyNjllMWQ1NzZhZjAyYzUyYzA4ZTMzZmY3OGU0Y2JhN2QzYmZjZDQiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjI3ZDI5YTYyZWEyZDU1OTE0ZDcyZmNiOTE4ZTQ1ZjNiYjFjYWY4YWQ3NjNmNGUyMWFiZGZjOGRjNmUwZTYyOTMiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImMzOWQ5NGQxOWNlZTRjNmJhZDU2M2Y1ODM1YTA0YzY3YjQ0MDU5ODczMmE2N2FhNDc4OTlkMmU3ZDI4NDBlNTAifQ"
+          "resource": "repo://game/orders/orders.py#L40-L47",
+          "version": "repo-lines-v1:sha256:564617c425c9d0994d6562100eb8927fd477bf62161237c547269d927e820ab9:eyJzZWxlY3RlZExpbmVDb3VudCI6OCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiYzgyMTY5M2IyY2VlMTZmYmNhN2FhNjc5NTUyMDllMTI1NmUxYmM0NTBkNjlmOThkMzRmN2ZiMWM3OGNjMmRmNyIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZjU3NmQ0MjFlMDI4MzRlOTM5ZjViNjAwMTU1OTM0ZTJhMDRiYmRjNWU0Mjk4ZGRiMTAxN2JiY2NmYTZiNzQzOCIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiOTBlZDFjZTlmMzZhNjY4OWQ0NzFiZGFmZWE3Y2IzNWY0YzlmOTlhMjk4M2E2NjUwNGMzYjZlYmI5MTc3NzhmMCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNzBjZTNmMjRhYjQ3YzJmNWE5ZDMzN2YzNzdlZDg1NzNmYTU2NTg0MDc2NDAyZjFhZjA1NGEzZGVkNjE5NDYyZiJ9"
         }
       ]
     },
     {
       "id": "claim_a23b1460a4b44324aae97fdc20c35097",
-      "statement": "Pending orders are applied on the game loop thread: a refusal logs the reason, an empty list logs no actions understood, and every outcome's voice line is added to the game log, with only the spoken ones also sent to the VoiceLineSpeaker.",
+      "statement": "Pending answers are applied on the game loop thread in arrival order: a refusal logs the reason, an empty list logs no actions understood, and every outcome's voice line is added to the game log and the chat, with only the spoken ones also sent to the VoiceLineSpeaker.",
       "evidence": [
         {
-          "resource": "repo://server/engine.py#L99-L113",
-          "version": "repo-lines-v1:sha256:798e7ff46271bb7631629839a1461872c0824579811f19e72ed630c23548d01b:eyJzZWxlY3RlZExpbmVDb3VudCI6MTUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6ImI2ZWI3YzExMjU4MzAxODMzNDA1MWIzYzU4YTEzODhmMzY2MzVhZjc1M2RhMzM1MzMzN2NlMjM5YWViYzE2NWMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImZkMDFlOGIwNjUwMTc5MzM3OTE0ZTMwNjc1MzAwMTJjMmU2NjRiYjEyNGVhYmEzNmRjYWRmYzljNWNiMzgwMjciLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQ5ODBlMjE4NDJiMjcwNDA1ZWU3N2UwMzY1NGI2ZGI0ZWZlZjVhNmU5MmYzNGU5NDFjNzJiY2VjMjNmZWVjNDYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjIxMjRlY2UwODdjY2I2M2ExZmI2MDgyOGQxMDdiMTVmZGY5MjU3OGU2MzI3MDk0YjNmYTE5ZGQ2MjkxM2YxZmIifQ"
+          "resource": "repo://server/engine.py#L111-L127",
+          "version": "repo-lines-v1:sha256:b3f4dd6565e5cdedbf82d4f550620355fa10a172f7b849fb7202c824dde6c65d:eyJzZWxlY3RlZExpbmVDb3VudCI6MTcsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjE4ZDliZGFlNzM2MzczMjQwZTdlN2ZjZjNmOWMzMTA0MjQyZjRmOTVkYmFiZTc1NTZhNzZhOTQyZmM0MmRjYzUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjIxMWUwZjFjNDQ0YTkwYjgyN2I5YWQ4ZGVjMDNmZWFhZTM4MWVkMTBjYzE2ODIwODE3Mzc0ZmVkYTcyNDlkZjIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjQ5ODBlMjE4NDJiMjcwNDA1ZWU3N2UwMzY1NGI2ZGI0ZWZlZjVhNmU5MmYzNGU5NDFjNzJiY2VjMjNmZWVjNDYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjIxMjRlY2UwODdjY2I2M2ExZmI2MDgyOGQxMDdiMTVmZGY5MjU3OGU2MzI3MDk0YjNmYTE5ZGQ2MjkxM2YxZmIifQ"
+        },
+        {
+          "resource": "repo://server/engine.py#L81-L84",
+          "version": "repo-lines-v1:sha256:adc31752a2c32c8b30fc1da68a6abdd5f48491144bed42ff7067f2d54956eee3:eyJzZWxlY3RlZExpbmVDb3VudCI6NCwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiNTM4ZWJjZDc2NDgwZGVjNWY5NThmYzM0YjU2MmMxYTMxYzg5Njc1MDg5ZmY3MDNiZmQxZmJmMmU2NDg4MzhkNCIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMzY5MWFmZDg0MWY2YzZmOTEyMDBlYWUwOWJlNWYyZmVmMjRjNGIzZTA3M2JkZWE4MGYwODA0M2Q4NjBjYWRmMSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMThmYmUyZjNjYzk4ZDgxZGMyYzM0NjQ5MGE0OTA2MjkyNTk5ZTZmMjQ0NDc0MDdlMzU3ZjhjYWMyMjU2Zjk2MSIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiMmFkN2MzZjlkZTM1ZWQ5YWU4NzQ0NWIxNDMxZjAzZDBiN2E5YjFiMjAzMzQxZjk4ZDhkN2NiMzJlYWJhZmIxZCJ9"
+        }
+      ]
+    },
+    {
+      "id": "claim_fa3040ebc3c542098858779ddca3d66d",
+      "statement": "An interpreted answer that asks for move_to is refused with ACTION_NEEDS_TARGET, since a voice or typed order carries no target tile.",
+      "evidence": [
+        {
+          "resource": "repo://api/order_contract.py#L153-L154",
+          "version": "repo-lines-v1:sha256:adce8ca596c621206792b42ac7f14d5f3bde80c307eda90defb6b42245ddc036:eyJzZWxlY3RlZExpbmVDb3VudCI6MiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiZGYzYmI2N2UyNzUxMzc3MjI4ODUyYWFhYjc4NWRlZDZjOGZiZDA3MjI3OWQ5MjExNzkxZjAzNGU1YThlZmYxNSIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiMjIwYTJiZTNhYjMzYmIyZWE3MmNkZWNkODhmMDRiOTkwNDkxZjhjMTg5ZjAwYjc2NDBlNjZiOGZkNTBlZWE3MyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiMWQ3MGMwYzNiM2FjMTExYjRjMmVkOTE3YjY1NTM4Mzc1YTg5N2FhM2FhMTc2NTVlYzEzOGQ1M2Y5N2FjY2RkNCIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiYTU5MjgwMjBlMzIxYjYwOGYyYmUxMjk2MDM4MmRiYzAwMjk1OGZlMWVlYWNjYTc4OWQxNzI0YmM0Zjk5ZGNlNyJ9"
+        },
+        {
+          "resource": "repo://game/orders/orders.py#L13-L17",
+          "version": "repo-lines-v1:sha256:e5a7bd70a71c18c0096fafb66308728bc454b931735f49dfe45a331274bfa8eb:eyJzZWxlY3RlZExpbmVDb3VudCI6NSwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMDk5M2E1YjZiODNkNjY0ODM5YzdjNDhmYmI1ZmI1M2VjNGIzMGJhOTRiMzgzNTQxZjYzM2IwMTIzYTk4YjA5NiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiZTY5M2VkZGYyNDg4M2VmZDNiODA0NTE3ODliYzUyZTBkNjA3NjUxMzk4MDJmODliMmIzMjAyZjhhZDQyNzE2ZSIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiOGRkZGIyZTJkNThmOWFhZTY2ZjRjZTI2ZTc0M2VlOWVmYjk1NzYxMzNjYzBjM2ZiZGYzNWQ2YjZjODlkZjU2ZiIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiNzBjZTNmMjRhYjQ3YzJmNWE5ZDMzN2YzNzdlZDg1NzNmYTU2NTg0MDc2NDAyZjFhZjA1NGEzZGVkNjE5NDYyZiJ9"
         }
       ]
     }
   ],
   "verification": {
     "by": "openwiki/0.5.2",
-    "at": "2026-11-18T09:41:00.050Z"
+    "at": "2026-11-25T15:38:15.273Z"
   }
 }

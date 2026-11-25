@@ -21,3 +21,18 @@ _.team
 # game/storage.py, StorageSnapshot: key of the "storage" object in the state the server
 # sends (GET /api/state, Socket.IO "state"), read by static/ui.js.
 _.houseCount
+
+# game/npc_names.py, ArcherName and WildArcherName: members read by iterating the enum to
+# build the name pools.
+_.ROBIN
+_.ARTEMIS
+_.HAWKE
+_.FLETCHER
+_.YGRITTE
+_.LEGOLAS
+_.BANDIT
+_.OUTLAW
+_.ROGUE
+_.POACHER
+_.MARAUDER
+_.RAIDER

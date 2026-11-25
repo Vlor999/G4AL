@@ -4,10 +4,10 @@ from __future__ import annotations
 
 import random
 
-from game.map_generation import generate_terrain
-from game.npc_names import NamePools
 from game.settings import MAP_COLS, MAP_ROWS, TILE_SIZE
-from game.terrain import WALKABLE_TILES
+from game.world.map_generation import generate_terrain
+from game.world.npc_names import NamePools
+from game.world.terrain import WALKABLE_TILES
 
 
 class GameMap:

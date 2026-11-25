@@ -1,11 +1,11 @@
 import pytest
 
-from game.actions import ActionType, State
-from game.archer import Archer
-from game.direct_orders import DirectOrder, DirectOrderOutcome, apply_direct_order
-from game.map import GameMap
-from game.npc import NPC
-from game.storage import ResourceStorage
+from game.npcs.actions import ActionType, State
+from game.npcs.archer import Archer
+from game.npcs.npc import NPC
+from game.orders.direct_orders import DirectOrder, DirectOrderOutcome, apply_direct_order
+from game.resources.storage import ResourceStorage
+from game.world.map import GameMap
 from tests.conftest import MapBuilder
 
 OPEN_FIELD = ["......"] * 4

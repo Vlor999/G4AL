@@ -6,8 +6,8 @@ from collections.abc import Sequence
 from dataclasses import dataclass
 from enum import StrEnum
 
-from game.actions import ActionType, create_order_action
-from game.npc import NPC
+from game.npcs.actions import ActionType, create_order_action
+from game.npcs.npc import NPC
 from game.settings import ORDER_SPEECH_DURATION_FRAMES, TTS_MAX_SPEAKERS
 
 VOICE_ORDER_ACTIONS: tuple[ActionType, ...] = tuple(

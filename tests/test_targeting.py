@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 import pytest
 
-from game.targeting import find_nearest_living
+from game.combat.targeting import find_nearest_living
 
 
 @dataclass

@@ -3,7 +3,7 @@
 from collections.abc import Callable, Sequence
 
 from api.model_catalog import MODELS_BY_ID, CatalogModel, LlmProvider
-from game.orders import CommandRefused, NpcOrder
+from game.orders.orders import CommandRefused, NpcOrder
 from game.ports import OrderInterpretationError
 from server.model_selection import ModelSelection, OrderInterpreters
 

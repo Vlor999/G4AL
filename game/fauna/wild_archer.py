@@ -4,9 +4,9 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from game.arrows import Arrow, Team, build_arrow
-from game.clock import WorldClock
-from game.fauna import Fauna, FaunaState
+from game.combat.arrows import Arrow, Team, build_arrow
+from game.combat.targeting import find_nearest_living, find_walkable_tile_in_range, tile_distance
+from game.fauna.fauna import Fauna, FaunaState
 from game.settings import (
     ARCHER_FIRE_ANIM_TIME,
     WILD_ARCHER_CHASE_RANGE,
@@ -15,12 +15,12 @@ from game.settings import (
     WILD_ARCHER_RANGE,
     WILD_ARCHER_SHOOT_TIME,
 )
-from game.targeting import find_nearest_living, find_walkable_tile_in_range, tile_distance
+from game.world.clock import WorldClock
 
 if TYPE_CHECKING:
-    from game.entities import Resource
-    from game.map import GameMap
-    from game.npc import NPC
+    from game.npcs.npc import NPC
+    from game.resources.entities import Resource
+    from game.world.map import GameMap
 
 
 class WildArcher(Fauna):

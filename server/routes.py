@@ -7,7 +7,7 @@ from flask.typing import ResponseReturnValue
 from flask_socketio import SocketIO, emit
 from werkzeug.exceptions import RequestEntityTooLarge
 
-from game.direct_orders import DirectOrder, DirectOrderOutcome
+from game.orders.direct_orders import DirectOrder, DirectOrderOutcome
 from server.constants import ENGINE_EXTENSION, MAX_REQUEST_BYTES, MIN_AUDIO_BYTES
 from server.engine import GameEngine
 from server.request_bodies import (

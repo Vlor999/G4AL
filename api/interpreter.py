@@ -34,8 +34,8 @@ from api.order_contract import (
     build_system_prompt,
     parse_orders,
 )
-from game.npc import NPC
-from game.orders import CommandRefused, NpcOrder, RefusalReason
+from game.npcs.npc import NPC
+from game.orders.orders import CommandRefused, NpcOrder, RefusalReason
 from game.ports import OrderInterpretationError
 
 ORDERS_TOOL: ToolTypedDict = {

@@ -1,6 +1,6 @@
 import pytest
 
-from game.pathfinding import find_nearest_tile, find_path
+from game.world.pathfinding import find_nearest_tile, find_path
 from tests.conftest import MapBuilder
 
 

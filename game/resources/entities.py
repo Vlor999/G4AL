@@ -5,12 +5,6 @@ from __future__ import annotations
 from collections.abc import Collection
 from typing import TYPE_CHECKING
 
-from game.dimensions import (
-    OBJECT_DIMENSIONS,
-    ObjectDimensions,
-    ObjectKind,
-    find_building_dimensions,
-)
 from game.settings import (
     GOLD_ROCK_SHARE,
     ROCK_DENSITY,
@@ -21,9 +15,15 @@ from game.settings import (
     WHEAT_GROW_TIME,
     WHEAT_YIELD,
 )
+from game.world.dimensions import (
+    OBJECT_DIMENSIONS,
+    ObjectDimensions,
+    ObjectKind,
+    find_building_dimensions,
+)
 
 if TYPE_CHECKING:
-    from game.map import GameMap
+    from game.world.map import GameMap
 
 
 class Resource:

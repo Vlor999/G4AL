@@ -4,14 +4,14 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from game.archer import Archer
-from game.arrows import Arrow
-from game.clock import WorldClock
-from game.entities import Resource, Structure, spawn_resources
-from game.fauna import Fauna
-from game.fauna_spawning import spawn_fauna
-from game.map import GameMap
-from game.npc import NPC
+from game.combat.arrows import Arrow
+from game.fauna.fauna import Fauna
+from game.fauna.fauna_spawning import spawn_fauna
+from game.fauna.wild_archer import WildArcher
+from game.npcs.archer import Archer
+from game.npcs.npc import NPC
+from game.resources.entities import Resource, Structure, spawn_resources
+from game.resources.storage import ResourceStorage
 from game.settings import (
     ARCHER_SPAWN_MAX_DISTANCE,
     INITIAL_ARCHER_COUNT,
@@ -24,8 +24,8 @@ from game.settings import (
     WILD_ARCHER_CORNER_MARGIN,
     WILD_ARCHER_SPAWN_RADIUS,
 )
-from game.storage import ResourceStorage
-from game.wild_archer import WildArcher
+from game.world.clock import WorldClock
+from game.world.map import GameMap
 
 
 @dataclass

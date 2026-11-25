@@ -5,11 +5,9 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import ClassVar
 
-from game.actions import PAWN_ACTIONS, Action, ActionType, State
-from game.dimensions import ObjectDimensions, find_building_dimensions
-from game.entities import Resource, Rock, Structure, Tree, WheatField
-from game.npc_base import NPCBase
-from game.pathfinding import find_nearest_tile
+from game.npcs.actions import PAWN_ACTIONS, Action, ActionType, State
+from game.npcs.npc_base import NPCBase
+from game.resources.entities import Resource, Rock, Structure, Tree, WheatField
 from game.settings import (
     BUILD_COST_STONE,
     BUILD_COST_WOOD,
@@ -22,6 +20,8 @@ from game.settings import (
     NPC_PLANT_SEARCH_RADIUS,
     WHEAT_PLANT_TIME,
 )
+from game.world.dimensions import ObjectDimensions, find_building_dimensions
+from game.world.pathfinding import find_nearest_tile
 
 
 class NPC(NPCBase):

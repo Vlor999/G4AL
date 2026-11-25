@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from typing import Protocol
 
-from game.orders import CommandRefused, NpcOrder
+from game.orders.orders import CommandRefused, NpcOrder
 
 
 class OrderInterpretationError(Exception):

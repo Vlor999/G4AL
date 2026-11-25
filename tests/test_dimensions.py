@@ -1,13 +1,13 @@
 import pytest
 
-from game.dimensions import (
+from game.settings import TILE_SIZE
+from game.world.dimensions import (
     OBJECT_DIMENSIONS,
     ObjectDimensions,
     ObjectKind,
     SpriteBox,
     find_building_dimensions,
 )
-from game.settings import TILE_SIZE
 
 TS = TILE_SIZE
 Rect = tuple[float, float, float, float]

@@ -4,16 +4,16 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from game.cat import Cat
+from game.fauna.cat import Cat
+from game.fauna.sheep import Sheep
+from game.fauna.wild_archer import WildArcher
 from game.settings import SHEEP_BIOMES
-from game.sheep import Sheep
-from game.terrain import TileType
-from game.wild_archer import WildArcher
+from game.world.terrain import TileType
 
 if TYPE_CHECKING:
-    from game.entities import Resource
-    from game.fauna import Fauna
-    from game.map import GameMap
+    from game.fauna.fauna import Fauna
+    from game.resources.entities import Resource
+    from game.world.map import GameMap
 
 
 def _find_sheep_tile(game_map: GameMap, occupied: set[tuple[int, int]]) -> tuple[int, int] | None:

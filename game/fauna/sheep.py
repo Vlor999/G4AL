@@ -4,11 +4,11 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from game.fauna import Fauna
+from game.fauna.fauna import Fauna
 
 if TYPE_CHECKING:
-    from game.entities import Resource
-    from game.map import GameMap
+    from game.resources.entities import Resource
+    from game.world.map import GameMap
 
 
 class Sheep(Fauna):

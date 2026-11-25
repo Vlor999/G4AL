@@ -5,13 +5,13 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from game.arrows import Arrow, advance_arrows
-from game.clock import WorldClock
-from game.entities import Resource, WheatField
-from game.fauna import Fauna, remove_dead_fauna
+from game.combat.arrows import Arrow, advance_arrows
+from game.fauna.fauna import Fauna, remove_dead_fauna
+from game.resources.entities import Resource, WheatField
+from game.world.clock import WorldClock
 
 if TYPE_CHECKING:
-    from game.npc import NPC
+    from game.npcs.npc import NPC
 
 
 def advance_world(

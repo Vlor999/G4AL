@@ -1,6 +1,6 @@
 """Game-wide constants and settings."""
 
-from game.terrain import Biome
+from game.world.terrain import Biome
 
 # ── Core ────────────────────────────────────────────────────────────────
 FPS = 60

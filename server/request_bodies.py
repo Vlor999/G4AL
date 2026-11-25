@@ -6,9 +6,9 @@ import base64
 from collections.abc import Mapping
 from typing import TypeGuard
 
-from game.actions import ActionType
 from game.constants import STORED_RESOURCE_KINDS
-from game.direct_orders import DirectOrder
+from game.npcs.actions import ActionType
+from game.orders.direct_orders import DirectOrder
 from server.constants import MAX_COMMAND_CHARACTERS
 
 

@@ -1,7 +1,7 @@
 import pytest
 
+from game.resources.storage import ResourceStorage
 from game.settings import HOUSE_CAPACITY_BONUS, STORAGE_BASE_CAPACITY
-from game.storage import ResourceStorage
 
 
 def test_capacity_grows_with_each_house() -> None:

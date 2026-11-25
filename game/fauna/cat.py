@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from game.fauna import Fauna
+from game.fauna.fauna import Fauna
 
 
 class Cat(Fauna):

@@ -4,9 +4,10 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from game.actions import ARCHER_ACTIONS, Action, ActionType, State
-from game.arrows import Team, build_arrow
-from game.npc import NPC
+from game.combat.arrows import Team, build_arrow
+from game.combat.targeting import find_nearest_living, find_walkable_tile_in_range, tile_distance
+from game.npcs.actions import ARCHER_ACTIONS, Action, ActionType, State
+from game.npcs.npc import NPC
 from game.settings import (
     ARCHER_ARROW_DAMAGE,
     ARCHER_DEFEND_SCAN_RADIUS,
@@ -15,14 +16,13 @@ from game.settings import (
     ARCHER_SHOOT_TIME,
     NPC_SPEED,
 )
-from game.targeting import find_nearest_living, find_walkable_tile_in_range, tile_distance
 
 if TYPE_CHECKING:
-    from game.arrows import Arrow
-    from game.entities import Resource
-    from game.fauna import Fauna
-    from game.map import GameMap
-    from game.storage import ResourceStorage
+    from game.combat.arrows import Arrow
+    from game.fauna.fauna import Fauna
+    from game.resources.entities import Resource
+    from game.resources.storage import ResourceStorage
+    from game.world.map import GameMap
 
 
 class Archer(NPC):

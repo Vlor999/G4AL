@@ -11,7 +11,7 @@ from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 
 from api.model_catalog import CatalogModel, LlmProvider
-from game.npc import NPC
+from game.npcs.npc import NPC
 from game.ports import TextOrderInterpreter, VoiceOrderInterpreter
 
 

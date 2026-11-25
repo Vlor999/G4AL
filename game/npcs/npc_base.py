@@ -7,9 +7,8 @@ from collections import deque
 from collections.abc import Callable
 from typing import TYPE_CHECKING, ClassVar
 
-from game.actions import Action, ActionType, State
-from game.entities import Resource, Structure
-from game.pathfinding import find_path
+from game.npcs.actions import Action, ActionType, State
+from game.resources.entities import Resource, Structure
 from game.settings import (
     NPC_HUNGER_DAMAGE,
     NPC_HUNGER_DRAIN,
@@ -17,10 +16,11 @@ from game.settings import (
     NPC_MAX_HEALTH,
     NPC_SPEED,
 )
+from game.world.pathfinding import find_path
 
 if TYPE_CHECKING:
-    from game.map import GameMap
-    from game.storage import ResourceStorage
+    from game.resources.storage import ResourceStorage
+    from game.world.map import GameMap
 
 
 class NPCBase:

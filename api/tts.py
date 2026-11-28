@@ -16,7 +16,11 @@ from typing import TYPE_CHECKING
 
 from loguru import logger
 
-from api.constants import ELEVENLABS_API_KEY_MASK
+from api.constants import (
+    ELEVENLABS_API_KEY_MASK,
+    TTS_OUTPUT_FORMAT,
+    TTS_QUEUE_POLL_SECONDS,
+)
 from api.logger import PipelineLogger
 from api.roster import NPC_VOICE_MAP, ElevenLabsVoice
 
@@ -87,7 +91,7 @@ class TTSEngine:
             return
         while self._running:
             try:
-                item = self._queue.get(timeout=0.5)
+                item = self._queue.get(timeout=TTS_QUEUE_POLL_SECONDS)
             except queue.Empty:
                 continue
             if item is None:
@@ -111,7 +115,7 @@ class TTSEngine:
                 voice_id=voice_id,
                 text=text,
                 model_id=_MODEL_ID,
-                output_format="mp3_22050_32",
+                output_format=TTS_OUTPUT_FORMAT,
             )
             with raw_resp as http_resp:
                 headers = http_resp.headers

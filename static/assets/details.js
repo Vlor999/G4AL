@@ -1,9 +1,4 @@
 const SPRITE_CONFIG = {
-    // ═══════════════════════════════════════════════════════════════════
-    //  ENTITÉS ANIMÉES (sprite sheets avec saut de frame)
-    // ═══════════════════════════════════════════════════════════════════
-
-    // --- Terrain / Nature ---
     trees: {
         frames: 8, type: 'animated', speed: 'slow',
         files_or_dir: [
@@ -27,7 +22,6 @@ const SPRITE_CONFIG = {
         files_or_dir: "static/assets/Terrain/Decorations/Rubber Duck/Rubber duck.png"
     },
 
-    // --- Animaux ---
     sheep_grass: {
         frames: 12, type: 'animated', speed: 'normal',
         files_or_dir: "static/assets/Terrain/Resources/Meat/Sheep/Sheep_Grass.png"
@@ -41,7 +35,6 @@ const SPRITE_CONFIG = {
         files_or_dir: "static/assets/Terrain/Resources/Meat/Sheep/Sheep_Move.png"
     },
 
-    // --- Ressources animées ---
     gold_highlight: {
         frames: 6, type: 'animated', speed: 'slow',
         files_or_dir: [
@@ -58,13 +51,11 @@ const SPRITE_CONFIG = {
         files_or_dir: "static/assets/Terrain/Resources/Gold/Gold Resource/Gold_Resource_Highlight.png"
     },
 
-    // --- Water ---
     water_foam: {
         frames: 16, type: 'animated', speed: 'slow',
         files_or_dir: "static/assets/Terrain/Tileset/Water Foam.png"
     },
 
-    // --- Unités : Pawn ---
     pawn_idle: {
         frames: 8, type: 'animated', speed: 'normal',
         files_or_dir: "static/assets/Units/Blue Units/Pawn/Pawn_Idle.png"
@@ -142,7 +133,6 @@ const SPRITE_CONFIG = {
         files_or_dir: "static/assets/Units/Blue Units/Pawn/Pawn_Interact Knife.png"
     },
 
-    // --- Unités : Archer ---
     archer_idle: {
         frames: 6, type: 'animated', speed: 'normal',
         files_or_dir: "static/assets/Units/Blue Units/Archer/Archer_Idle.png"
@@ -156,7 +146,6 @@ const SPRITE_CONFIG = {
         files_or_dir: "static/assets/Units/Blue Units/Archer/Archer_Shoot.png"
     },
 
-    // --- Unités : Warrior ---
     warrior_idle: {
         frames: 8, type: 'animated', speed: 'normal',
         files_or_dir: "static/assets/Units/Blue Units/Warrior/Warrior_Idle.png"
@@ -178,7 +167,6 @@ const SPRITE_CONFIG = {
         files_or_dir: "static/assets/Units/Blue Units/Warrior/Warrior_Guard.png"
     },
 
-    // --- Unités : Lancer ---
     lancer_idle: {
         frames: 8, type: 'animated', speed: 'normal',
         files_or_dir: "static/assets/Units/Blue Units/Lancer/Lancer_Idle.png"
@@ -228,7 +216,6 @@ const SPRITE_CONFIG = {
         files_or_dir: "static/assets/Units/Blue Units/Lancer/Lancer_UpRight_Defence.png"
     },
 
-    // --- Unités : Monk ---
     monk_idle: {
         frames: 8, type: 'animated', speed: 'normal',
         files_or_dir: "static/assets/Units/Blue Units/Monk/Idle.png"
@@ -246,7 +233,6 @@ const SPRITE_CONFIG = {
         files_or_dir: "static/assets/Units/Blue Units/Monk/Heal_Effect.png"
     },
 
-    // --- Particules d'effets ---
     dust_1: {
         frames: 8, type: 'animated', speed: 'fast',
         files_or_dir: "static/assets/Particle FX/Dust_01.png"
@@ -280,11 +266,6 @@ const SPRITE_CONFIG = {
         files_or_dir: "static/assets/Particle FX/Water Splash.png"
     },
 
-    // ═══════════════════════════════════════════════════════════════════
-    //  ENTITÉS STATIQUES (1 sprite par image, ou variations)
-    // ═══════════════════════════════════════════════════════════════════
-
-    // --- Terrain / Ressources ---
     stump: {
         frames: 1, type: 'static',
         files_or_dir: [
@@ -358,7 +339,6 @@ const SPRITE_CONFIG = {
         ]
     },
 
-    // --- Bâtiments (Blue) ---
     buildings: {
         frames: 1, type: 'static',
         files_or_dir: {
@@ -373,13 +353,11 @@ const SPRITE_CONFIG = {
         }
     },
 
-    // --- Unités : Arrow (projectile statique) ---
     archer_arrow: {
         frames: 1, type: 'static',
         files_or_dir: "static/assets/Units/Blue Units/Archer/Arrow.png"
     },
 
-    // --- Tilesets ---
     tileset_color1: {
         frames: 1, type: 'static',
         files_or_dir: "static/assets/Terrain/Tileset/Tilemap_color1.png"
@@ -409,7 +387,6 @@ const SPRITE_CONFIG = {
         files_or_dir: "static/assets/Terrain/Tileset/Shadow.png"
     },
 
-    // --- UI Elements ---
     ui_cursors: {
         frames: 1, type: 'static',
         files_or_dir: [

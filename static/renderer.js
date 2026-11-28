@@ -78,17 +78,17 @@
         const { canvas: mapCanvas, waterRocks, decorations, clouds } = G.mapLayers;
         if (mapCanvas) ctx.drawImage(mapCanvas, -G.camX, -G.camY);
 
-        const spr = G.sprites;
+        const sprites = G.sprites;
 
         // Water rocks
         for (const wr of waterRocks) {
             const dx = wr.x - G.camX;
             const dy = wr.y - G.camY;
             if (dx < -OFFSCREEN_MARGIN || dx > W + OFFSCREEN_MARGIN || dy < -OFFSCREEN_MARGIN || dy > H + OFFSCREEN_MARGIN) continue;
-            const wrSpr = spr["water_rock" + wr.variant];
+            const wrSpr = sprites["water_rock" + wr.variant];
             if (wrSpr) {
-                const sz = 48;
-                ctx.drawImage(wrSpr, dx - sz / 2, dy - sz / 2, sz, sz);
+                const spriteSize = 48;
+                ctx.drawImage(wrSpr, dx - spriteSize / 2, dy - spriteSize / 2, spriteSize, spriteSize);
             }
         }
 
@@ -97,21 +97,21 @@
             const dx = deco.x - G.camX;
             const dy = deco.y - G.camY;
             if (dx < -SMALL_OFFSCREEN_MARGIN || dx > W + SMALL_OFFSCREEN_MARGIN || dy < -SMALL_OFFSCREEN_MARGIN || dy > H + SMALL_OFFSCREEN_MARGIN) continue;
-            const bushSpr = spr["bush" + deco.variant];
+            const bushSpr = sprites["bush" + deco.variant];
             if (bushSpr) {
-                const sz = 30;
-                const bushFrames = G.cfgFrames("bushes", 8);
-                const fi = G.spriteFrame(bushFrames, G.cfgSpeed("bushes", "slow"), deco.offset);
+                const spriteSize = 30;
+                const bushFrames = G.readFrameCount("bushes", 8);
+                const fi = G.spriteFrame(bushFrames, G.readAnimationSpeed("bushes", "slow"), deco.offset);
                 G.drawSpriteFrame(ctx, bushSpr, fi, bushFrames,
-                    dx - sz / 2, dy - sz / 2, sz, sz, false);
+                    dx - spriteSize / 2, dy - spriteSize / 2, spriteSize, spriteSize, false);
             }
         }
 
         // 2.5D depth sort: merge resources + NPCs + fauna
         const ts = G.mapCached.tileSize;
         const drawList = [];
-        for (const res of G.gameState.resources) {
-            drawList.push({ type: "res", obj: res, footY: (res.row + res.footprint.depth) * ts });
+        for (const resource of G.gameState.resources) {
+            drawList.push({ type: "resource", obj: resource, footY: (resource.row + resource.footprint.depth) * ts });
         }
         for (const npc of G.gameState.npcs) {
             drawList.push({ type: "npc", obj: npc, footY: npc.y });
@@ -124,12 +124,12 @@
         drawList.sort((a, b) => a.footY - b.footY);
 
         for (const item of drawList) {
-            if (item.type === "res") {
-                const res = item.obj;
-                const sx = res.col * ts + (res.footprint.width * ts) / 2 - G.camX;
-                const sy = res.row * ts + (res.footprint.depth * ts) / 2 - G.camY;
+            if (item.type === "resource") {
+                const resource = item.obj;
+                const sx = resource.col * ts + (resource.footprint.width * ts) / 2 - G.camX;
+                const sy = resource.row * ts + (resource.footprint.depth * ts) / 2 - G.camY;
                 if (sx < -ts * 3 || sx > W + ts * 3 || sy < -ts * 3 || sy > H + ts * 3) continue;
-                drawResource(ctx, res, sx, sy, ts);
+                drawResource(ctx, resource, sx, sy, ts);
             } else if (item.type === "npc") {
                 const npc = item.obj;
                 const sx = npc.x - G.camX;
@@ -156,43 +156,39 @@
             if (px < -SMALL_OFFSCREEN_MARGIN || px > W + SMALL_OFFSCREEN_MARGIN || py < -SMALL_OFFSCREEN_MARGIN || py > H + SMALL_OFFSCREEN_MARGIN) continue;
             ctx.globalAlpha = 1 - progress;
             if (p.type === "dust") {
-                const ds = spr.dust1 || spr.dust2;
+                const ds = sprites.dust1 || sprites.dust2;
                 if (ds) {
-                    const dustFrames = G.cfgFrames("dust_1", 8);
-                    const fi = G.spriteFrame(dustFrames, G.cfgSpeed("dust_1", "fast"), p.birth);
+                    const dustFrames = G.readFrameCount("dust_1", 8);
+                    const fi = G.spriteFrame(dustFrames, G.readAnimationSpeed("dust_1", "fast"), p.birth);
                     G.drawSpriteFrame(ctx, ds, fi, dustFrames, px - 24, py - 24, 48, 48, false);
                 }
             } else if (p.type === "fire") {
-                const fs = spr.fire1 || spr.fire2;
+                const fs = sprites.fire1 || sprites.fire2;
                 if (fs) {
-                    const fireFrames = G.cfgFrames("fire_1", 8);
-                    const fi = G.spriteFrame(fireFrames, G.cfgSpeed("fire_1", "fast"), p.birth);
+                    const fireFrames = G.readFrameCount("fire_1", 8);
+                    const fi = G.spriteFrame(fireFrames, G.readAnimationSpeed("fire_1", "fast"), p.birth);
                     G.drawSpriteFrame(ctx, fs, fi, fireFrames, px - 16, py - 32, 32, 32, false);
                 }
             }
             ctx.globalAlpha = 1;
         }
 
-        // Arrow projectiles
         if (G.gameState.arrows) {
             for (const arrow of G.gameState.arrows) {
                 const p = arrow.progress;
-                // Play SFX for newly spawned arrows
+                // The state carries no "arrow fired" event: a fresh arrow is one early in its flight.
                 if (p < 0.15) playArrowSfx();
-                // Interpolate position
                 const ax = arrow.fromX + (arrow.toX - arrow.fromX) * p;
                 const ay = arrow.fromY + (arrow.toY - arrow.fromY) * p;
                 const sx = ax - G.camX;
                 const sy = ay - G.camY;
                 if (sx < -SMALL_OFFSCREEN_MARGIN || sx > W + SMALL_OFFSCREEN_MARGIN || sy < -SMALL_OFFSCREEN_MARGIN || sy > H + SMALL_OFFSCREEN_MARGIN) continue;
 
-                // Calculate angle from source to target
                 const dx = arrow.toX - arrow.fromX;
                 const dy = arrow.toY - arrow.fromY;
                 const angle = Math.atan2(dy, dx);
 
-                // Try to use arrow sprite
-                const arrowSpr = arrow.team === "red" ? spr.red_archer_arrow : spr.archer_arrow;
+                const arrowSpr = arrow.team === "red" ? sprites.red_archer_arrow : sprites.archer_arrow;
                 if (arrowSpr) {
                     ctx.save();
                     ctx.translate(sx, sy);
@@ -201,7 +197,7 @@
                     ctx.drawImage(arrowSpr, -aw / 2, -ah / 2, aw, ah);
                     ctx.restore();
                 } else {
-                    // Fallback: draw a line
+                    // Drawn by hand while the arrow sprite has not loaded.
                     const color = arrow.team === "red" ? "#ef5350" : "#42a5f5";
                     ctx.save();
                     ctx.translate(sx, sy);
@@ -240,7 +236,7 @@
                 const cx = cl.x - G.camX - 150;
                 const cy = cl.y - G.camY;
                 if (cx < -300 || cx > W + 300 || cy < -200 || cy > H + 200) continue;
-                const cloudSpr = spr["cloud" + cl.variant];
+                const cloudSpr = sprites["cloud" + cl.variant];
                 if (cloudSpr) {
                     const cw = 160 * cl.scale;
                     const ch = (cloudSpr.height / cloudSpr.width) * cw;
@@ -270,19 +266,19 @@
         };
     }
 
-    function drawResource(ctx, res, sx, sy, ts) {
-        const spr = G.sprites;
+    function drawResource(ctx, resource, sx, sy, ts) {
+        const sprites = G.sprites;
         const posHash = G.posHash;
-        const rect = spriteRect(res, sx, sy + (res.footprint.depth * ts) / 2, ts);
+        const rect = spriteRect(resource, sx, sy + (resource.footprint.depth * ts) / 2, ts);
 
-        switch (res.kind) {
+        switch (resource.kind) {
             case "tree": {
-                const v = posHash(res.col, res.row, 4) + 1;
-                const sp = spr["tree" + v];
+                const v = posHash(resource.col, resource.row, 4) + 1;
+                const sp = sprites["tree" + v];
                 if (sp) {
-                    const treeFrames = G.cfgFrames("trees", 8);
-                    const offset = posHash(res.col, res.row, treeFrames);
-                    const frame = G.spriteFrame(treeFrames, G.cfgSpeed("trees", "slow"), offset);
+                    const treeFrames = G.readFrameCount("trees", 8);
+                    const offset = posHash(resource.col, resource.row, treeFrames);
+                    const frame = G.spriteFrame(treeFrames, G.readAnimationSpeed("trees", "slow"), offset);
                     G.drawSpriteFrame(ctx, sp, frame, treeFrames,
                         rect.left, rect.top, rect.width, rect.height, false);
                 } else {
@@ -296,15 +292,15 @@
                 break;
             }
             case "rock": {
-                if (res.hasGold) {
-                    const v = posHash(res.col, res.row, 6) + 1;
-                    const sp = spr["gold" + v];
+                if (resource.hasGold) {
+                    const v = posHash(resource.col, resource.row, 6) + 1;
+                    const sp = sprites["gold" + v];
                     if (sp) {
                         ctx.drawImage(sp, rect.left, rect.top, rect.width, rect.height);
-                        const hlSpr = spr["gold_hl" + v];
+                        const hlSpr = sprites["gold_hl" + v];
                         if (hlSpr) {
-                            const hlFrames = G.cfgFrames("gold_highlight", 6);
-                            const hlFrame = G.spriteFrame(hlFrames, G.cfgSpeed("gold_highlight", "slow"), posHash(res.col, res.row, 6));
+                            const hlFrames = G.readFrameCount("gold_highlight", 6);
+                            const hlFrame = G.spriteFrame(hlFrames, G.readAnimationSpeed("gold_highlight", "slow"), posHash(resource.col, resource.row, 6));
                             ctx.globalAlpha = 0.6;
                             G.drawSpriteFrame(ctx, hlSpr, hlFrame, hlFrames, rect.left, rect.top, rect.width, rect.height, false);
                             ctx.globalAlpha = 1;
@@ -318,8 +314,8 @@
                         });
                     }
                 } else {
-                    const v = posHash(res.col, res.row, 4) + 1;
-                    const sp = spr["rock" + v];
+                    const v = posHash(resource.col, resource.row, 4) + 1;
+                    const sp = sprites["rock" + v];
                     if (sp) {
                         ctx.drawImage(sp, rect.left, rect.top, rect.width, rect.height);
                     } else {
@@ -330,10 +326,10 @@
                 break;
             }
             case "structure": {
-                const isHut = res.buildingType === "storage_hut";
-                const houseKey = isHut ? "house1" : "house" + (posHash(res.col, res.row, 3) + 1);
-                const houseSpr = spr[houseKey] || spr.house1;
-                if (res.built) {
+                const isHut = resource.buildingType === "storage_hut";
+                const houseKey = isHut ? "house1" : "house" + (posHash(resource.col, resource.row, 3) + 1);
+                const houseSpr = sprites[houseKey] || sprites.house1;
+                if (resource.built) {
                     if (houseSpr) {
                         ctx.drawImage(houseSpr, rect.left, rect.top, rect.width, rect.height);
                     } else {
@@ -381,21 +377,21 @@
                     }
                 } else {
                     if (houseSpr) {
-                        ctx.globalAlpha = 0.2 + 0.8 * (res.buildProgress / 100);
+                        ctx.globalAlpha = 0.2 + 0.8 * (resource.buildProgress / 100);
                         ctx.drawImage(houseSpr, rect.left, rect.top, rect.width, rect.height);
                         ctx.globalAlpha = 1;
                     } else {
                         ctx.fillStyle = "#8b7765"; ctx.fillRect(sx - 20, sy - 20, 40, 40);
                         ctx.strokeStyle = "#50403c"; ctx.lineWidth = 2; ctx.strokeRect(sx - 20, sy - 20, 40, 40);
                     }
-                    drawBar(ctx, sx, rect.top - 10, 36, 5, res.buildProgress / 100, "#4caf50");
+                    drawBar(ctx, sx, rect.top - 10, 36, 5, resource.buildProgress / 100, "#4caf50");
                 }
                 break;
             }
             case "wheat": {
                 const half = ts / 2 - 2;
-                const gr = res.growthRatio;         // 0 → 1
-                const sway = Math.sin(G.gameFrame / 28 + posHash(res.col, res.row, 100)) * 1.5 * gr;
+                const gr = resource.growthRatio;         // 0 → 1
+                const sway = Math.sin(G.gameFrame / 28 + posHash(resource.col, resource.row, 100)) * 1.5 * gr;
 
                 const px = sx - half, py = sy - half + 6;
                 const pw = half * 2, ph = half * 2 - 6;
@@ -469,7 +465,7 @@
                 }
 
                 // ── Growth indicator ──
-                if (!res.fullyGrown) {
+                if (!resource.fullyGrown) {
                     drawBar(ctx, sx, py - 6, 30, 5, gr, "#7cb342");
                 } else {
                     // Golden sparkle particles for READY state
@@ -477,7 +473,7 @@
                     ctx.globalAlpha = 0.7 + 0.3 * Math.sin(sparkleT);
                     ctx.fillStyle = "#ffe066";
                     for (let si = 0; si < 3; si++) {
-                        const sa = sparkleT + si * 2.1 + posHash(res.col, res.row, 10);
+                        const sa = sparkleT + si * 2.1 + posHash(resource.col, resource.row, 10);
                         const sparkX = sx + Math.cos(sa) * (half * 0.7);
                         const sparkY = py + ph * 0.3 + Math.sin(sa * 1.3) * (half * 0.4);
                         const ss = 1.5 + Math.sin(sparkleT + si) * 0.8;
@@ -498,104 +494,104 @@
                 break;
             }
         }
-        if (res.hp < res.maxHp && res.kind !== "wheat" && res.kind !== "structure") {
-            drawBar(ctx, sx, sy - ts / 2 - 8, 30, 5, res.hp / res.maxHp, "#4caf50");
+        if (resource.hp < resource.maxHp && resource.kind !== "wheat" && resource.kind !== "structure") {
+            drawBar(ctx, sx, sy - ts / 2 - 8, 30, 5, resource.hp / resource.maxHp, "#4caf50");
         }
     }
 
     // ── Draw NPC ────────────────────────────────────────────────────────
 
     function getNpcSprite(npc) {
-        const spr = G.sprites;
-        const st = npc.state;
-        const act = npc.actionType || "";
+        const sprites = G.sprites;
+        const state = npc.state;
+        const actionType = npc.actionType || "";
         const carrying = npc.carrying || {};
         const hasWood  = (carrying.wood  || 0) > 0;
         const hasGold  = (carrying.gold  || 0) > 0;
 
         // ── Carrying sprites (RETURNING to hut or idle while carrying) ──
         if (npc.isCarrying) {
-            if (st === "RETURNING" || st === "MOVING") {
-                if (hasWood)  return { spr: spr.pawn_run_wood  || spr.pawn_run, frames: G.cfgFrames("pawn_run_wood",  6), speed: G.cfgSpeed("pawn_run_wood",  "fast") };
-                if (hasGold)  return { spr: spr.pawn_run_gold  || spr.pawn_run, frames: G.cfgFrames("pawn_run_gold",  6), speed: G.cfgSpeed("pawn_run_gold",  "fast") };
+            if (state === "RETURNING" || state === "MOVING") {
+                if (hasWood)  return { sprite: sprites.pawn_run_wood  || sprites.pawn_run, frames: G.readFrameCount("pawn_run_wood",  6), speed: G.readAnimationSpeed("pawn_run_wood",  "fast") };
+                if (hasGold)  return { sprite: sprites.pawn_run_gold  || sprites.pawn_run, frames: G.readFrameCount("pawn_run_gold",  6), speed: G.readAnimationSpeed("pawn_run_gold",  "fast") };
                 // stone / wheat – reuse wood carry sprite
-                return { spr: spr.pawn_run_wood  || spr.pawn_run, frames: G.cfgFrames("pawn_run_wood", 6), speed: G.cfgSpeed("pawn_run_wood", "fast") };
+                return { sprite: sprites.pawn_run_wood  || sprites.pawn_run, frames: G.readFrameCount("pawn_run_wood", 6), speed: G.readAnimationSpeed("pawn_run_wood", "fast") };
             }
             // idle while carrying
-            if (hasWood)  return { spr: spr.pawn_idle_wood || spr.pawn_idle, frames: G.cfgFrames("pawn_idle_wood", 8), speed: G.cfgSpeed("pawn_idle_wood", "normal") };
-            if (hasGold)  return { spr: spr.pawn_idle_gold || spr.pawn_idle, frames: G.cfgFrames("pawn_idle_gold", 8), speed: G.cfgSpeed("pawn_idle_gold", "normal") };
-            return { spr: spr.pawn_idle_wood || spr.pawn_idle, frames: G.cfgFrames("pawn_idle_wood", 8), speed: G.cfgSpeed("pawn_idle_wood", "normal") };
+            if (hasWood)  return { sprite: sprites.pawn_idle_wood || sprites.pawn_idle, frames: G.readFrameCount("pawn_idle_wood", 8), speed: G.readAnimationSpeed("pawn_idle_wood", "normal") };
+            if (hasGold)  return { sprite: sprites.pawn_idle_gold || sprites.pawn_idle, frames: G.readFrameCount("pawn_idle_gold", 8), speed: G.readAnimationSpeed("pawn_idle_gold", "normal") };
+            return { sprite: sprites.pawn_idle_wood || sprites.pawn_idle, frames: G.readFrameCount("pawn_idle_wood", 8), speed: G.readAnimationSpeed("pawn_idle_wood", "normal") };
         }
 
         // ── Archer (playable, Blue) ─────────────────────────────────────
         if (npc.kind === "archer") {
-            if (st === "MOVING" || st === "RETURNING") {
-                return { spr: spr.archer_run, frames: G.cfgFrames("archer_run", 4), speed: G.cfgSpeed("archer_run", "fast") };
+            if (state === "MOVING" || state === "RETURNING") {
+                return { sprite: sprites.archer_run, frames: G.readFrameCount("archer_run", 4), speed: G.readAnimationSpeed("archer_run", "fast") };
             }
-            if (st === "PERFORMING") {
-                if (act === "eat") {
-                    return { spr: spr.archer_idle, frames: G.cfgFrames("archer_idle", 6), speed: G.cfgSpeed("archer_idle", "slow") };
+            if (state === "PERFORMING") {
+                if (actionType === "eat") {
+                    return { sprite: sprites.archer_idle, frames: G.readFrameCount("archer_idle", 6), speed: G.readAnimationSpeed("archer_idle", "slow") };
                 }
                 // Shoot: only play shoot anim during fire phase, idle during aim
                 if (npc.isFiring) {
-                    return { spr: spr.archer_shoot, frames: G.cfgFrames("archer_shoot", 8), speed: G.cfgSpeed("archer_shoot", "fast") };
+                    return { sprite: sprites.archer_shoot, frames: G.readFrameCount("archer_shoot", 8), speed: G.readAnimationSpeed("archer_shoot", "fast") };
                 }
-                return { spr: spr.archer_idle, frames: G.cfgFrames("archer_idle", 6), speed: G.cfgSpeed("archer_idle", "normal") };
+                return { sprite: sprites.archer_idle, frames: G.readFrameCount("archer_idle", 6), speed: G.readAnimationSpeed("archer_idle", "normal") };
             }
             // IDLE / DONE
-            return { spr: spr.archer_idle, frames: G.cfgFrames("archer_idle", 6), speed: G.cfgSpeed("archer_idle", "normal") };
+            return { sprite: sprites.archer_idle, frames: G.readFrameCount("archer_idle", 6), speed: G.readAnimationSpeed("archer_idle", "normal") };
         }
 
         // ── Pawn (default) ──────────────────────────────────────────────
-        if (st === "MOVING") {
-            switch (act) {
-                case "chop_wood":  return { spr: spr.pawn_run_axe  || spr.pawn_run, frames: G.cfgFrames("pawn_run_axe", 6), speed: G.cfgSpeed("pawn_run_axe", "fast") };
-                case "mine_rock":  return { spr: spr.pawn_run_pick || spr.pawn_run, frames: G.cfgFrames("pawn_run_pickaxe", 6), speed: G.cfgSpeed("pawn_run_pickaxe", "fast") };
-                case "build":      return { spr: spr.pawn_run_ham  || spr.pawn_run, frames: G.cfgFrames("pawn_run_hammer", 6), speed: G.cfgSpeed("pawn_run_hammer", "fast") };
-                default:           return { spr: spr.pawn_run, frames: G.cfgFrames("pawn_run", 6), speed: G.cfgSpeed("pawn_run", "fast") };
+        if (state === "MOVING") {
+            switch (actionType) {
+                case "chop_wood":  return { sprite: sprites.pawn_run_axe  || sprites.pawn_run, frames: G.readFrameCount("pawn_run_axe", 6), speed: G.readAnimationSpeed("pawn_run_axe", "fast") };
+                case "mine_rock":  return { sprite: sprites.pawn_run_pick || sprites.pawn_run, frames: G.readFrameCount("pawn_run_pickaxe", 6), speed: G.readAnimationSpeed("pawn_run_pickaxe", "fast") };
+                case "build":      return { sprite: sprites.pawn_run_ham  || sprites.pawn_run, frames: G.readFrameCount("pawn_run_hammer", 6), speed: G.readAnimationSpeed("pawn_run_hammer", "fast") };
+                default:           return { sprite: sprites.pawn_run, frames: G.readFrameCount("pawn_run", 6), speed: G.readAnimationSpeed("pawn_run", "fast") };
             }
         }
 
-        if (st === "PERFORMING") {
-            switch (act) {
+        if (state === "PERFORMING") {
+            switch (actionType) {
                 case "chop_wood":
                     if (G.gameFrame % 20 === 0) G.spawnParticle("dust", npc.x, npc.y + 5);
-                    return { spr: spr.pawn_act_axe,   frames: G.cfgFrames("pawn_interact_axe", 6),     speed: G.cfgSpeed("pawn_interact_axe", "fast") };
+                    return { sprite: sprites.pawn_act_axe,   frames: G.readFrameCount("pawn_interact_axe", 6),     speed: G.readAnimationSpeed("pawn_interact_axe", "fast") };
                 case "mine_rock":
                     if (G.gameFrame % 18 === 0) G.spawnParticle("fire", npc.x, npc.y - 10);
-                    return { spr: spr.pawn_act_pick,  frames: G.cfgFrames("pawn_interact_pickaxe", 6), speed: G.cfgSpeed("pawn_interact_pickaxe", "fast") };
+                    return { sprite: sprites.pawn_act_pick,  frames: G.readFrameCount("pawn_interact_pickaxe", 6), speed: G.readAnimationSpeed("pawn_interact_pickaxe", "fast") };
                 case "build":
                     if (G.gameFrame % 25 === 0) G.spawnParticle("dust", npc.x, npc.y + 5);
-                    return { spr: spr.pawn_act_ham,   frames: G.cfgFrames("pawn_interact_hammer", 3),  speed: G.cfgSpeed("pawn_interact_hammer", "fast") };
+                    return { sprite: sprites.pawn_act_ham,   frames: G.readFrameCount("pawn_interact_hammer", 3),  speed: G.readAnimationSpeed("pawn_interact_hammer", "fast") };
                 case "plant_wheat":
                 case "collect_wheat":
-                    return { spr: spr.pawn_act_knife, frames: G.cfgFrames("pawn_interact_knife", 6),   speed: G.cfgSpeed("pawn_interact_knife", "fast") };
+                    return { sprite: sprites.pawn_act_knife, frames: G.readFrameCount("pawn_interact_knife", 6),   speed: G.readAnimationSpeed("pawn_interact_knife", "fast") };
                 case "eat":
-                    return { spr: spr.pawn_idle_meat, frames: G.cfgFrames("pawn_idle_meat", 8),        speed: G.cfgSpeed("pawn_idle_meat", "normal") };
+                    return { sprite: sprites.pawn_idle_meat, frames: G.readFrameCount("pawn_idle_meat", 8),        speed: G.readAnimationSpeed("pawn_idle_meat", "normal") };
                 default:
-                    return { spr: spr.pawn_idle,      frames: G.cfgFrames("pawn_idle", 8),             speed: G.cfgSpeed("pawn_idle", "normal") };
+                    return { sprite: sprites.pawn_idle,      frames: G.readFrameCount("pawn_idle", 8),             speed: G.readAnimationSpeed("pawn_idle", "normal") };
             }
         }
 
-        switch (act) {
-            case "chop_wood":  return { spr: spr.pawn_idle_axe  || spr.pawn_idle, frames: G.cfgFrames("pawn_idle_axe", 8),     speed: G.cfgSpeed("pawn_idle_axe", "normal") };
-            case "mine_rock":  return { spr: spr.pawn_idle_pick || spr.pawn_idle, frames: G.cfgFrames("pawn_idle_pickaxe", 8), speed: G.cfgSpeed("pawn_idle_pickaxe", "normal") };
-            case "build":      return { spr: spr.pawn_idle_ham  || spr.pawn_idle, frames: G.cfgFrames("pawn_idle_hammer", 8),  speed: G.cfgSpeed("pawn_idle_hammer", "normal") };
-            default:           return { spr: spr.pawn_idle,                       frames: G.cfgFrames("pawn_idle", 8),         speed: G.cfgSpeed("pawn_idle", "normal") };
+        switch (actionType) {
+            case "chop_wood":  return { sprite: sprites.pawn_idle_axe  || sprites.pawn_idle, frames: G.readFrameCount("pawn_idle_axe", 8),     speed: G.readAnimationSpeed("pawn_idle_axe", "normal") };
+            case "mine_rock":  return { sprite: sprites.pawn_idle_pick || sprites.pawn_idle, frames: G.readFrameCount("pawn_idle_pickaxe", 8), speed: G.readAnimationSpeed("pawn_idle_pickaxe", "normal") };
+            case "build":      return { sprite: sprites.pawn_idle_ham  || sprites.pawn_idle, frames: G.readFrameCount("pawn_idle_hammer", 8),  speed: G.readAnimationSpeed("pawn_idle_hammer", "normal") };
+            default:           return { sprite: sprites.pawn_idle,                       frames: G.readFrameCount("pawn_idle", 8),         speed: G.readAnimationSpeed("pawn_idle", "normal") };
         }
     }
 
     function drawNPC(ctx, npc, sx, sy) {
-        const spr = G.sprites;
+        const sprites = G.sprites;
         const rect = spriteRect(npc, sx, sy, G.mapCached.tileSize);
         const SIZE = rect.height;
         const HALF = SIZE / 2;
         const facingRight = G.updateFacing(npc);
 
         // Shadow
-        if (spr.shadow) {
+        if (sprites.shadow) {
             ctx.globalAlpha = 0.25;
-            ctx.drawImage(spr.shadow, 0, 0, SHADOW_SPRITE_SIZE, SHADOW_SPRITE_SIZE, sx - HALF * 0.7, sy - 4, SIZE * 0.7, SIZE * 0.35);
+            ctx.drawImage(sprites.shadow, 0, 0, SHADOW_SPRITE_SIZE, SHADOW_SPRITE_SIZE, sx - HALF * 0.7, sy - 4, SIZE * 0.7, SIZE * 0.35);
             ctx.globalAlpha = 1;
         } else {
             ctx.fillStyle = "rgba(0,0,0,0.25)";
@@ -611,7 +607,7 @@
         // Sprite
         const info = getNpcSprite(npc);
         const frame = G.spriteFrame(info.frames, info.speed, npc.id);
-        const spriteDrawn = info.spr && G.drawSpriteFrame(ctx, info.spr, frame, info.frames,
+        const spriteDrawn = info.sprite && G.drawSpriteFrame(ctx, info.sprite, frame, info.frames,
             rect.left, rect.top, rect.width, rect.height, !facingRight);
 
         if (!spriteDrawn) {
@@ -659,47 +655,47 @@
     // ── Draw Fauna (autonomous creatures like sheep) ──────────────────
 
     function getFaunaSpriteInfo(f) {
-        const spr = G.sprites;
-        const st = f.state;
+        const sprites = G.sprites;
+        const state = f.state;
 
         if (f.kind === "cat") return null;  // cat uses individual frames
 
         // ── Wild Archer (Red) ───────────────────────────────────────────
         if (f.kind === "wild_archer") {
-            if (st === "SHOOTING") {
+            if (state === "SHOOTING") {
                 // Only play shoot anim during fire phase, idle during aim
                 if (f.isFiring) {
-                    return { spr: spr.red_archer_shoot, frames: G.cfgFrames("archer_shoot", 8), speed: G.cfgSpeed("archer_shoot", "fast") };
+                    return { sprite: sprites.red_archer_shoot, frames: G.readFrameCount("archer_shoot", 8), speed: G.readAnimationSpeed("archer_shoot", "fast") };
                 }
-                return { spr: spr.red_archer_idle, frames: G.cfgFrames("archer_idle", 6), speed: G.cfgSpeed("archer_idle", "normal") };
+                return { sprite: sprites.red_archer_idle, frames: G.readFrameCount("archer_idle", 6), speed: G.readAnimationSpeed("archer_idle", "normal") };
             }
-            if (st === "WANDERING") {
-                return { spr: spr.red_archer_run, frames: G.cfgFrames("archer_run", 4), speed: G.cfgSpeed("archer_run", "fast") };
+            if (state === "WANDERING") {
+                return { sprite: sprites.red_archer_run, frames: G.readFrameCount("archer_run", 4), speed: G.readAnimationSpeed("archer_run", "fast") };
             }
             // IDLE
-            return { spr: spr.red_archer_idle, frames: G.cfgFrames("archer_idle", 6), speed: G.cfgSpeed("archer_idle", "normal") };
+            return { sprite: sprites.red_archer_idle, frames: G.readFrameCount("archer_idle", 6), speed: G.readAnimationSpeed("archer_idle", "normal") };
         }
 
         // ── Sheep ───────────────────────────────────────────────────────
-        if (st === "GRAZING") {
+        if (state === "GRAZING") {
             return {
-                spr: spr.sheep_grass,
-                frames: G.cfgFrames("sheep_grass", 12),
-                speed: G.cfgSpeed("sheep_grass", "normal"),
+                sprite: sprites.sheep_grass,
+                frames: G.readFrameCount("sheep_grass", 12),
+                speed: G.readAnimationSpeed("sheep_grass", "normal"),
             };
         }
-        if (st === "WANDERING") {
+        if (state === "WANDERING") {
             return {
-                spr: spr.sheep_move,
-                frames: G.cfgFrames("sheep_move", 4),
-                speed: G.cfgSpeed("sheep_move", "normal"),
+                sprite: sprites.sheep_move,
+                frames: G.readFrameCount("sheep_move", 4),
+                speed: G.readAnimationSpeed("sheep_move", "normal"),
             };
         }
         // IDLE
         return {
-            spr: spr.sheep_idle,
-            frames: G.cfgFrames("sheep_idle", 6),
-            speed: G.cfgSpeed("sheep_idle", "normal"),
+            sprite: sprites.sheep_idle,
+            frames: G.readFrameCount("sheep_idle", 6),
+            speed: G.readAnimationSpeed("sheep_idle", "normal"),
         };
     }
 
@@ -714,16 +710,16 @@
             return;
         }
 
-        const spr = G.sprites;
+        const sprites = G.sprites;
         const rect = spriteRect(f, sx, sy, G.mapCached.tileSize);
         const SIZE = rect.height;
         const HALF = SIZE / 2;
         const facingRight = G.updateFacing(f);
 
         // Shadow
-        if (spr.shadow) {
+        if (sprites.shadow) {
             ctx.globalAlpha = 0.2;
-            ctx.drawImage(spr.shadow, 0, 0, SHADOW_SPRITE_SIZE, SHADOW_SPRITE_SIZE, sx - HALF * 0.6, sy - 2, SIZE * 0.6, SIZE * 0.25);
+            ctx.drawImage(sprites.shadow, 0, 0, SHADOW_SPRITE_SIZE, SHADOW_SPRITE_SIZE, sx - HALF * 0.6, sy - 2, SIZE * 0.6, SIZE * 0.25);
             ctx.globalAlpha = 1;
         } else {
             ctx.fillStyle = "rgba(0,0,0,0.18)";
@@ -733,7 +729,7 @@
         // Sprite
         const info = getFaunaSpriteInfo(f);
         const frame = G.spriteFrame(info.frames, info.speed, f.id);
-        const spriteDrawn = info.spr && G.drawSpriteFrame(ctx, info.spr, frame, info.frames,
+        const spriteDrawn = info.sprite && G.drawSpriteFrame(ctx, info.sprite, frame, info.frames,
             rect.left, rect.top, rect.width, rect.height, !facingRight);
 
         if (!spriteDrawn) {
@@ -753,21 +749,21 @@
     // ── Draw Cat (individual-frame animation) ───────────────────────────
 
     function drawCat(ctx, f, sx, sy) {
-        const spr = G.sprites;
+        const sprites = G.sprites;
         const rect = spriteRect(f, sx, sy, G.mapCached.tileSize);
         const SIZE = rect.height;
         const HALF = SIZE / 2;
 
         // Shadow
-        if (spr.shadow) {
+        if (sprites.shadow) {
             ctx.globalAlpha = 0.2;
-            ctx.drawImage(spr.shadow, 0, 0, SHADOW_SPRITE_SIZE, SHADOW_SPRITE_SIZE, sx - HALF * 0.5, sy - 2, SIZE * 0.5, SIZE * 0.2);
+            ctx.drawImage(sprites.shadow, 0, 0, SHADOW_SPRITE_SIZE, SHADOW_SPRITE_SIZE, sx - HALF * 0.5, sy - 2, SIZE * 0.5, SIZE * 0.2);
             ctx.globalAlpha = 1;
         }
 
         // Pick the right frame from the individual images
         const fi = Math.floor(G.gameFrame / LECHAT_ANIM_INTERVAL) % G.CAT_FRAME_COUNT;
-        const frameImg = spr["lechat_" + fi];
+        const frameImg = sprites["lechat_" + fi];
         if (frameImg) {
             ctx.drawImage(frameImg, rect.left, rect.top, rect.width, rect.height);
         } else {
@@ -787,16 +783,16 @@
     // ── Draw Wild Archer (Red team, fauna) ──────────────────────────────
 
     function drawWildArcher(ctx, f, sx, sy) {
-        const spr = G.sprites;
+        const sprites = G.sprites;
         const rect = spriteRect(f, sx, sy, G.mapCached.tileSize);
         const SIZE = rect.height;
         const HALF = SIZE / 2;
         const facingRight = G.updateFacing(f);
 
         // Shadow
-        if (spr.shadow) {
+        if (sprites.shadow) {
             ctx.globalAlpha = 0.25;
-            ctx.drawImage(spr.shadow, 0, 0, SHADOW_SPRITE_SIZE, SHADOW_SPRITE_SIZE, sx - HALF * 0.7, sy - 4, SIZE * 0.7, SIZE * 0.35);
+            ctx.drawImage(sprites.shadow, 0, 0, SHADOW_SPRITE_SIZE, SHADOW_SPRITE_SIZE, sx - HALF * 0.7, sy - 4, SIZE * 0.7, SIZE * 0.35);
             ctx.globalAlpha = 1;
         } else {
             ctx.fillStyle = "rgba(0,0,0,0.25)";
@@ -806,7 +802,7 @@
         // Sprite
         const info = getFaunaSpriteInfo(f);
         const frame = G.spriteFrame(info.frames, info.speed, f.id);
-        const spriteDrawn = info.spr && G.drawSpriteFrame(ctx, info.spr, frame, info.frames,
+        const spriteDrawn = info.sprite && G.drawSpriteFrame(ctx, info.sprite, frame, info.frames,
             rect.left, rect.top, rect.width, rect.height, !facingRight);
 
         if (!spriteDrawn) {

@@ -1,18 +1,11 @@
-/* ═══════════════════════════════════════════════════════════════════════════
-   G4AL Web Client – Main Entry Point
-   Shared state, Socket.IO, Camera, Canvas setup, Boot
-   ═══════════════════════════════════════════════════════════════════════════
-   Module load order (set in index.html):
-     details.js → sprites.js → renderer.js → ptt.js → ui.js → chat.js → input.js → game.js
-   ═══════════════════════════════════════════════════════════════════════════ */
+/* Client entry point: camera, Socket.IO state updates, boot. index.html loads it last,
+   once every other script has added its functions to window.G4AL. */
 
 (function (G) {
     "use strict";
 
-    // ── Constants ───────────────────────────────────────────────────────
     const CAMERA_SPEED = 10;
 
-    // ── Camera ──────────────────────────────────────────────────────────
     G.updateCamera = function (W, H) {
         if (!G.mapCached) return;
         const maxX = G.mapCached.cols * G.mapCached.tileSize - W;
@@ -27,20 +20,18 @@
         G.camY = Math.max(0, Math.min(G.camY, maxY));
     };
 
-    // ── Socket.IO connection ────────────────────────────────────────────
     let cameraCentered = false;
     const socket = io();
 
     socket.on("state", (data) => {
         G.gameState = data;
 
-        // Cache map on first state
+        // The map never changes during a game, so its image is built once.
         if (!G.mapCached && G.gameState.map) {
             G.mapCached = G.gameState.map;
             G.buildMapImage();
         }
 
-        // Center camera on first NPC once
         if (!cameraCentered && G.mapCached && G.gameState.npcs && G.gameState.npcs.length > 0) {
             const npc = G.gameState.npcs[0];
             const W = G.canvas.width  || G.container.clientWidth;
@@ -53,7 +44,6 @@
         }
     });
 
-    // ── Boot: load sprites then start render loop ───────────────────────
     G.loadAllSprites().then(() => {
         if (G.mapCached) G.buildMapImage();
     });

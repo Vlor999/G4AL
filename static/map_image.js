@@ -28,7 +28,7 @@
     G.buildMapImage = function () {
         if (!G.mapCached) return;
         const { cols, rows, tileSize, tiles, biomes } = G.mapCached;
-        const spr = G.sprites;
+        const sprites = G.sprites;
         const posHash = G.posHash;
 
         const mapCanvas = document.createElement("canvas");
@@ -49,12 +49,12 @@
                 const py = r * tileSize;
 
                 let tileset = null;
-                if (tt === TILE_TYPE.GRASS) tileset = spr[GRASS_TILESET_BY_BIOME[biome]] || spr.ts_grass;
-                else if (tt === TILE_TYPE.DIRT) tileset = spr.ts_dirt;
-                else if (tt === TILE_TYPE.SAND) tileset = spr.ts_sand;
+                if (tt === TILE_TYPE.GRASS) tileset = sprites[GRASS_TILESET_BY_BIOME[biome]] || sprites.ts_grass;
+                else if (tt === TILE_TYPE.DIRT) tileset = sprites.ts_dirt;
+                else if (tt === TILE_TYPE.SAND) tileset = sprites.ts_sand;
                 else if (tt === TILE_TYPE.WATER) {
-                    if (spr.water_bg) {
-                        mctx.drawImage(spr.water_bg, px, py, tileSize, tileSize);
+                    if (sprites.water_bg) {
+                        mctx.drawImage(sprites.water_bg, px, py, tileSize, tileSize);
                     } else {
                         mctx.fillStyle = "#42a5f5";
                         mctx.fillRect(px, py, tileSize, tileSize);

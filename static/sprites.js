@@ -52,24 +52,23 @@ window.G4AL = window.G4AL || {};
     // Speed tiers: game frames per animation frame change
     const ANIM_SPEED = { slow: 30, normal: 12, fast: 5 };
 
-    // ── Config helpers (reads from SPRITE_CONFIG in details.js) ─────────
-
-    function cfgFrames(key, fallback) {
+    // SPRITE_CONFIG comes from details.js; a key it lacks falls back to the caller's value.
+    function readFrameCount(key, fallback) {
         if (typeof SPRITE_CONFIG !== "undefined" && SPRITE_CONFIG[key]) {
             return SPRITE_CONFIG[key].frames;
         }
         return fallback;
     }
 
-    function cfgSpeed(key, fallback) {
+    function readAnimationSpeed(key, fallback) {
         if (typeof SPRITE_CONFIG !== "undefined" && SPRITE_CONFIG[key]) {
             return SPRITE_CONFIG[key].speed || fallback;
         }
         return fallback;
     }
 
-    G.cfgFrames = cfgFrames;
-    G.cfgSpeed = cfgSpeed;
+    G.readFrameCount = readFrameCount;
+    G.readAnimationSpeed = readAnimationSpeed;
 
     // ── Loader ──────────────────────────────────────────────────────────
 

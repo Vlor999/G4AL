@@ -1,12 +1,9 @@
-"""Single source of truth for every NPC identity.
+"""The profile of each named NPC: personality for the LLM prompt, ElevenLabs voice.
 
-Each NPC is defined *once* as an ``NPCProfile`` that bundles:
-  • **name** – the canonical NPC name (enum).
-  • **soul** – a personality blurb fed to the LLM for in-character lines.
-  • **voice** – the ElevenLabs preset voice (enum).
-
-All other modules should import derived helpers from here rather than
-maintaining their own parallel dictionaries.
+A profile is keyed by an ``NPCName`` member of ``game/world/npc_names.py``, so adding
+an NPC takes a member there and a profile in ``NPC_PROFILES``. A name without a
+profile, such as an archer's or a wild archer's, gets the generic soul of
+``get_soul`` and the default voice of ``api.tts``.
 """
 
 from __future__ import annotations
@@ -16,13 +13,9 @@ from enum import Enum
 
 from game.world.npc_names import NPCName
 
-# ═══════════════════════════════════════════════════════════════════════════
-#  ElevenLabs voice library
-# ═══════════════════════════════════════════════════════════════════════════
-
 
 class ElevenLabsVoice(Enum):
-    """Available ElevenLabs preset voices with their API IDs."""
+    """ElevenLabs preset voices, valued by their API ids."""
 
     # Female voices
     RACHEL = "21m00Tcm4TlvDq8ikWAM"  # calm, mature
@@ -38,16 +31,10 @@ class ElevenLabsVoice(Enum):
 
 @dataclass(frozen=True)
 class NPCProfile:
-    """Immutable identity card for one NPC."""
+    name: NPCName
+    soul: str  # personality description written into the LLM prompt
+    voice: ElevenLabsVoice
 
-    name: NPCName  # canonical NPC name (enum)
-    soul: str  # personality description (for LLM prompts)
-    voice: ElevenLabsVoice  # ElevenLabs preset voice (enum)
-
-
-# ═══════════════════════════════════════════════════════════════════════════
-#  Master registry – the ONE place to add / edit / remove NPCs
-# ═══════════════════════════════════════════════════════════════════════════
 
 NPC_PROFILES: tuple[NPCProfile, ...] = (
     NPCProfile(
@@ -104,15 +91,11 @@ NPC_PROFILES: tuple[NPCProfile, ...] = (
 )
 
 
-# ═══════════════════════════════════════════════════════════════════════════
-#  Derived lookups – generated once from NPC_PROFILES
-# ═══════════════════════════════════════════════════════════════════════════
+CHARACTER_SOULS: dict[str, str] = {profile.name.value: profile.soul for profile in NPC_PROFILES}
 
-CHARACTER_SOULS: dict[str, str] = {p.name.value: p.soul for p in NPC_PROFILES}
-"""NPC name → personality description (for LLM prompts)."""
-
-NPC_VOICE_MAP: dict[str, str] = {p.name.value: p.voice.value for p in NPC_PROFILES}
-"""NPC name → ElevenLabs voice ID."""
+NPC_VOICE_MAP: dict[str, str] = {
+    profile.name.value: profile.voice.value for profile in NPC_PROFILES
+}
 
 
 def get_soul(name: str) -> str:

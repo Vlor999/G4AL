@@ -1,8 +1,7 @@
-"""ElevenLabs TTS – speaks NPC voice lines in the background.
+"""ElevenLabs TTS: speaks NPC voice lines in the background.
 
-Voice assignments come from :pymod:`api.npc_profiles` (the single source of
-truth for NPC identities).  A daemon worker thread processes a FIFO queue
-so voice lines never overlap and never block the game loop.
+Each NPC's voice comes from :pymod:`api.npc_profiles`. One daemon worker thread
+plays the queued lines in order, so they never overlap and never block the game loop.
 """
 
 from __future__ import annotations
@@ -27,14 +26,10 @@ from api.npc_profiles import NPC_VOICE_MAP, ElevenLabsVoice
 if TYPE_CHECKING:
     from elevenlabs import ElevenLabs
 
-# Default fallback voice ID
 _DEFAULT_VOICE_ID = ElevenLabsVoice.RACHEL.value
 
-# Model for short voice lines – optimised for low latency.
+# Optimised for latency, which matters more than quality for short voice lines.
 _MODEL_ID = "eleven_turbo_v2_5"
-
-
-# ── TTSEngine ────────────────────────────────────────────────────────────
 
 
 class TTSEngine:
@@ -66,23 +61,17 @@ class TTSEngine:
         self._thread = threading.Thread(target=self._worker, daemon=True)
         self._thread.start()
 
-    # ── public API ───────────────────────────────────────────────────────
-
     def speak(self, voice_line: str, npc_name: str) -> None:
-        """Enqueue a voice line for background playback."""
         if self._client is None or not voice_line.strip():
             return
         self._queue.put((voice_line, npc_name))
 
     def close(self) -> None:
-        """Gracefully stop the worker thread."""
+        """Stop the worker thread once the line it is playing ends; queued lines are dropped."""
         self._running = False
-        self._queue.put(None)  # sentinel
-
-    # ── internals ────────────────────────────────────────────────────────
+        self._queue.put(None)
 
     def _voice_id_for(self, npc_name: str) -> str:
-        """Get the ElevenLabs voice ID for an NPC name."""
         return NPC_VOICE_MAP.get(npc_name, _DEFAULT_VOICE_ID)
 
     def _worker(self) -> None:
@@ -109,19 +98,19 @@ class TTSEngine:
         """
         try:
             voice_id = self._voice_id_for(npc_name)
-            self._pipeline_logger.tts_start(text, npc_name, voice_id)
-            # Use with_raw_response to access API-reported usage headers
-            raw_resp = client.text_to_speech.with_raw_response.convert(
+            self._pipeline_logger.tts_start(text, npc_name=npc_name, voice_id=voice_id)
+            # The raw response carries the API-reported usage headers.
+            raw_response = client.text_to_speech.with_raw_response.convert(
                 voice_id=voice_id,
                 text=text,
                 model_id=_MODEL_ID,
                 output_format=TTS_OUTPUT_FORMAT,
             )
-            with raw_resp as http_resp:
-                headers = http_resp.headers
+            with raw_response as http_response:
+                headers = http_response.headers
                 character_cost = int(headers.get("character-cost", 0))
                 tts_latency_ms = int(headers.get("tts-latency-ms", 0))
-                audio = b"".join(http_resp.data)
+                audio = b"".join(http_response.data)
         except Exception as exc:  # noqa: BLE001 - worker thread must survive any API error
             self._pipeline_logger.tts_end(
                 npc_name=npc_name,
@@ -181,11 +170,10 @@ def _create_elevenlabs_client(api_key: str) -> ElevenLabs:
 def _play_through_mixer(audio_bytes: bytes) -> None:
     import pygame.mixer  # already initialised by the entry point
 
-    # Play through pygame.mixer.music (supports mp3 via SDL_mixer)
-    buf = io.BytesIO(audio_bytes)
-    pygame.mixer.music.load(buf)
+    # pygame.mixer.music, unlike Sound, decodes mp3.
+    pygame.mixer.music.load(io.BytesIO(audio_bytes))
     pygame.mixer.music.play()
 
-    # Block until playback finishes so lines don't overlap
+    # Blocking keeps the next queued line from starting over this one.
     while pygame.mixer.music.get_busy():
         pygame.time.wait(50)

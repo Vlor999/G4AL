@@ -1,8 +1,8 @@
 """Structured logging for the game pipeline (powered by loguru).
 
 Writes log files under ``logs/`` with timing, cost, and event data for
-every Voxtral call (LLM, audio in), every ElevenLabs TTS call, and a
-session summary.
+every LLM call (typed text or audio, whatever the provider), every ElevenLabs
+TTS call, and a session summary.
 
 Two sinks:
   • ``logs/pipeline_YYYYMMDD_HHMMSS.log`` – human-readable log
@@ -41,11 +41,10 @@ def configure_sinks(log_dir: Path) -> list[int]:
     """Add the pipeline sinks (console, one file pair per session under ``log_dir``);
     returns their handler ids. Other sinks are left as they are."""
     log_dir.mkdir(parents=True, exist_ok=True)
-    session_ts = datetime.now(UTC).strftime("%Y%m%d_%H%M%S")
+    session_timestamp = datetime.now(UTC).strftime("%Y%m%d_%H%M%S")
 
     handler_ids = []
 
-    # Console sink – concise colored output
     handler_ids.append(
         logger.add(
             sys.stderr,
@@ -55,10 +54,9 @@ def configure_sinks(log_dir: Path) -> list[int]:
         )
     )
 
-    # Human-readable file sink
     handler_ids.append(
         logger.add(
-            str(log_dir / f"pipeline_{session_ts}.log"),
+            str(log_dir / f"pipeline_{session_timestamp}.log"),
             level="DEBUG",
             format="{time:YYYY-MM-DD HH:mm:ss.SSS} | {level: <8} | {extra[event]: <18} | {message}",
             filter=has_event,
@@ -67,10 +65,9 @@ def configure_sinks(log_dir: Path) -> list[int]:
         )
     )
 
-    # Structured JSON-lines sink for programmatic analysis
     handler_ids.append(
         logger.add(
-            str(log_dir / f"pipeline_{session_ts}.jsonl"),
+            str(log_dir / f"pipeline_{session_timestamp}.jsonl"),
             level="DEBUG",
             format="{message}",
             serialize=True,
@@ -109,10 +106,13 @@ def _describe_orders(order: dict[str, Any] | None) -> str:
 
 
 class PipelineLogger:
-    """Thread-safe structured logger for Voxtral, TTS and session summary events."""
+    """Logs each LLM and TTS call with its time and cost, and the session totals.
+
+    The start time of a call is kept between its ``*_start`` and ``*_end`` events, so
+    one instance times one LLM call and one TTS call at a time.
+    """
 
     def __init__(self) -> None:
-        # running totals
         self._total_llm_cost = 0.0
         self._total_tts_cost = 0.0
         self._total_llm_time = 0.0
@@ -121,17 +121,14 @@ class PipelineLogger:
         self._tts_call_count = 0
         self._call_count = 0
 
-        # in-flight timers
-        self._llm_t0: float | None = None
-        self._tts_t0: float | None = None
+        self._llm_start_time: float | None = None
+        self._tts_start_time: float | None = None
 
     def start_session(self) -> None:
         logger.bind(event="session_start").info("Session started")
 
-    # ── LLM events ───────────────────────────────────────────────────────
-
     def llm_start(self, input_text: str) -> None:
-        self._llm_t0 = time.perf_counter()
+        self._llm_start_time = time.perf_counter()
         logger.bind(event="llm_start", input_text=input_text).info(f'LLM request: "{input_text}"')
 
     def llm_end(
@@ -147,7 +144,7 @@ class PipelineLogger:
         """Log the end of a call to ``model``, a catalog model id. ``cost_usd`` is the
         token cost at that model's prices plus the cost of the ``audio_seconds`` of input audio, logged apart as
         ``audio_cost_usd``."""
-        elapsed = time.perf_counter() - (self._llm_t0 or time.perf_counter())
+        elapsed = time.perf_counter() - (self._llm_start_time or time.perf_counter())
         prices = MODELS_BY_ID[model].prices
         audio_cost = audio_seconds * prices.audio_per_second
         cost = (
@@ -158,7 +155,7 @@ class PipelineLogger:
         self._total_llm_cost += cost
         self._total_llm_time += elapsed
         self._call_count += 1
-        self._llm_t0 = None
+        self._llm_start_time = None
 
         log = logger.bind(
             event="llm_end",
@@ -182,10 +179,8 @@ class PipelineLogger:
                 f"elapsed={elapsed:.2f}s | cost=${cost:.4f}"
             )
 
-    # ── TTS events ────────────────────────────────────────────────────────
-
-    def tts_start(self, text: str, npc_name: str, voice_id: str) -> None:
-        self._tts_t0 = time.perf_counter()
+    def tts_start(self, text: str, *, npc_name: str, voice_id: str) -> None:
+        self._tts_start_time = time.perf_counter()
         logger.bind(
             event="tts_start",
             npc_name=npc_name,
@@ -196,18 +191,19 @@ class PipelineLogger:
     def tts_end(
         self,
         npc_name: str,
+        *,
         char_count: int,
         audio_bytes: int = 0,
         tts_latency_ms: int = 0,
         error: str | None = None,
     ) -> None:
-        elapsed = time.perf_counter() - (self._tts_t0 or time.perf_counter())
+        elapsed = time.perf_counter() - (self._tts_start_time or time.perf_counter())
         cost = char_count * TTS_COST_PER_CHAR
         self._total_tts_cost += cost
         self._total_tts_time += elapsed
         self._total_tts_chars += char_count
         self._tts_call_count += 1
-        self._tts_t0 = None
+        self._tts_start_time = None
 
         log = logger.bind(
             event="tts_end",
@@ -228,10 +224,9 @@ class PipelineLogger:
                 f"elapsed={elapsed:.2f}s | cost=${cost:.4f}"
             )
 
-    # ── pipeline round-trip ──────────────────────────────────────────────
-
     def pipeline_summary(self, order: dict[str, Any] | None) -> None:
-        """Log an end-to-end summary for one voice→LLM→TTS cycle."""
+        """Log the latest ``order`` with the time and cost of every LLM and TTS call
+        so far in the session."""
         total_time = self._total_llm_time + self._total_tts_time
         total_cost = self._total_llm_cost + self._total_tts_cost
 
@@ -253,8 +248,6 @@ class PipelineLogger:
             f"(llm=${self._total_llm_cost:.4f} "
             f"tts=${self._total_tts_cost:.4f})"
         )
-
-    # ── session close ────────────────────────────────────────────────────
 
     def close(self) -> None:
         total_cost = self._total_llm_cost + self._total_tts_cost

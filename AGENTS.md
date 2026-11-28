@@ -16,7 +16,7 @@ HTML5 Canvas client every 3rd tick (~20 Hz).
 | `main.py` | Starts the server (`server.app.main`). |
 | `static/` | Browser client: classic scripts sharing globals, loaded in order by `index.html`, no build step (`game.js` entry, `map_image.js`, `renderer.js`, `input.js`, `ptt.js`, `ui.js`, `sprites.js`). |
 | `tests/` | Pytest suite. |
-| `scripts/` | Standalone tools run with `uv run --script` (PEP 723), outside the game: `asset_inventory.py` writes `docs/assets.md`. |
+| `scripts/` | Standalone tools run with `uv run --script` (PEP 723), outside the game: `asset_inventory.py` writes `docs/assets.md`, `tileset_reference.py` writes the table in `docs/tileset.md` and the git-ignored `docs/tileset_reference.png`. |
 | `docs/` | [Architecture](docs/architecture.md), [client/server contract](docs/api.md), [decisions](docs/adr/). |
 | `openwiki/` | Generated repository wiki, start at the [quickstart](openwiki/quickstart.md). Refresh it by running the `openwiki` skill in `update` mode after significant merges into `dev`; no scheduled workflow. |
 

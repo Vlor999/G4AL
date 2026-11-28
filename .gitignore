@@ -51,3 +51,6 @@ htmlcov/
 
 # mr-review output (never committed)
 *_TO_*_review.md
+
+# Tileset reference image, derived from the asset pack (see docs/tileset.md)
+docs/tileset_reference.png

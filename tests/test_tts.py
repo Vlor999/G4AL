@@ -10,7 +10,7 @@ from elevenlabs import ElevenLabs
 from loguru import logger
 
 from api.logger import PipelineLogger, has_event
-from api.roster import NPC_VOICE_MAP
+from api.npc_profiles import NPC_VOICE_MAP
 from api.tts import TTSEngine
 
 WAIT_SECONDS = 2.0

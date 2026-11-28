@@ -20,7 +20,7 @@ until its file is refactored.
 
 ## Text a model reads
 
-Prompt bodies and LLM instructions (`api/interpreter.py`, `api/roster.py`) are English.
+Prompt bodies and LLM instructions (`api/interpreter.py`, `api/npc_profiles.py`) are English.
 The language the NPCs answer in is stated in the prompt itself, never assumed.
 
 ## French content keeps its diacritics

@@ -101,7 +101,7 @@ api/
   order_contract.py prompt, answer schema and order parsing shared by every provider
   model_catalog.py  the models the player can pick, with their prices
   tts.py            ElevenLabs text-to-speech
-  roster.py         NPC profiles (name, personality, voice)
+  npc_profiles.py   NPC profiles (name, personality, voice)
   logger.py         pipeline logging, written to logs/
 
 game/

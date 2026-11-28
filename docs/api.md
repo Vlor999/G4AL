@@ -41,7 +41,7 @@ The player picks the model that interprets the next command
 
 | Key | Type | Meaning |
 |---|---|---|
-| `models` | list of `{"id": str, "name": str, "provider": str, "hasVoiceInput": bool}` | the catalog models whose provider API key is set, in catalog order |
+| `models` | list of `{"id": str, "name": str, "hasVoiceInput": bool}` | the catalog models whose provider API key is set, in catalog order |
 | `selectedModelId` | str | the `id` of the model the next command goes to |
 | `hasVoiceInput` | bool | whether the selected model takes spoken commands |
 

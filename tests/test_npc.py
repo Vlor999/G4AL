@@ -139,7 +139,7 @@ def test_queued_moves_run_one_after_the_other(build_map: MapBuilder) -> None:
     npc.enqueue(Action(ActionType.MOVE_TO, target=(3, 0)))
     npc.enqueue(Action(ActionType.MOVE_TO, target=(3, 3)))
 
-    assert npc.queue_size == 2
+    assert [action.target for action in npc.action_queue] == [(3, 3)]
     assert run_until(npc, lambda: npc.state == State.IDLE)
     assert npc.tile_pos == (3, 3)
 

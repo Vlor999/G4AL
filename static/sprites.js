@@ -16,6 +16,9 @@ window.G4AL = window.G4AL || {};
     G.gameFrame = 0;
     G.keysDown = new Set();
 
+    // Individual frame images of the cat (lechat/frame_000.png onwards).
+    G.CAT_FRAME_COUNT = 27;
+
     // ── Canvas refs ─────────────────────────────────────────────────────
     G.canvas = document.getElementById("game-canvas");
     G.ctx = G.canvas.getContext("2d");
@@ -183,8 +186,8 @@ window.G4AL = window.G4AL || {};
             loadImg("red_archer_shoot", "Units/Red Units/Archer/Archer_Shoot.png"),
             loadImg("red_archer_arrow", "Units/Red Units/Archer/Arrow.png"),
 
-            // Le Chat – 27 individual frames
-            ...Array.from({ length: 27 }, (_, i) =>
+            // Le Chat – one image per frame
+            ...Array.from({ length: G.CAT_FRAME_COUNT }, (_, i) =>
                 loadImg("lechat_" + i, "lechat/frame_" + String(i).padStart(3, "0") + ".png")
             ),
 

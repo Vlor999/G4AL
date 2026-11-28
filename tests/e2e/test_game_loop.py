@@ -107,7 +107,7 @@ def test_an_archer_shoots_a_creature_added_after_tick_removed_the_dead(
         creature.health = 0
 
     engine.tick()
-    newcomer = WildArcher(archer.x, archer.y, engine.game_map, engine.resources)
+    newcomer = WildArcher(archer.x, archer.y, engine.game_map)
     engine.fauna.append(newcomer)
     archer.enqueue(Action(ActionType.SHOOT))
     for _ in range(MAX_FRAMES):

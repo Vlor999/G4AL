@@ -30,7 +30,7 @@ class Ambush:
         self.game_map = game_map
         self.pawns: list[NPC] = []
         self.arrows: list[Arrow] = []
-        self.archer = WildArcher(*game_map.tile_center(*archer_tile), game_map, [])
+        self.archer = WildArcher(*game_map.tile_center(*archer_tile), game_map)
         self.archer.link_battlefield(
             npcs=self.pawns, arrows=self.arrows, clock=clock_at(elapsed_frames)
         )

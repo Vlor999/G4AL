@@ -9,7 +9,6 @@ from enum import Enum, auto
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from game.resources.entities import Resource
     from game.world.map import GameMap
 
 
@@ -35,7 +34,6 @@ class Fauna:
 
     kind: str = "fauna"
     default_name: str = "Fauna"
-    controllable: bool = False
     wander_radius: int = 5
     max_health: int = 30
     speed: float = 1.0
@@ -45,7 +43,6 @@ class Fauna:
         x: float,
         y: float,
         game_map: GameMap,
-        resources: list[Resource],
         name: str | None = None,
     ):
         self.id = _next_fauna_id()
@@ -55,7 +52,6 @@ class Fauna:
         self.health = self.max_health
 
         self._map = game_map
-        self._resources = resources
 
         self.state = FaunaState.IDLE
         self._path: list[tuple[int, int]] = []

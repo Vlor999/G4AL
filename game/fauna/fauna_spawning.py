@@ -30,7 +30,6 @@ def _find_sheep_tile(game_map: GameMap, occupied: set[tuple[int, int]]) -> tuple
 
 def _place_cat_in_corner(
     game_map: GameMap,
-    resources: list[Resource],
     *,
     occupied: set[tuple[int, int]],
 ) -> Cat | None:
@@ -44,7 +43,7 @@ def _place_cat_in_corner(
         if game_map.is_walkable(col, row) and (col, row) not in occupied:
             occupied.add((col, row))
             wx, wy = game_map.tile_center(col, row)
-            return Cat(wx, wy, game_map, resources)
+            return Cat(wx, wy, game_map)
     return None
 
 
@@ -62,9 +61,9 @@ def spawn_fauna(
         if pos:
             occupied.add(pos)
             wx, wy = game_map.tile_center(*pos)
-            fauna.append(Sheep(wx, wy, game_map, resources))
+            fauna.append(Sheep(wx, wy, game_map))
 
-    cat = _place_cat_in_corner(game_map, resources, occupied=occupied)
+    cat = _place_cat_in_corner(game_map, occupied=occupied)
     if cat is not None:
         fauna.append(cat)
 

@@ -29,7 +29,7 @@ def wander_legs(creature: Fauna, frames: int) -> list[int]:
 
 
 def place(kind: type[Sheep] | type[WildArcher], game_map: GameMap) -> Fauna:
-    return kind(*game_map.tile_center(15, 15), game_map, [])
+    return kind(*game_map.tile_center(15, 15), game_map)
 
 
 @pytest.mark.parametrize(
@@ -64,7 +64,7 @@ def test_a_sheep_alternates_idling_grazing_and_wandering(build_map: MapBuilder) 
 
 def test_a_sheep_on_an_island_stays_on_its_tile(build_map: MapBuilder) -> None:
     game_map = build_map(["~~~", "~.~", "~~~"])
-    sheep = Sheep(*game_map.tile_center(1, 1), game_map, [])
+    sheep = Sheep(*game_map.tile_center(1, 1), game_map)
 
     for _ in range(FRAMES):
         sheep.update()
@@ -74,7 +74,7 @@ def test_a_sheep_on_an_island_stays_on_its_tile(build_map: MapBuilder) -> None:
 
 def test_remove_dead_fauna_drops_the_dead_creatures(build_map: MapBuilder) -> None:
     game_map = build_map(["." * 4])
-    alive, dead = (Sheep(*game_map.tile_center(col, 0), game_map, []) for col in (0, 1))
+    alive, dead = (Sheep(*game_map.tile_center(col, 0), game_map) for col in (0, 1))
     dead.health = 0
     fauna = [alive, dead]
 

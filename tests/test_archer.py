@@ -35,7 +35,7 @@ class Battlefield:
         self.archer.link_battlefield(fauna=self.fauna, arrows=self.arrows)
 
     def add_enemy(self, tile: tuple[int, int]) -> WildArcher:
-        enemy = WildArcher(*self.game_map.tile_center(*tile), self.game_map, [])
+        enemy = WildArcher(*self.game_map.tile_center(*tile), self.game_map)
         self.fauna.append(enemy)
         return enemy
 
@@ -87,9 +87,7 @@ def no_fauna(battlefield: Battlefield) -> None:
 
 
 def only_a_sheep(battlefield: Battlefield) -> None:
-    battlefield.fauna.append(
-        Sheep(*battlefield.game_map.tile_center(1, 1), battlefield.game_map, [])
-    )
+    battlefield.fauna.append(Sheep(*battlefield.game_map.tile_center(1, 1), battlefield.game_map))
 
 
 def a_dead_enemy(battlefield: Battlefield) -> None:

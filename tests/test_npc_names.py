@@ -67,7 +67,7 @@ def test_a_fresh_pool_picks_names_in_seeded_order(
     [
         (lambda game_map: NPC(0.0, 0.0, game_map, [], ResourceStorage()).name, NPC_NAMES),
         (lambda game_map: Archer(0.0, 0.0, game_map, [], ResourceStorage()).name, ARCHER_NAMES),
-        (lambda game_map: WildArcher(0.0, 0.0, game_map, []).name, WILD_ARCHER_NAMES),
+        (lambda game_map: WildArcher(0.0, 0.0, game_map).name, WILD_ARCHER_NAMES),
     ],
     ids=["pawn", "archer", "wild-archer"],
 )

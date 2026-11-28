@@ -36,7 +36,6 @@ class Resource:
         self.row = row
         self.hp = hp
         self.max_hp = hp
-        self.yields = yields
         self.depleted = False
         self.reserved_by: int | None = None  # id of the NPC that claimed it
         self.remaining_yields: dict[str, int] = dict(yields)

@@ -62,6 +62,9 @@ VOICE_ORDER_ACTION_VALUES = [
     "collect_wheat",
     "shoot",
     "defend",
+    "go_to_shore",
+    "fish",
+    "swim",
 ]
 """The actions the model may answer with, written out so a new or renamed ``ActionType``
 value fails the drift test until this list, and the prompt, are reviewed."""
@@ -166,6 +169,30 @@ def test_interpret_merges_the_orders_of_every_orders_call(build_map: MapBuilder)
         NpcOrder(pawn.id, pawn.name, ActionType.CHOP_WOOD, "On it."),
         NpcOrder(archer.id, archer.name, ActionType.DEFEND, "Ready."),
     ]
+
+
+@pytest.mark.parametrize("action_type", [ActionType.GO_TO_SHORE, ActionType.FISH, ActionType.SWIM])
+def test_interpret_maps_each_lake_action_to_an_npc_order(
+    build_map: MapBuilder, action_type: ActionType
+) -> None:
+    pawn, _archer = npcs = make_npcs(build_map)
+    order = {"npc_id": pawn.id, "action": action_type.value, "voice_line": "To the lake!"}
+    interpreter, _ = interpreter_answering(answer_with([tool_call({"orders": [order]})]))
+    interpreter.register_roster(npcs)
+
+    orders = interpret_spoken(interpreter)
+
+    assert orders == [NpcOrder(pawn.id, pawn.name, action_type, "To the lake!")]
+
+
+def test_the_prompt_names_the_lake_orders_in_french(build_map: MapBuilder) -> None:
+    interpreter, chat = interpreter_answering(answer_with([tool_call({"orders": []})]), build_map)
+
+    interpret_spoken(interpreter)
+
+    system_prompt = chat.calls[0]["messages"][0]["content"]
+    for phrase in ("« va pêcher »", "« va nager »", "« va au bord du lac »"):
+        assert phrase in system_prompt
 
 
 @pytest.mark.parametrize(

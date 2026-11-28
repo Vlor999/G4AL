@@ -195,6 +195,7 @@ window.G4AL = window.G4AL || {};
             loadImg("dust2",  "Particle FX/Dust_02.png"),
             loadImg("fire1",  "Particle FX/Fire_01.png"),
             loadImg("fire2",  "Particle FX/Fire_02.png"),
+            loadImg("water_splash", "Particle FX/Water Splash.png"),
 
             // Shadow
             loadImg("shadow", "Terrain/Tileset/Shadow.png"),

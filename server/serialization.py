@@ -125,6 +125,9 @@ def _serialize_npc(npc: NPC) -> dict[str, Any]:
         "isDefending": npc.is_defending,
         "isCarrying": npc.is_carrying,
         "carrying": dict(npc.carrying),
+        "isInWater": npc.is_in_water,
+        "waterTile": list(npc.water_tile) if npc.water_tile else None,
+        "lastRefusal": npc.last_refusal.value if npc.last_refusal else None,
         **_serialize_dimensions(OBJECT_DIMENSIONS[ObjectKind(npc.kind)]),
     }
 

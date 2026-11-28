@@ -3,7 +3,7 @@ turns a player order into an action (``create_order_action``)."""
 
 from __future__ import annotations
 
-from enum import Enum, auto
+from enum import Enum, StrEnum, auto
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -29,6 +29,9 @@ class ActionType(Enum):
     COLLECT_WHEAT = "collect_wheat"
     SHOOT = "shoot"
     DEFEND = "defend"
+    GO_TO_SHORE = "go_to_shore"
+    FISH = "fish"
+    SWIM = "swim"
 
 
 PAWN_ACTIONS = [
@@ -39,6 +42,9 @@ PAWN_ACTIONS = [
     ActionType.EAT,
     ActionType.PLANT_WHEAT,
     ActionType.COLLECT_WHEAT,
+    ActionType.GO_TO_SHORE,
+    ActionType.FISH,
+    ActionType.SWIM,
 ]
 
 ARCHER_ACTIONS = [
@@ -46,10 +52,27 @@ ARCHER_ACTIONS = [
     ActionType.SHOOT,
     ActionType.DEFEND,
     ActionType.EAT,
+    ActionType.GO_TO_SHORE,
+    ActionType.SWIM,
 ]
+
+SHORE_ACTIONS = (ActionType.GO_TO_SHORE, ActionType.FISH, ActionType.SWIM)
+"""Actions that start with a walk to the nearest shore tile."""
 
 TILE_TARGETED_ACTIONS = (ActionType.BUILD, ActionType.PLANT_WHEAT)
 """Actions that work on a tile: without a target they aim at the NPC's own tile."""
+
+
+class ActionRefusal(StrEnum):
+    """Why an NPC refused to start an action it was allowed to queue."""
+
+    NO_SHORE_REACHABLE = "no shore reachable"
+
+
+REFUSAL_SPEECH: dict[ActionRefusal, str] = {
+    ActionRefusal.NO_SHORE_REACHABLE: "No lake nearby!",
+}
+"""What the NPC says when it refuses an action, by reason."""
 
 
 class Action:

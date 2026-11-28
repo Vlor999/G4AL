@@ -7,7 +7,7 @@
 
     // Pixels past the canvas edges where a unit, a creature or a water rock is still drawn.
     const OFFSCREEN_MARGIN = 80;
-    // Pixels past the canvas edges where a bush, a particle or an arrow is still drawn.
+    // Pixels past the canvas edges where a bush or an arrow is still drawn.
     const SMALL_OFFSCREEN_MARGIN = 64;
     // Side, in pixels, of the source image of Shadow.png.
     const SHADOW_SPRITE_SIZE = 192;
@@ -15,9 +15,6 @@
     const ARROW_SFX_COOLDOWN_FRAMES = 20;
     // Game frames per animation frame of the cat.
     const CAT_ANIMATION_INTERVAL = 6;
-
-    const particles = [];
-    G.particles = particles;
 
     // ── Arrow SFX (procedural Web Audio) ────────────────────────────────
 
@@ -45,17 +42,6 @@
             osc.stop(t + 0.18);
         } catch (e) { /* audio not available */ }
     }
-
-    // ── Particles ───────────────────────────────────────────────────────
-
-    G.spawnParticle = function (type, wx, wy) {
-        particles.push({
-            type,
-            wx, wy,
-            birth: G.gameFrame,
-            life: type === "dust" ? 30 : 40,
-        });
-    };
 
     // ── Render loop ─────────────────────────────────────────────────────
 
@@ -145,33 +131,8 @@
             }
         }
 
-        // Particle FX
-        for (let i = particles.length - 1; i >= 0; i--) {
-            const p = particles[i];
-            const age = G.gameFrame - p.birth;
-            if (age >= p.life) { particles.splice(i, 1); continue; }
-            const progress = age / p.life;
-            const px = p.wx - G.camX;
-            const py = p.wy - G.camY;
-            if (px < -SMALL_OFFSCREEN_MARGIN || px > W + SMALL_OFFSCREEN_MARGIN || py < -SMALL_OFFSCREEN_MARGIN || py > H + SMALL_OFFSCREEN_MARGIN) continue;
-            ctx.globalAlpha = 1 - progress;
-            if (p.type === "dust") {
-                const ds = sprites.dust1 || sprites.dust2;
-                if (ds) {
-                    const dustFrames = G.readFrameCount("dust_1", 8);
-                    const fi = G.spriteFrame(dustFrames, G.readAnimationSpeed("dust_1", "fast"), p.birth);
-                    G.drawSpriteFrame(ctx, ds, fi, dustFrames, px - 24, py - 24, 48, 48, false);
-                }
-            } else if (p.type === "fire") {
-                const fs = sprites.fire1 || sprites.fire2;
-                if (fs) {
-                    const fireFrames = G.readFrameCount("fire_1", 8);
-                    const fi = G.spriteFrame(fireFrames, G.readAnimationSpeed("fire_1", "fast"), p.birth);
-                    G.drawSpriteFrame(ctx, fs, fi, fireFrames, px - 16, py - 32, 32, 32, false);
-                }
-            }
-            ctx.globalAlpha = 1;
-        }
+        G.spawnWaterSplashes(G.gameState.npcs);
+        G.drawParticles(ctx, W, H);
 
         if (G.gameState.arrows) {
             for (const arrow of G.gameState.arrows) {
@@ -586,14 +547,15 @@
         const rect = spriteRect(npc, sx, sy, G.mapCached.tileSize);
         const SIZE = rect.height;
         const HALF = SIZE / 2;
-        const facingRight = G.updateFacing(npc);
+        const facingRight = G.faceWater(npc, G.updateFacing(npc));
 
-        // Shadow
-        if (sprites.shadow) {
+        // Shadow, on land only: the waterline hides a swimmer's feet
+        const hasShadow = !npc.isInWater;
+        if (hasShadow && sprites.shadow) {
             ctx.globalAlpha = 0.25;
             ctx.drawImage(sprites.shadow, 0, 0, SHADOW_SPRITE_SIZE, SHADOW_SPRITE_SIZE, sx - HALF * 0.7, sy - 4, SIZE * 0.7, SIZE * 0.35);
             ctx.globalAlpha = 1;
-        } else {
+        } else if (hasShadow) {
             ctx.fillStyle = "rgba(0,0,0,0.25)";
             ctx.beginPath(); ctx.ellipse(sx, sy, HALF * 0.6, HALF * 0.25, 0, 0, Math.PI * 2); ctx.fill();
         }
@@ -607,8 +569,10 @@
         // Sprite
         const info = getNpcSprite(npc);
         const frame = G.spriteFrame(info.frames, info.speed, npc.id);
+        const isClipped = G.clipAtWaterline(ctx, npc, rect);
         const spriteDrawn = info.sprite && G.drawSpriteFrame(ctx, info.sprite, frame, info.frames,
             rect.left, rect.top, rect.width, rect.height, !facingRight);
+        if (isClipped) ctx.restore();
 
         if (!spriteDrawn) {
             const bob = npc.state === "IDLE" ? Math.sin(Date.now() / 200) * 2 : 0;

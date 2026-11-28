@@ -7,18 +7,20 @@ from collections import deque
 from collections.abc import Callable
 from typing import TYPE_CHECKING, ClassVar
 
-from game.npcs.actions import Action, ActionType, State
+from game.npcs.actions import REFUSAL_SPEECH, Action, ActionRefusal, ActionType, State
 from game.resources.entities import Resource, Structure
 from game.settings import (
     DEFAULT_SPEECH_DURATION_FRAMES,
     LONG_SPEECH_DURATION_FRAMES,
+    MEDIUM_SPEECH_DURATION_FRAMES,
     NPC_HUNGER_DAMAGE,
     NPC_HUNGER_DRAIN,
     NPC_HUNGER_MAX,
     NPC_MAX_HEALTH,
     NPC_SPEED,
 )
-from game.world.pathfinding import find_path
+from game.world.pathfinding import Tile, find_path
+from game.world.shore import ShoreSpot, find_shore_spot
 
 if TYPE_CHECKING:
     from game.resources.storage import ResourceStorage
@@ -84,6 +86,9 @@ class NPCBase:
         self.carrying: dict[str, int] = {}
         self._last_harvest_action: ActionType | None = None
         self._last_harvest_target: Resource | None = None
+        self._shore_spot: ShoreSpot | None = None
+        self._last_refusal: ActionRefusal | None = None
+        self._refused_action: Action | None = None
 
         self.selected = False
 
@@ -119,7 +124,7 @@ class NPCBase:
         self.carrying = {}
         self._last_harvest_action = None
         self._last_harvest_target = None
-        self._current_action = None
+        self._end_current_action()
         self.state = State.IDLE
         return True
 
@@ -131,6 +136,22 @@ class NPCBase:
     def current_action_type(self) -> ActionType | None:
         """Type of the action under way; None when no action is under way (idle)."""
         return self._current_action.action_type if self._current_action else None
+
+    @property
+    def last_refusal(self) -> ActionRefusal | None:
+        """Why the latest refused action was refused; None once the action after it
+        has ended, or when no action was refused."""
+        return self._last_refusal
+
+    @property
+    def water_tile(self) -> Tile | None:
+        """The water tile next to the shore tile of the lake action under way; None
+        outside a lake action or before its shore is found."""
+        return self._shore_spot.water_tile if self._shore_spot else None
+
+    @property
+    def is_in_water(self) -> bool:
+        return self._map.is_water(*self.tile_pos)
 
     @property
     def visible_speech_text(self) -> str:
@@ -169,11 +190,19 @@ class NPCBase:
 
     def _finish_action(self) -> None:
         self._release_reservation()
-        self._current_action = None
+        self._end_current_action()
+        self._shore_spot = None
         if self.action_queue:
             self._next_action()
         else:
             self.state = State.IDLE
+
+    def _end_current_action(self) -> None:
+        """Forget the action under way; a refusal is kept until an action after it ends."""
+        if self._current_action is not self._refused_action:
+            self._last_refusal = None
+            self._refused_action = None
+        self._current_action = None
 
     def _next_action(self) -> None:
         """Start the next queued action, or head to the hut first when carrying a load.
@@ -199,6 +228,35 @@ class NPCBase:
         self._perform_timer = 0
         self._perform_duration = duration
         self.state = State.PERFORMING
+
+    def _refuse(self, reason: ActionRefusal) -> None:
+        """End the action under way as refused for *reason*, and say so."""
+        self._last_refusal = reason
+        self._refused_action = self._current_action
+        self.say(REFUSAL_SPEECH[reason], MEDIUM_SPEECH_DURATION_FRAMES)
+        self.state = State.DONE
+
+    def _start_shore_trip(self, action: Action) -> None:
+        """Walk to the nearest reachable shore tile; a swim walks on into the water tile
+        next to it, the one step of a path that is not on land."""
+        blocked = self._find_tiles_covered_by_resources()
+        spot = find_shore_spot(self._map, self.tile_pos, blocked=blocked)
+        if spot is None:
+            self._refuse(ActionRefusal.NO_SHORE_REACHABLE)
+            return
+        self._shore_spot = spot
+        self._plan_move_to(*spot.shore_tile)
+        if action.action_type is ActionType.SWIM and self.state == State.MOVING:
+            self._path.append(spot.water_tile)
+
+    def _leave_water(self) -> None:
+        """Swim back from the water tile to the shore tile of the swim."""
+        if self._shore_spot is None:
+            self.state = State.DONE
+            return
+        self._path = [self._shore_spot.shore_tile]
+        self._path_index = 0
+        self.state = State.MOVING
 
     def _plan_move_to(self, col: int, row: int) -> None:
         start = self.tile_pos
@@ -268,7 +326,7 @@ class NPCBase:
         if self.action_queue:
             self._last_harvest_action = None
             self._last_harvest_target = None
-            self._current_action = None
+            self._end_current_action()
             self._next_action()
             return
 
@@ -287,10 +345,10 @@ class NPCBase:
             else:
                 self._last_harvest_action = None
                 self._last_harvest_target = None
-                self._current_action = None
+                self._end_current_action()
                 self.state = State.IDLE
         else:
-            self._current_action = None
+            self._end_current_action()
             self.state = State.IDLE
 
     def _store_carried_load(self) -> None:

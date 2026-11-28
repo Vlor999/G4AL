@@ -12,8 +12,8 @@ if TYPE_CHECKING:
 
 Tile = tuple[int, int]
 
-_ORTHOGONAL_STEPS: tuple[Tile, ...] = ((-1, 0), (1, 0), (0, -1), (0, 1))
-_GOAL_FALLBACK_STEPS: tuple[Tile, ...] = (*_ORTHOGONAL_STEPS, (-1, -1), (1, -1), (-1, 1), (1, 1))
+ORTHOGONAL_STEPS: tuple[Tile, ...] = ((-1, 0), (1, 0), (0, -1), (0, 1))
+_GOAL_FALLBACK_STEPS: tuple[Tile, ...] = (*ORTHOGONAL_STEPS, (-1, -1), (1, -1), (-1, 1), (1, 1))
 
 
 def _heuristic(a: Tile, b: Tile) -> float:
@@ -70,7 +70,7 @@ def _search_path(game_map: GameMap, start: Tile, *, goal: Tile, blocked: set[Til
 def _passable_neighbors(
     game_map: GameMap, tile: Tile, *, goal: Tile, blocked: set[Tile]
 ) -> list[Tile]:
-    neighbors = [(tile[0] + dc, tile[1] + dr) for dc, dr in _ORTHOGONAL_STEPS]
+    neighbors = [(tile[0] + dc, tile[1] + dr) for dc, dr in ORTHOGONAL_STEPS]
     return [
         neighbor
         for neighbor in neighbors
@@ -98,7 +98,7 @@ def find_nearest_tile(
     queue = deque([origin])
     while queue:
         col, row = queue.popleft()
-        for dc, dr in _ORTHOGONAL_STEPS:
+        for dc, dr in ORTHOGONAL_STEPS:
             neighbor = (col + dc, row + dr)
             if neighbor in visited or not _is_within_radius(
                 neighbor, origin=origin, radius=max_radius

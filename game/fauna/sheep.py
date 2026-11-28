@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from game.fauna.fauna import Fauna
+from game.settings import SHEEP_MAX_HEALTH, SHEEP_SPEED
 
 if TYPE_CHECKING:
     from game.world.map import GameMap
@@ -13,8 +14,8 @@ if TYPE_CHECKING:
 class Sheep(Fauna):
     kind = "sheep"
     default_name = "Sheep"
-    max_health = 20
-    speed = 0.8
+    max_health = SHEEP_MAX_HEALTH
+    speed = SHEEP_SPEED
 
     def __init__(
         self,

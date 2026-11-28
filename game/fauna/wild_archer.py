@@ -12,8 +12,13 @@ from game.settings import (
     WILD_ARCHER_CHASE_RANGE,
     WILD_ARCHER_DAMAGE,
     WILD_ARCHER_GRACE_FRAMES,
+    WILD_ARCHER_IDLE_DURATION_RANGE,
+    WILD_ARCHER_MAX_HEALTH,
     WILD_ARCHER_RANGE,
     WILD_ARCHER_SHOOT_TIME,
+    WILD_ARCHER_SPEED,
+    WILD_ARCHER_WANDER_CHANCE,
+    WILD_ARCHER_WANDER_RADIUS,
 )
 from game.world.clock import WorldClock
 
@@ -26,9 +31,9 @@ class WildArcher(Fauna):
     """Red-team fauna that patrols, chases the pawns and archers near it and shoots them."""
 
     kind = "wild_archer"
-    wander_radius = 8
-    max_health = 50
-    speed = 1.5
+    wander_radius = WILD_ARCHER_WANDER_RADIUS
+    max_health = WILD_ARCHER_MAX_HEALTH
+    speed = WILD_ARCHER_SPEED
 
     def __init__(
         self,
@@ -88,10 +93,10 @@ class WildArcher(Fauna):
                 self._chase_target(target)
                 return
             roll = self._map.rng.random()
-            if roll < 0.35:
+            if roll < WILD_ARCHER_WANDER_CHANCE:
                 self._start_wander()
             else:
-                self._state_duration = self._map.rng.randint(90, 300)
+                self._state_duration = self._map.rng.randint(*WILD_ARCHER_IDLE_DURATION_RANGE)
 
     def _do_wander(self) -> None:
         if self._path_index >= len(self._path):

@@ -8,6 +8,15 @@ import math
 from enum import Enum, auto
 from typing import TYPE_CHECKING
 
+from game.settings import (
+    FAUNA_GRAZE_CHANCE,
+    FAUNA_GRAZE_DURATION_RANGE,
+    FAUNA_IDLE_DURATION_RANGE,
+    FAUNA_MAX_HEALTH,
+    FAUNA_SPEED,
+    FAUNA_WANDER_RADIUS,
+)
+
 if TYPE_CHECKING:
     from game.world.map import GameMap
 
@@ -34,9 +43,9 @@ class Fauna:
 
     kind: str = "fauna"
     default_name: str = "Fauna"
-    wander_radius: int = 5
-    max_health: int = 30
-    speed: float = 1.0
+    wander_radius: int = FAUNA_WANDER_RADIUS
+    max_health: int = FAUNA_MAX_HEALTH
+    speed: float = FAUNA_SPEED
 
     def __init__(
         self,
@@ -81,7 +90,7 @@ class Fauna:
         self._timer += 1
         if self._timer >= self._state_duration:
             self._timer = 0
-            if self._map.rng.random() < 0.5:
+            if self._map.rng.random() < FAUNA_GRAZE_CHANCE:
                 self._start_graze()
             else:
                 self._start_wander()
@@ -98,7 +107,7 @@ class Fauna:
             self._start_idle()
 
     def _start_idle(self) -> None:
-        self._enter_timed_state(FaunaState.IDLE, self._map.rng.randint(60, 240))
+        self._enter_timed_state(FaunaState.IDLE, self._map.rng.randint(*FAUNA_IDLE_DURATION_RANGE))
 
     def _enter_timed_state(self, state: FaunaState, duration: int) -> None:
         """Enter *state* for *duration* frames, counted by ``_timer`` from 0."""
@@ -125,7 +134,9 @@ class Fauna:
         self.state = FaunaState.WANDERING
 
     def _start_graze(self) -> None:
-        self._enter_timed_state(FaunaState.GRAZING, self._map.rng.randint(120, 360))
+        self._enter_timed_state(
+            FaunaState.GRAZING, self._map.rng.randint(*FAUNA_GRAZE_DURATION_RANGE)
+        )
 
     def _follow_path(self) -> None:
         if self._path_index >= len(self._path):

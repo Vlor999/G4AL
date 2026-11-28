@@ -39,6 +39,14 @@ NPC_BUILD_SEARCH_RADIUS = 8  # tiles searched around the order's tile for a free
 EAT_WHEAT_COST = 2  # wheat consumed per eat action
 NPC_HUNGER_DAMAGE = 0.05  # HP lost per frame when hunger == 0
 
+# ── Speech bubbles (frames) ──────────────────────────────────────────────
+DEFAULT_SPEECH_DURATION_FRAMES = 300
+BRIEF_SPEECH_DURATION_FRAMES = 60  # a combat shout
+SHORT_SPEECH_DURATION_FRAMES = 90  # a status line
+MEDIUM_SPEECH_DURATION_FRAMES = 120  # an order the pawn cannot carry out
+LONG_SPEECH_DURATION_FRAMES = 180  # a refusal the player must notice
+ORDER_SPEECH_DURATION_FRAMES = 360  # speech bubble of an NPC answering a voice order
+
 # ── Resources ────────────────────────────────────────────────────────────
 TREE_WOOD_YIELD = 10
 ROCK_STONE_YIELD = 8
@@ -50,6 +58,12 @@ WHEAT_PLANT_TIME = 60  # frames to plant
 # ── Per-unit resource collection ──────────────────────────────────────────
 NPC_COLLECT_UNIT_TIME = 90  # frames to harvest 1 unit of any resource (1.5 s)
 
+# ── Resource hit points ──────────────────────────────────────────────────
+TREE_MAX_HP = TREE_WOOD_YIELD * 3
+ROCK_MAX_HP = ROCK_STONE_YIELD * 4
+STRUCTURE_MAX_HP = 100
+WHEAT_FIELD_MAX_HP = 10
+
 # ── Archer ───────────────────────────────────────────────────────────────
 # Keep 0 < ARCHER_FIRE_ANIM_TIME < ARCHER_SHOOT_TIME: Archer._perform relies on the
 # shot landing before the shoot cycle ends.
@@ -59,6 +73,21 @@ ARCHER_RANGE = 1  # tiles – max distance to shoot an enemy (melee-range)
 ARCHER_ARROW_DAMAGE = 12  # HP per arrow hit
 ARCHER_ARROW_FLIGHT = 24  # frames for an arrow to reach the target
 ARCHER_DEFEND_SCAN_RADIUS = 6  # tiles – how far a defending archer detects enemies
+ARCHER_SPEED = NPC_SPEED * 1.1  # pixels / frame
+ARCHER_MAX_HEALTH = 70
+
+# ── Fauna ────────────────────────────────────────────────────────────────
+FAUNA_WANDER_RADIUS = 5  # tiles around its tile a creature wanders to
+FAUNA_MAX_HEALTH = 30
+FAUNA_SPEED = 1.0  # pixels / frame
+FAUNA_IDLE_DURATION_RANGE = (60, 240)  # frames
+FAUNA_GRAZE_DURATION_RANGE = (120, 360)  # frames
+FAUNA_GRAZE_CHANCE = 0.5  # chance that an idle creature grazes rather than wanders
+SHEEP_MAX_HEALTH = 20
+SHEEP_SPEED = 0.8  # pixels / frame
+CAT_MAX_HEALTH = 50
+CAT_SPEED = 0.0  # the cat never leaves its tile
+CAT_CORNER_MARGIN = 2  # tiles between the map edge and the cat's corner tile
 
 # ── Wild Archer (enemy AI) ───────────────────────────────────────────────
 WILD_ARCHER_RANGE = 1  # tiles – attack range for wild archers
@@ -66,6 +95,11 @@ WILD_ARCHER_CHASE_RANGE = 6  # tiles – a wild archer chases an NPC this close
 WILD_ARCHER_DAMAGE = 8  # HP per arrow hit on our units
 WILD_ARCHER_SHOOT_TIME = 80  # frames between shots (~1.3 s)
 WILD_ARCHER_GRACE_FRAMES = 7200  # world frames (2 min) at game start before wild archers attack
+WILD_ARCHER_WANDER_RADIUS = 8  # tiles
+WILD_ARCHER_MAX_HEALTH = 50
+WILD_ARCHER_SPEED = 1.5  # pixels / frame
+WILD_ARCHER_WANDER_CHANCE = 0.35  # chance that an idle wild archer with no target wanders
+WILD_ARCHER_IDLE_DURATION_RANGE = (90, 300)  # frames
 
 # ── Initial spawn ────────────────────────────────────────────────────────
 INITIAL_PAWN_COUNT = 3
@@ -87,4 +121,3 @@ BUILD_COST_STONE = 3
 
 # ── TTS ──────────────────────────────────────────────────────────────────
 TTS_MAX_SPEAKERS = 1  # max NPCs that speak aloud per command (0 = mute)
-ORDER_SPEECH_DURATION_FRAMES = 360  # speech bubble of an NPC answering a voice order

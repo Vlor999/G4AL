@@ -5,13 +5,18 @@ from __future__ import annotations
 from collections.abc import Collection
 from typing import TYPE_CHECKING
 
+from game.constants import BUILD_PROGRESS_COMPLETE
 from game.settings import (
     GOLD_ROCK_SHARE,
     ROCK_DENSITY,
     ROCK_GOLD_YIELD,
+    ROCK_MAX_HP,
     ROCK_STONE_YIELD,
+    STRUCTURE_MAX_HP,
     TREE_DENSITY,
+    TREE_MAX_HP,
     TREE_WOOD_YIELD,
+    WHEAT_FIELD_MAX_HP,
     WHEAT_GROW_TIME,
     WHEAT_YIELD,
 )
@@ -70,7 +75,7 @@ class Tree(Resource):
     kind = "tree"
 
     def __init__(self, col: int, row: int) -> None:
-        super().__init__(col, row, hp=TREE_WOOD_YIELD * 3, yields={"wood": TREE_WOOD_YIELD})
+        super().__init__(col, row, hp=TREE_MAX_HP, yields={"wood": TREE_WOOD_YIELD})
 
 
 class Rock(Resource):
@@ -80,7 +85,7 @@ class Rock(Resource):
         yields = {"stone": ROCK_STONE_YIELD}
         if has_gold:
             yields["gold"] = ROCK_GOLD_YIELD
-        super().__init__(col, row, hp=ROCK_STONE_YIELD * 4, yields=yields)
+        super().__init__(col, row, hp=ROCK_MAX_HP, yields=yields)
         self.has_gold = has_gold
 
     @property
@@ -89,7 +94,8 @@ class Rock(Resource):
 
 
 class Structure(Resource):
-    """A building the pawns raise: ``built`` once ``build_progress`` reaches 100."""
+    """A building the pawns raise: ``built`` once ``build_progress`` reaches
+    ``BUILD_PROGRESS_COMPLETE``."""
 
     kind = "structure"
 
@@ -100,7 +106,7 @@ class Structure(Resource):
         build_progress: int = 0,
         building_type: str = "house1",
     ) -> None:
-        super().__init__(col, row, hp=100, yields={})
+        super().__init__(col, row, hp=STRUCTURE_MAX_HP, yields={})
         self.build_progress = build_progress
         self.built = False
         self.building_type = building_type
@@ -118,8 +124,8 @@ class Structure(Resource):
         return tiles
 
     def build_tick(self) -> None:
-        self.build_progress = min(100, self.build_progress + 1)
-        if self.build_progress >= 100:
+        self.build_progress = min(BUILD_PROGRESS_COMPLETE, self.build_progress + 1)
+        if self.build_progress >= BUILD_PROGRESS_COMPLETE:
             self.built = True
 
 
@@ -130,7 +136,7 @@ class WheatField(Resource):
     kind = "wheat"
 
     def __init__(self, col: int, row: int) -> None:
-        super().__init__(col, row, hp=10, yields={"wheat": WHEAT_YIELD})
+        super().__init__(col, row, hp=WHEAT_FIELD_MAX_HP, yields={"wheat": WHEAT_YIELD})
         self.growth = 0  # frames, up to WHEAT_GROW_TIME
         self.fully_grown = False
 

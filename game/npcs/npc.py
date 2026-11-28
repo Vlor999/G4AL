@@ -5,6 +5,7 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import ClassVar
 
+from game.constants import BUILD_PROGRESS_COMPLETE
 from game.npcs.actions import PAWN_ACTIONS, Action, ActionType, State
 from game.npcs.npc_base import NPCBase
 from game.resources.entities import Resource, Rock, Structure, Tree, WheatField
@@ -12,12 +13,14 @@ from game.settings import (
     BUILD_COST_STONE,
     BUILD_COST_WOOD,
     EAT_WHEAT_COST,
+    MEDIUM_SPEECH_DURATION_FRAMES,
     NPC_BUILD_SEARCH_RADIUS,
     NPC_BUILD_TIME,
     NPC_COLLECT_UNIT_TIME,
     NPC_EAT_RESTORE,
     NPC_EAT_TIME,
     NPC_PLANT_SEARCH_RADIUS,
+    SHORT_SPEECH_DURATION_FRAMES,
     WHEAT_PLANT_TIME,
 )
 from game.world.dimensions import ObjectDimensions, find_building_dimensions
@@ -77,7 +80,7 @@ class NPC(NPCBase):
     ) -> None:
         target = action.target if isinstance(action.target, Resource) else self._find_nearest(kind)
         if target is None:
-            self.say(unavailable_message, 120)
+            self.say(unavailable_message, MEDIUM_SPEECH_DURATION_FRAMES)
             self.state = State.DONE
             return
         action.target = target
@@ -99,7 +102,7 @@ class NPC(NPCBase):
         btype = "house1"
         resolved = self._find_free_area(origin, find_building_dimensions(btype))
         if resolved is None:
-            self.say("No space to build!", 120)
+            self.say("No space to build!", MEDIUM_SPEECH_DURATION_FRAMES)
             self.state = State.DONE
             return
         col, row = resolved
@@ -107,7 +110,7 @@ class NPC(NPCBase):
             self._storage.get("wood") < BUILD_COST_WOOD
             or self._storage.get("stone") < BUILD_COST_STONE
         ):
-            self.say("Not enough resources to build!", 120)
+            self.say("Not enough resources to build!", MEDIUM_SPEECH_DURATION_FRAMES)
             self.state = State.DONE
             return
         self._storage.spend("wood", BUILD_COST_WOOD)
@@ -123,7 +126,7 @@ class NPC(NPCBase):
 
     def _start_eat(self) -> None:
         if self._storage.get("wheat") < EAT_WHEAT_COST:
-            self.say("No wheat to eat!", 120)
+            self.say("No wheat to eat!", MEDIUM_SPEECH_DURATION_FRAMES)
             self.state = State.DONE
             return
         self._storage.spend("wheat", EAT_WHEAT_COST)
@@ -135,7 +138,7 @@ class NPC(NPCBase):
             origin, max_radius=NPC_PLANT_SEARCH_RADIUS, is_suitable=self._is_free_tile
         )
         if resolved is None:
-            self.say("No space to plant!", 120)
+            self.say("No space to plant!", MEDIUM_SPEECH_DURATION_FRAMES)
             self.state = State.DONE
             return
         col, row = resolved
@@ -151,7 +154,7 @@ class NPC(NPCBase):
             else self._find_nearest_ready_wheat()
         )
         if target is None:
-            self.say("No wheat ready!", 120)
+            self.say("No wheat ready!", MEDIUM_SPEECH_DURATION_FRAMES)
             self.state = State.DONE
             return
         action.target = target
@@ -185,7 +188,7 @@ class NPC(NPCBase):
 
     def _finish_eating(self) -> None:
         self.hunger = min(self.max_hunger, self.hunger + NPC_EAT_RESTORE)
-        self.say("Mmm, delicious!", 90)
+        self.say("Mmm, delicious!", SHORT_SPEECH_DURATION_FRAMES)
         self.state = State.DONE
 
     def _advance_resource_work(self, action_type: ActionType, target: Resource) -> bool:
@@ -220,9 +223,9 @@ class NPC(NPCBase):
         self._start_return_to_hut()
 
     def _advance_construction(self, target: Structure) -> None:
-        # build_tick adds 1 %: tick every NPC_BUILD_TIME/100 frames so the build lasts
-        # NPC_BUILD_TIME frames.
-        interval = max(1, NPC_BUILD_TIME // 100)
+        # build_tick adds 1 %: tick every NPC_BUILD_TIME/BUILD_PROGRESS_COMPLETE frames so
+        # the build lasts NPC_BUILD_TIME frames.
+        interval = max(1, NPC_BUILD_TIME // BUILD_PROGRESS_COMPLETE)
         if self._perform_timer % interval == 0:
             target.build_tick()
         if target.built:

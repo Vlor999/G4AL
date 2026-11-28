@@ -13,7 +13,7 @@ It was built for the Mistral Worldwide Hackathon 2026. The backend runs locally 
 | Model picker | Pick the model that interprets the next order from a list above the chat, among the models whose provider key is set. Push-to-talk works with the models that hear audio (Voxtral). |
 | NPC personalities | Each NPC has a name, a personality and an ElevenLabs voice. |
 | Survival | Chop wood, mine rock, plant and harvest wheat, build structures, manage hunger. |
-| Combat | Archers shoot enemies. Wild archers attack from the map edges. |
+| Combat | Archers shoot enemies. Wild archers attack from their camp in a corner of the map. |
 | Web UI | A Flask and Socket.IO backend pushes game state to an HTML5 Canvas client at about 60 FPS. |
 | Logging | Every voice command and LLM call is logged with timing, cost and token usage (JSONL). |
 

@@ -61,9 +61,7 @@ def spawn_world(game_map: GameMap) -> SpawnedWorld:
     entity_tiles = _occupied_entity_tiles(resources)
     _spawn_pawns_near_center(world, game_map, entity_tiles=entity_tiles)
     _spawn_archers_near_hut(world, game_map, entity_tiles=entity_tiles)
-    world.fauna = spawn_fauna(
-        game_map, resources, sheep_count=INITIAL_SHEEP_COUNT, wild_archer_count=0
-    )
+    world.fauna = spawn_fauna(game_map, resources, sheep_count=INITIAL_SHEEP_COUNT)
     _spawn_wild_archers_in_corner(world, game_map)
     _link_combatants(world)
     return world

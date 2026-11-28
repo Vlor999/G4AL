@@ -5,7 +5,7 @@ description: How G4AL splits into a pure game domain in layered sub-packages, ve
 tags: [architecture, layers, ports, threading, import-contract]
 verified:
   - by: openwiki/0.5.2
-    at: 2026-11-25T15:38:15.273Z
+    at: 2026-11-28T12:48:19.642Z
 sources:
   - id: openwiki-source-68f8bb6dd19f483ad1ca049d
     resource: repo://docs/adr/0004-game-sub-packages.md

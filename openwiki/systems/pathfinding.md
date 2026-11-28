@@ -17,7 +17,7 @@ sources:
 generated: { by: "claude-code", at: "2026-11-25T16:09:17.330Z" }
 verified:
   - by: openwiki/0.5.2
-    at: 2026-11-25T16:09:17.330Z
+    at: 2026-11-28T12:48:19.642Z
 ---
 
 # Pathfinding

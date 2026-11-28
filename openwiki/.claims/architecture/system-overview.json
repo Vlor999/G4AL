@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "pageVersion": "sha256:326f91e996b0c367bba897f738d23c9614942aae675a0be327f20d9889bdfbbe",
+  "pageVersion": "sha256:0cd9b8d305b4353373dd3c7d4234ec0938f2371f343fc0e7aaf2fd0f44e7768a",
   "claims": [
     {
       "id": "claim_01922ab1fcfe410a8a5f0ff8bfee174b",
@@ -27,8 +27,8 @@
       "statement": "GameEngine takes model_selection, speaker and run_in_background as keyword-only constructor arguments, so adapters and the background runner are injected rather than imported.",
       "evidence": [
         {
-          "resource": "repo://server/engine.py#L50-L73",
-          "version": "repo-lines-v1:sha256:817d39749e77e440f27c018d654f34985890d600ff2db4f7aebb36aa14a2f51c:eyJzZWxlY3RlZExpbmVDb3VudCI6MjQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjlmZDdhMDdhODNkZDE5OTZmYjUxNjg0YjQyYWVjYWY0ZTkwZmI3OGJhNzIzMGU1NDJlZDdiZDAxZDQyMzAxYmUiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjgxZGYwNzk3OTFjM2JlOWI1N2YwYWQ0ZTZkMDc3OWQ0NzM5MzE4NDM0MDVjODhjMzAzNjExZGZiNjNkYjg5Y2UiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjhhNWEzYzE5ZTY0N2JlNmQxZTY2NTdkYjA3NTcxNDI3OTU2MGM1ZWVhZjgzMTUxMjhlOGUzYzU5MzhhNGY4YTYiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImNmZDc2MTRhMTc1ZjBmYTQwOWRjYzk0OGQ4NDgyYjAwOTNmNWM0NDBhY2I1ZmZjNDdhYWFhMWQ5ZmU1Yjk5OTIifQ"
+          "resource": "repo://server/engine.py#L45-L69",
+          "version": "repo-lines-v1:sha256:a03d4d5eea5a58ce1371efccd57ea8d2951aa9fee259e89c8b5defcdc30cdc33:eyJzZWxlY3RlZExpbmVDb3VudCI6MjUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjllNWJhMWU3MWQ5YzUyZjJmYjZkODIwNTY5MTc1MDBkMTllZWI1NTgwMzlmYzdkODMwMTI5YTAzMWVmYmNhNDgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImNmMzhlNjhhYzA2NjFlM2M4MzIyZTlmMzU2OWRiNGFkZTI3N2RkMmY2Mzg5YzY0NjBhYzAzMGUwOTBmOGZiZjAiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjA1NTMyN2UzYzE1OGM4NDg0MTdhNGZhZmE1Yzg2OGJkZWJhNzM3NTA3MDY5MjEzMzVmMzRhZTk2YjRmMDhmZDEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6IjlmZDFlMDcyZDFiNmE2OGVmOGViMWU5ZDY2M2M5YjVhNzFkYTdlYmIyZDJmMGUxMTk5ZWFkMWVmZjE5MGFhOGYifQ"
         }
       ]
     },
@@ -97,6 +97,6 @@
   ],
   "verification": {
     "by": "openwiki/0.5.2",
-    "at": "2026-11-25T15:38:15.273Z"
+    "at": "2026-11-28T12:48:19.642Z"
   }
 }

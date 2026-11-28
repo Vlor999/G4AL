@@ -3,9 +3,6 @@ type: system
 title: Adapters, Mistral, ElevenLabs and logging
 description: The api/ package that implements the domain ports with Mistral (typed and Voxtral audio commands), ElevenLabs plus the pygame mixer, and a JSONL pipeline logger, plus the provider-neutral order contract and the NPC roster.
 tags: [adapters, mistral, voxtral, elevenlabs, logging, ports]
-verified:
-  - by: openwiki/0.5.2
-    at: 2026-11-25T15:38:15.273Z
 sources:
   - id: openwiki-source-6e21f962de7f225422324196
     resource: repo://api/constants.py
@@ -13,15 +10,18 @@ sources:
     resource: repo://api/interpreter.py
   - id: openwiki-source-b7fcb6ba7b5ef12e584d14ba
     resource: repo://api/logger.py
+  - id: openwiki-source-4601c7f853b2f0af6bd153c7
+    resource: repo://api/npc_profiles.py
   - id: openwiki-source-bd1c9ad72f7e472b6efd8fe4
     resource: repo://api/order_contract.py
-  - id: openwiki-source-e9c3e06b2d604594c651cc11
-    resource: repo://api/roster.py
   - id: openwiki-source-18da8bfe4ae2cbf4ece58cf2
     resource: repo://api/tts.py
   - id: openwiki-source-141c86ea716204370c1b7a2d
     resource: repo://server/app.py
-generated: { by: "claude-code", at: "2026-11-25T15:38:15.273Z" }
+generated: { by: "claude-code", at: "2026-11-28T12:48:19.642Z" }
+verified:
+  - by: openwiki/0.5.2
+    at: 2026-11-28T12:48:19.642Z
 ---
 
 # Adapters: Mistral, ElevenLabs, logging
@@ -33,7 +33,7 @@ generated: { by: "claude-code", at: "2026-11-25T15:38:15.273Z" }
 The part every LLM provider shares, with no vendor SDK:
 
 - **Roster.** `build_roster(npcs)` records id, name, kind and allowed actions per NPC, keeping only the actions an order without a target tile can give (`VOICE_ORDER_ACTIONS`, every `ActionType` except `move_to`).
-- **System prompt.** `build_system_prompt(roster)` lists the roster as a table and each NPC's personality from `api/roster.py`. It tells the model to find every NPC and action pair, in the order given, and to still give an order the NPC cannot do, with an in-character refusal as voice line. The NPC then refuses it at enqueue time. See [Voice and typed order flow](../workflows/voice-order-flow.md).
+- **System prompt.** `build_system_prompt(roster)` lists the roster as a table and each NPC's personality from `api/npc_profiles.py`. It tells the model to find every NPC and action pair, in the order given, and to still give an order the NPC cannot do, with an in-character refusal as voice line. The NPC then refuses it at enqueue time. See [Voice and typed order flow](../workflows/voice-order-flow.md).
 - **Schema.** `ORDERS_SCHEMA` requires `orders[]` items with `npc_id` (integer), `action` (enum of `VOICE_ORDER_ACTIONS`) and `voice_line`, with `additionalProperties: false`. The answer is never parsed as prose.
 - **Validation.** `parse_orders(arguments, roster)` accepts a JSON string or its decoded object. A bad shape gives `CommandRefused(MALFORMED_ANSWER)`, an action outside `ActionType` `UNKNOWN_ACTION`, `move_to` `ACTION_NEEDS_TARGET` (`action needs a target tile`), and an id outside the roster `UNKNOWN_NPC`. One bad item refuses the whole answer.
 
@@ -58,7 +58,7 @@ The part every LLM provider shares, with no vendor SDK:
 - `speak` enqueues `(voice_line, npc_name)`, ignoring blank lines. A daemon worker thread takes lines in FIFO order, looks up the voice by NPC name (`NPC_VOICE_MAP`, fallback Rachel), calls `text_to_speech.with_raw_response.convert` with model `eleven_turbo_v2_5` and `mp3_22050_32`, reads the `character-cost` and `tts-latency-ms` headers, logs exactly one `tts_end`, then plays the clip, blocking until it ends.
 - A synthesis failure is logged as `tts_end` with an error, a playback failure as `tts_playback`; in both cases the worker continues. `mask_api_key` replaces the key, as given and stripped, in every logged error text. `close()` stops the worker with a sentinel.
 
-## Roster (`api/roster.py`)
+## NPC profiles (`api/npc_profiles.py`)
 
 `NPC_PROFILES` is the single registry of NPC identities: a name from `NPCName`, a personality text ("soul") and an `ElevenLabsVoice`. `CHARACTER_SOULS` and `NPC_VOICE_MAP` are derived from it. `get_soul` falls back to a neutral personality for unknown names. The prompt builder and the TTS voice lookup both read these maps.
 

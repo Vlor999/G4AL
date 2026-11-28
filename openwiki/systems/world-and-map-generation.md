@@ -3,9 +3,6 @@ type: system
 title: World and map generation
 description: How a new map is generated from one seed - biome regions, lakes, dirt patches and fords - how biomes drive where resources and sheep appear, how object sizes and heights are defined, and how NPC names are drawn.
 tags: [map, terrain, biomes, dimensions, domain]
-verified:
-  - by: openwiki/0.5.2
-    at: 2026-11-25T16:09:17.330Z
 sources:
   - id: openwiki-source-09da166315e69a49f3933fb7
     resource: repo://game/constants.py
@@ -24,6 +21,9 @@ sources:
   - id: openwiki-source-504d98e9d76a9ce2845e13ba
     resource: repo://game/world/npc_names.py
 generated: { by: "claude-code", at: "2026-11-25T15:38:15.273Z" }
+verified:
+  - by: openwiki/0.5.2
+    at: 2026-11-28T12:48:19.642Z
 ---
 
 # World and map generation
@@ -64,7 +64,7 @@ Resources read their `dimensions` and `occupied_tiles` from this table, pawns us
 
 ## Names (`game/world/npc_names.py`)
 
-`NamePools` holds one `NamePool` each for pawns (`NPCName`: Bob, Paul, Thomas, Marie, Sam, Lisa), archers and wild archers. A pool draws a name from the map's `rng` that is not in use yet, and recycles the whole pool once exhausted. Pawn names match the personalities and voices of `api/roster.py`. See [Adapters](adapters.md).
+`NamePools` holds one `NamePool` each for pawns (`NPCName`: Bob, Paul, Thomas, Marie, Sam, Lisa), archers and wild archers. A pool draws a name from the map's `rng` that is not in use yet, and recycles the whole pool once exhausted. Pawn names match the personalities and voices of `api/npc_profiles.py`. See [Adapters](adapters.md).
 
 ## Tests
 

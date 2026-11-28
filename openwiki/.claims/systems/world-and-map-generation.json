@@ -1,14 +1,14 @@
 {
   "schemaVersion": 1,
-  "pageVersion": "sha256:59c9e0b9f85a1bdaa1d38398ba8aae5aea2ec33a5765542dae4a9df2d2c21f39",
+  "pageVersion": "sha256:d81930b1fd99ebae7024a1507bc0cb9900b83b4ff8a97116fbcb1788a2797c98",
   "claims": [
     {
       "id": "claim_7610a85820284f9d9a10fe63d608b7e2",
       "statement": "GameMap keeps one random.Random built from its seed; the terrain, spawning, NPC name pools and fauna behaviour all draw from it, so one seed replays the same game.",
       "evidence": [
         {
-          "resource": "repo://game/world/map.py#L13-L36",
-          "version": "repo-lines-v1:sha256:f1ce6863c82b446f0ec1ed5cfa4120952ac93fcfe4fa70b229e8c2c693af6388:eyJzZWxlY3RlZExpbmVDb3VudCI6MjQsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjhlMjA5OTQ0OGE5NmNlM2M3NzFlYmUzYjcxZGE5MjNkZjE1NThmMzVjZWVmMzgzM2NkZDMzNWZkMWRlMmNlZDgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAzNzYzMmFlNWYyZWU5OWM4NDhkMjhhZjc4MTlhYWM3YjlkOGQzODM2NzUwMmEzNGExODlkZDMzODU0Y2Q1OWUiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjY4ZThjMjNhMDVjOTVjNjExNmYyMWUzNWQ1MDE5ZWYxM2RhOWVjM2JiYjY1M2Q0OGIzMGM1ZTA0OTk4OTJkNmQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6Ijk1MTJiYTFiZDhhNmE4Y2Q1N2Q0MDc1YTc3NmZmNWQ0OGNjNmJkZmRkMjc5ZDgxMjlhNzIxNGM3ZGM2Y2EyNGEifQ"
+          "resource": "repo://game/world/map.py#L13-L37",
+          "version": "repo-lines-v1:sha256:7a236e5190e13372663b3df8502a5799039f814b6753e819f7267c7079a00e7d:eyJzZWxlY3RlZExpbmVDb3VudCI6MjUsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjhlMjA5OTQ0OGE5NmNlM2M3NzFlYmUzYjcxZGE5MjNkZjE1NThmMzVjZWVmMzgzM2NkZDMzNWZkMWRlMmNlZDgiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6IjAxYmE0NzE5YzgwYjZmZTkxMWIwOTFhN2MwNTEyNGI2NGVlZWNlOTY0ZTA5YzA1OGVmOGY5ODA1ZGFjYTU0NmIiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjY4ZThjMjNhMDVjOTVjNjExNmYyMWUzNWQ1MDE5ZWYxM2RhOWVjM2JiYjY1M2Q0OGIzMGM1ZTA0OTk4OTJkNmQiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImY2YWRiYmUxMGE4NzBhOWRhMzVjOTkwY2M4NDQyYjg5OTAxNzhlZjRjMDQ0NzkwZmFmMzdhY2FlNzhhMjQ3ZjYifQ"
         }
       ]
     },
@@ -73,6 +73,6 @@
   ],
   "verification": {
     "by": "openwiki/0.5.2",
-    "at": "2026-11-25T16:09:17.330Z"
+    "at": "2026-11-28T12:48:19.642Z"
   }
 }

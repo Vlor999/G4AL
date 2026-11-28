@@ -25,7 +25,7 @@ sources:
 generated: { by: "claude-code", at: "2026-11-25T15:38:15.273Z" }
 verified:
   - by: openwiki/0.5.2
-    at: 2026-11-28T10:49:24.445Z
+    at: 2026-11-28T12:48:19.642Z
 ---
 
 # Fauna, wild archers and combat

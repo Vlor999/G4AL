@@ -67,7 +67,10 @@ def test_apply_orders_does_not_accept_an_order_for_an_unknown_npc_id(
     outcomes = apply_orders(npcs, [order])
 
     assert outcomes == [OrderOutcome(order, is_accepted=False, is_spoken=False)]
-    assert all(npc.queue_size == 0 and npc.visible_speech_text != "Hm" for npc in npcs)
+    assert all(
+        npc.current_action_type is None and not npc.action_queue and npc.visible_speech_text != "Hm"
+        for npc in npcs
+    )
 
 
 def test_apply_orders_speaks_at_most_the_allowed_number_of_accepted_lines(

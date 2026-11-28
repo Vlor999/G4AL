@@ -126,10 +126,6 @@ class NPCBase:
         return self._map.world_to_tile(self.x, self.y)
 
     @property
-    def queue_size(self) -> int:
-        return len(self.action_queue) + (1 if self._current_action else 0)
-
-    @property
     def current_action_type(self) -> ActionType | None:
         """Type of the action under way; None when no action is under way (idle)."""
         return self._current_action.action_type if self._current_action else None

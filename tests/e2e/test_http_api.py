@@ -30,6 +30,10 @@ def first_controllable_npc(client: FlaskClient) -> dict[str, Any]:
     return next(npc for npc in read_state(client)["npcs"] if npc["controllable"])
 
 
+def read_npc(client: FlaskClient, npc_id: int) -> dict[str, Any]:
+    return next(npc for npc in read_state(client)["npcs"] if npc["id"] == npc_id)
+
+
 def test_state_exposes_every_top_level_section(client: FlaskClient) -> None:
     state = read_state(client)
 
@@ -60,26 +64,23 @@ def test_select_marks_the_npc_then_empty_body_deselects_all(client: FlaskClient)
 
 def test_move_enqueues_an_action_on_the_npc(client: FlaskClient, engine: GameEngine) -> None:
     npc = first_controllable_npc(client)
+    col, row = engine._find_npc(npc["id"]).tile_pos  # type: ignore[union-attr]
 
-    response = client.post(
-        "/api/move", json={"npcId": npc["id"], "col": npc["tileCol"], "row": npc["tileRow"] + 1}
-    )
+    response = client.post("/api/move", json={"npcId": npc["id"], "col": col, "row": row + 1})
 
     assert response.get_json() == {"ok": True}
-    assert engine._find_npc(npc["id"]).queue_size == npc["queueSize"] + 1  # type: ignore[union-attr]
+    assert (npc["actionType"], read_npc(client, npc["id"])["actionType"]) == ("", "move_to")
 
 
 @pytest.mark.parametrize("action", ["dance", ["chop_wood"], {"name": "chop_wood"}])
-def test_action_outside_the_action_names_is_refused(
-    client: FlaskClient, engine: GameEngine, action: object
-) -> None:
+def test_action_outside_the_action_names_is_refused(client: FlaskClient, action: object) -> None:
     npc = first_controllable_npc(client)
 
     response = client.post("/api/action", json={"npcId": npc["id"], "action": action})
 
     assert response.status_code == 400
     assert "unknown action" in response.get_json()["error"]
-    assert engine._find_npc(npc["id"]).queue_size == npc["queueSize"]  # type: ignore[union-attr]
+    assert read_npc(client, npc["id"])["actionType"] == npc["actionType"]
 
 
 UNKNOWN_NPC_ID = 999_999
@@ -184,13 +185,11 @@ def test_the_state_lists_the_available_models_and_the_selected_one(client: Flask
         {
             "id": "voxtral-small-latest",
             "name": "Voxtral Small",
-            "provider": "mistral",
             "hasVoiceInput": True,
         },
         {
             "id": "mistral-small-latest",
             "name": "Mistral Small 4",
-            "provider": "mistral",
             "hasVoiceInput": False,
         },
     ]

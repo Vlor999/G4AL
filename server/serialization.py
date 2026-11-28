@@ -56,7 +56,6 @@ def _serialize_model(model: CatalogModel) -> dict[str, Any]:
     return {
         "id": model.model_id,
         "name": model.display_name,
-        "provider": model.provider,
         "hasVoiceInput": model.has_voice_input,
     }
 
@@ -114,8 +113,6 @@ def _serialize_npc(npc: NPC) -> dict[str, Any]:
         "allowedActions": [action.value for action in npc.allowed_actions],
         "x": round(npc.x, 1),
         "y": round(npc.y, 1),
-        "tileCol": npc.tile_pos[0],
-        "tileRow": npc.tile_pos[1],
         "health": round(npc.health, 1),
         "maxHealth": npc.max_health,
         "hunger": round(npc.hunger, 1),
@@ -126,7 +123,6 @@ def _serialize_npc(npc: NPC) -> dict[str, Any]:
         "speechText": npc.visible_speech_text,
         "isFiring": npc.is_firing,
         "isDefending": npc.is_defending,
-        "queueSize": npc.queue_size,
         "isCarrying": npc.is_carrying,
         "carrying": dict(npc.carrying),
         **_serialize_dimensions(OBJECT_DIMENSIONS[ObjectKind(npc.kind)]),
@@ -138,11 +134,8 @@ def _serialize_creature(creature: Fauna) -> dict[str, Any]:
         "id": creature.id,
         "name": creature.name,
         "kind": creature.kind,
-        "controllable": False,
         "x": round(creature.x, 1),
         "y": round(creature.y, 1),
-        "tileCol": creature.tile_pos[0],
-        "tileRow": creature.tile_pos[1],
         "health": round(creature.health, 1),
         "maxHealth": creature.max_health,
         "state": creature.state.name,

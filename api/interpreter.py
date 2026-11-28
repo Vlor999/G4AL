@@ -23,7 +23,7 @@ from mistralai.client.models import (
     ToolTypedDict,
 )
 
-from api.constants import ORDERS_TOOL_NAME
+from api.constants import LLM_MAX_TOKENS, LLM_TEMPERATURE, ORDERS_TOOL_NAME
 from api.logger import PipelineLogger
 from api.order_contract import (
     ORDERS_SCHEMA,
@@ -165,8 +165,8 @@ class MistralOrderInterpreter:
                 tools=[ORDERS_TOOL],
                 tool_choice="any",
                 parallel_tool_calls=False,
-                temperature=0.7,
-                max_tokens=1024,
+                temperature=LLM_TEMPERATURE,
+                max_tokens=LLM_MAX_TOKENS,
             )
         except Exception as error:
             self._pipeline_logger.llm_end(order=None, model=model, error=str(error))

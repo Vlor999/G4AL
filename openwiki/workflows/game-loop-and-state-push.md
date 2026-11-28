@@ -3,9 +3,6 @@ type: workflow
 title: Game loop and state push
 description: How GameEngine advances the simulation at 60 FPS under one lock, in what order a frame updates the world, and how the state is serialised and pushed over Socket.IO every third tick.
 tags: [game-loop, engine, socketio, threading, serialization]
-verified:
-  - by: openwiki/0.5.2
-    at: 2026-11-25T15:38:15.273Z
 sources:
   - id: openwiki-source-9a049830ee6d0ec18662aeea
     resource: repo://game/simulation.py
@@ -14,6 +11,9 @@ sources:
   - id: openwiki-source-ad8a0f8b85e961c2b13636c0
     resource: repo://server/serialization.py
 generated: { by: "claude-code", at: "2026-11-25T15:38:15.273Z" }
+verified:
+  - by: openwiki/0.5.2
+    at: 2026-11-28T10:49:24.445Z
 ---
 
 # Game loop and state push

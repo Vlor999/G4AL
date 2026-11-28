@@ -5,7 +5,7 @@ description: Which LLM models can interpret orders, how the start model and the 
 tags: [llm, models, providers, configuration, mistral]
 verified:
   - by: openwiki/0.5.2
-    at: 2026-11-25T15:38:15.273Z
+    at: 2026-11-28T10:49:24.445Z
 sources:
   - id: openwiki-source-4a7abb12a40e98905af9e3a5
     resource: repo://api/model_catalog.py
@@ -17,7 +17,7 @@ sources:
     resource: repo://server/providers.py
   - id: openwiki-source-ad8a0f8b85e961c2b13636c0
     resource: repo://server/serialization.py
-generated: { by: "claude-code", at: "2026-11-25T15:38:15.273Z" }
+generated: { by: "claude-code", at: "2026-11-28T10:49:24.445Z" }
 ---
 
 # LLM models and providers
@@ -65,7 +65,7 @@ When the selected model does not hear audio, `voice` is `None`. Then:
 - The state sends `hasVoiceInput: false`, so the client neither starts push-to-talk nor shows the microphone hint.
 - Typed commands still work.
 
-The state also sends `models` (id, name, provider, voice input) and `selectedModelId` for the picker. See [Browser client](browser-client.md).
+The state also sends `models` (id, name, voice input) and `selectedModelId` for the picker. See [Browser client](browser-client.md).
 
 ## Adding a provider
 

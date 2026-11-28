@@ -5,7 +5,7 @@ description: The game/ simulation, sub-package by sub-package - the NPC action m
 tags: [domain, npc, orders, storage, resources, spawning]
 verified:
   - by: openwiki/0.5.2
-    at: 2026-11-25T16:09:17.330Z
+    at: 2026-11-28T10:49:24.445Z
 sources:
   - id: openwiki-source-bfb818f4a0eb4aef9472705b
     resource: repo://game/npcs/actions.py

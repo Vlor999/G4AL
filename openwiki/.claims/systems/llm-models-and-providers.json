@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "pageVersion": "sha256:abc67f8320553182d20daca5a690e49bc3891730a8db88da6bddcc00358aac9d",
+  "pageVersion": "sha256:bac88d3d363d220f3bb1216eef8f45ed538cc2b4b2536b570d75f413f061f92f",
   "claims": [
     {
       "id": "claim_8d5944952a964cf4bb5327bc697d0298",
@@ -69,10 +69,20 @@
           "version": "repo-lines-v1:sha256:40c77534e926dc5b06c880c589fd9d079d638ec9b50ea8dad41ee94e5d7b6cab:eyJzZWxlY3RlZExpbmVDb3VudCI6MjYsImZpcnN0U2VsZWN0ZWRMaW5lSGFzaCI6IjhjOTY5MzUyOTBjZTU5ZWRmNjhmZmZhMmFiMDBiMDdmNDMwMDE5MDhjNDRjOTliZWQwMmEzNjU1YzJiMGQxNTMiLCJsYXN0U2VsZWN0ZWRMaW5lSGFzaCI6ImQxMDQyNGJkZTNhZDkxZmY4ZGFlYTgxYTRhYTUwNGIyZmU5ZDM3OTIzZjU5Mzc5MTUyZDU0M2Q3YjRkZWFmNzEiLCJwcmVjZWRpbmdDb250ZXh0TGluZUNvdW50IjozLCJwcmVjZWRpbmdDb250ZXh0SGFzaCI6IjRhMTRhZDQzMGNhNmEyN2JmNjdmYjI5Y2E5MjczY2Y3MTdmNzAwYzk2ODM5MDc5MmVkYjMwYmQyMTkwN2UwOGEiLCJmb2xsb3dpbmdDb250ZXh0TGluZUNvdW50IjozLCJmb2xsb3dpbmdDb250ZXh0SGFzaCI6ImViZmZmYjUwZWM3YmY0ZWEyYTUyN2RlOTAyYTJjZTU2ZjgzODY0MTRhODc4NmRiODMxYmRlMTk1ZmM1MzBjZTAifQ"
         }
       ]
+    },
+    {
+      "id": "claim_8312c70da7f34f19ba987bd001a98c29",
+      "statement": "Each entry of the state's models list carries the model id, display name and voice input flag; the provider is not sent to the client.",
+      "evidence": [
+        {
+          "resource": "repo://server/serialization.py#L55-L60",
+          "version": "repo-lines-v1:sha256:863a4b477734d210be7664af07d5b6ae0a97c071c8f354adc98396e61c0a1ef2:eyJzZWxlY3RlZExpbmVDb3VudCI6NiwiZmlyc3RTZWxlY3RlZExpbmVIYXNoIjoiMWU2MzA0MGVlZTEwMDgyOWU5ZTZiNjQ4MDFjZGIxMTNhZjI4YzY2MDFmZDgwNmVkMDAxNGU3Y2Y2NWJhNzJkYiIsImxhc3RTZWxlY3RlZExpbmVIYXNoIjoiNDg5M2Y0MGUzNzgxZWI4OTZjODJkMDQ2YTA4MDY3YTExZTM1Y2RmMmYxZGZhZjI2ZmVhOTBiOGRiNjY3NjQxMyIsInByZWNlZGluZ0NvbnRleHRMaW5lQ291bnQiOjMsInByZWNlZGluZ0NvbnRleHRIYXNoIjoiNGZiZDAwOTMxNGJjMjcwODQxNjczNGEwMmFlNWZmMzlhMWU0OGEwNTBiZTkxZjQzYjJmYWE5MjAwMmM2MmJmYyIsImZvbGxvd2luZ0NvbnRleHRMaW5lQ291bnQiOjMsImZvbGxvd2luZ0NvbnRleHRIYXNoIjoiOGE4MWY2Nzc0MWRhMTFlYzQwNDZmNGE0NzliZDBkODQ0OThkOWY4MGZhMzdlNTQxYWZiNjY5YjAwZjg3YjVjNyJ9"
+        }
+      ]
     }
   ],
   "verification": {
     "by": "openwiki/0.5.2",
-    "at": "2026-11-25T15:38:15.273Z"
+    "at": "2026-11-28T10:49:24.445Z"
   }
 }

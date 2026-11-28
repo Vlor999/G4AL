@@ -1,6 +1,6 @@
-"""G4AL – 2D Survival Game (top-down, bot-controlled NPCs).
+"""G4AL, a voice-controlled top-down survival game.
 
-Run:  python main.py   →  Web UI (Flask + HTML/CSS/JS Canvas)
+Run ``make run`` (or ``uv run python main.py``) and open the URL it prints.
 """
 
 

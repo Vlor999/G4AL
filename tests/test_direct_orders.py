@@ -30,6 +30,8 @@ def make_world(build_map: MapBuilder) -> tuple[GameMap, list[NPC]]:
         (0, ActionType.MOVE_TO, (5, 3), DirectOrderOutcome.ACCEPTED),
         (0, ActionType.CHOP_WOOD, None, DirectOrderOutcome.ACCEPTED),
         (1, ActionType.CHOP_WOOD, None, DirectOrderOutcome.REFUSED_BY_NPC),
+        (0, ActionType.FISH, None, DirectOrderOutcome.ACCEPTED),
+        (1, ActionType.FISH, None, DirectOrderOutcome.REFUSED_BY_NPC),
         (None, ActionType.EAT, None, DirectOrderOutcome.UNKNOWN_NPC),
         (0, ActionType.MOVE_TO, (6, 0), DirectOrderOutcome.TARGET_OUTSIDE_MAP),
         (0, ActionType.BUILD, (0, -1), DirectOrderOutcome.TARGET_OUTSIDE_MAP),

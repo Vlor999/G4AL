@@ -6,7 +6,7 @@ from collections.abc import Callable
 from typing import ClassVar
 
 from game.constants import BUILD_PROGRESS_COMPLETE
-from game.npcs.actions import PAWN_ACTIONS, Action, ActionType, State
+from game.npcs.actions import PAWN_ACTIONS, SHORE_ACTIONS, Action, ActionType, State
 from game.npcs.npc_base import NPCBase
 from game.resources.entities import Resource, Rock, Structure, Tree, WheatField
 from game.settings import (
@@ -19,7 +19,10 @@ from game.settings import (
     NPC_COLLECT_UNIT_TIME,
     NPC_EAT_RESTORE,
     NPC_EAT_TIME,
+    NPC_FISH_RESTORE,
+    NPC_FISH_TIME,
     NPC_PLANT_SEARCH_RADIUS,
+    NPC_SWIM_TIME,
     SHORT_SPEECH_DURATION_FRAMES,
     WHEAT_PLANT_TIME,
 )
@@ -45,6 +48,10 @@ class NPC(NPCBase):
         ActionType.EAT: lambda npc, _action: npc._start_eat(),
         ActionType.PLANT_WHEAT: lambda npc, action: npc._start_plant_wheat(action),
         ActionType.COLLECT_WHEAT: lambda npc, action: npc._start_collect_wheat(action),
+        **{
+            action_type: lambda npc, action: npc._start_shore_trip(action)
+            for action_type in SHORE_ACTIONS
+        },
     }
     _WORK_TIME_BY_ACTION: ClassVar[dict[ActionType, int]] = {
         ActionType.CHOP_WOOD: NPC_COLLECT_UNIT_TIME,
@@ -52,7 +59,16 @@ class NPC(NPCBase):
         ActionType.BUILD: NPC_BUILD_TIME,
         ActionType.PLANT_WHEAT: WHEAT_PLANT_TIME,
         ActionType.COLLECT_WHEAT: NPC_COLLECT_UNIT_TIME,
+        ActionType.FISH: NPC_FISH_TIME,
+        ActionType.SWIM: NPC_SWIM_TIME,
     }
+    _FINISH_BY_ACTION: ClassVar[dict[ActionType, Callable[[NPC], None]]] = {
+        ActionType.EAT: lambda npc: npc._restore_hunger(NPC_EAT_RESTORE, speech="Mmm, delicious!"),
+        ActionType.FISH: lambda npc: npc._restore_hunger(NPC_FISH_RESTORE, speech="Caught a fish!"),
+        ActionType.SWIM: lambda npc: npc._leave_water(),
+    }
+    """What ends a timed action once its ``_perform_duration`` has run out; any other
+    action is just done."""
 
     def _next_action(self) -> None:
         if self.is_carrying:
@@ -62,6 +78,7 @@ class NPC(NPCBase):
             self.state = State.IDLE
             return
         self._release_reservation()
+        self._shore_spot = None
         action = self.action_queue.popleft()
         self._current_action = action
         self._start_action(action)
@@ -162,7 +179,9 @@ class NPC(NPCBase):
 
     def _on_arrival(self) -> None:
         action_type = self.current_action_type
-        if action_type is None or action_type not in self._WORK_TIME_BY_ACTION:
+        # A swim arrives twice: in the water tile, then back on the shore tile.
+        is_back_from_swim = action_type is ActionType.SWIM and not self.is_in_water
+        if action_type not in self._WORK_TIME_BY_ACTION or is_back_from_swim:
             self.state = State.DONE
             return
         self._start_performing(self._WORK_TIME_BY_ACTION[action_type])
@@ -173,8 +192,9 @@ class NPC(NPCBase):
             return
         if self._perform_timer < self._perform_duration:
             return
-        if self.current_action_type == ActionType.EAT:
-            self._finish_eating()
+        action_type = self.current_action_type
+        if action_type is not None and action_type in self._FINISH_BY_ACTION:
+            self._FINISH_BY_ACTION[action_type](self)
         else:
             self.state = State.DONE
 
@@ -186,9 +206,10 @@ class NPC(NPCBase):
             return False
         return self._advance_resource_work(action.action_type, action.target)
 
-    def _finish_eating(self) -> None:
-        self.hunger = min(self.max_hunger, self.hunger + NPC_EAT_RESTORE)
-        self.say("Mmm, delicious!", SHORT_SPEECH_DURATION_FRAMES)
+    def _restore_hunger(self, amount: float, *, speech: str) -> None:
+        """End a meal: hunger goes up by *amount*, up to its maximum."""
+        self.hunger = min(self.max_hunger, self.hunger + amount)
+        self.say(speech, SHORT_SPEECH_DURATION_FRAMES)
         self.state = State.DONE
 
     def _advance_resource_work(self, action_type: ActionType, target: Resource) -> bool:

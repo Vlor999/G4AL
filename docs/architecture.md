@@ -98,7 +98,7 @@ the order:
 | actors | `game/npcs/`, `game/fauna/` | pawns, archers, their actions; sheep, cat, wild archers, fauna spawning |
 | combat | `game/combat/` | arrows, target and firing tile searches |
 | resources | `game/resources/` | trees, rocks, structures, wheat fields, storage |
-| world | `game/world/` | map, terrain, map generation, pathfinding, dimensions, name pools, world clock |
+| world | `game/world/` | map, terrain, map generation, pathfinding, shore search, dimensions, name pools, world clock |
 
 `game/settings.py` and `game/constants.py` sit outside the layers: every package
 reads them. Today
@@ -118,6 +118,22 @@ only paces the state push and plays no part in this rule.
 
 A pawn that reaches a full storage keeps the part of its load that does not fit and
 waits, queued orders included, until space frees or `/api/dismiss_storage` is called.
+
+The lake actions (`go_to_shore`, `fish`, `swim`) start with a walk to the shore spot
+`game/world/shore.py` finds: the walkable tile nearest by walking distance that shares
+an edge with a water tile, reached under the same rules as `find_path`. Pawns take all
+three; archers take `go_to_shore` and `swim`, and refuse `fish` like any action they
+are not allowed. Fishing lasts `NPC_FISH_TIME` (600 frames, 10 s) on the shore tile,
+then the catch restores `NPC_FISH_RESTORE` hunger (25, against 35 for eating, but it
+spends no wheat); no fish goes to storage. A swim walks on from the shore tile into
+its water tile, stays `NPC_SWIM_TIME` (300 frames, 5 s) and walks back: that one step
+is the only time an NPC stands on water, and `find_path` still never crosses it. With
+no shore reachable, the NPC refuses: `last_refusal` holds the reason
+(`ActionRefusal.NO_SHORE_REACHABLE`, `game/npcs/actions.py`) until the action after
+it ends, the speech bubble shows
+its text from `REFUSAL_SPEECH`, and the state sends it as `lastRefusal`. That enum
+holds only this reason so far; the other start failures still speak only
+([#123](https://github.com/Vlor999/G4AL/issues/123)).
 
 The entry point is the `server/` package:
 

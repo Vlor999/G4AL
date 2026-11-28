@@ -73,6 +73,20 @@ The ground point is the bottom centre of the footprint for a resource or a struc
 and `x`, `y` for an NPC or a creature. Structures no longer send `gridWidth` and
 `gridHeight`: `footprint` replaces them.
 
+### NPC lake actions
+
+Besides its other fields, each entry of `npcs` carries what the client needs to draw
+the lake actions (`go_to_shore`, `fish`, `swim`):
+
+| Field | Type | Meaning |
+|---|---|---|
+| `isInWater` | bool | the NPC stands on a water tile: only during a swim |
+| `waterTile` | `[col, row]` or `null` | the water tile next to the shore tile of the lake action under way; `null` outside one |
+| `lastRefusal` | str or `null` | why the latest refused action was refused (`"no shore reachable"`), until the action after it ends; `null` otherwise |
+
+No client reads `lastRefusal` yet. [#123](https://github.com/Vlor999/G4AL/issues/123)
+will return the refusal reason from `enqueue`, so the orders report it.
+
 ## HTTP
 
 All POST bodies are JSON sent as `application/json` unless stated. A route parses its
@@ -92,7 +106,7 @@ body once (`server/request_bodies.py`) and answers:
 | Route | Body | Effect |
 |---|---|---|
 | `GET /api/state` | none | returns the full game state |
-| `POST /api/action` | `{"npcId": int, "action": str, "target"?: [col, row]}` | enqueues an action on an NPC; `action` is an `ActionType` value of `game/npcs/actions.py`; `target`, when given, must be two integers inside the map, whatever the action; `move_to` needs one, `build` and `plant_wheat` without one aim at the NPC's tile, the other actions do not use it. An action the NPC is not allowed to do still answers 200: the NPC says so in the game |
+| `POST /api/action` | `{"npcId": int, "action": str, "target"?: [col, row]}` | enqueues an action on an NPC; `action` is an `ActionType` value of `game/npcs/actions.py`; `target`, when given, must be two integers inside the map, whatever the action; `move_to` needs one, `build` and `plant_wheat` without one aim at the NPC's tile, the other actions (`go_to_shore`, `fish` and `swim` included) do not use it. An action the NPC is not allowed to do still answers 200: the NPC says so in the game |
 | `POST /api/select` | `{"npcId": int}` or `{}` | selects an NPC, or deselects all |
 | `POST /api/move` | `{"npcId": int, "col": int, "row": int}` | enqueues a `move_to` |
 | `POST /api/discard` | `{"wood"?: int, "stone"?: int, "gold"?: int, "wheat"?: int}`, amounts ≥ 0, no other key | discards resources from storage; returns `discarded` |

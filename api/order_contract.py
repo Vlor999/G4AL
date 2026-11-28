@@ -80,6 +80,9 @@ Your job:
 • If the player asks an NPC for an action NOT in its allowed actions, still give that \
 order, but its voice line is an in-character refusal explaining why it cannot.
 • The voice line reflects the NPC's unique personality: short, punchy, and fun.
+• Lake orders: « va au bord du lac » is go_to_shore (walk to the nearest lake shore), \
+« va pêcher » is fish (fish at the lake: a catch refills hunger), « va nager » is swim \
+(swim in the lake for a while, then come back out).
 """
 
 

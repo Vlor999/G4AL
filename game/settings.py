@@ -34,6 +34,9 @@ NPC_EAT_RESTORE = 35
 NPC_PLANT_SEARCH_RADIUS = 5  # tiles searched around the order's tile for a free field
 NPC_BUILD_SEARCH_RADIUS = 8  # tiles searched around the order's tile for a free footprint
 EAT_WHEAT_COST = 2
+NPC_FISH_TIME = 600  # frames of fishing on the shore before the catch (10 s)
+NPC_FISH_RESTORE = 25  # hunger the catch restores: less than eating, but it costs no wheat
+NPC_SWIM_TIME = 300  # frames spent in the water tile before swimming back (5 s)
 NPC_HUNGER_DAMAGE = 0.05  # HP lost per frame when hunger == 0
 
 DEFAULT_SPEECH_DURATION_FRAMES = 300

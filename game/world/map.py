@@ -7,7 +7,7 @@ import random
 from game.settings import MAP_COLS, MAP_ROWS, TILE_SIZE
 from game.world.map_generation import generate_terrain
 from game.world.npc_names import NamePools
-from game.world.terrain import WALKABLE_TILES
+from game.world.terrain import WALKABLE_TILES, TileType
 
 
 class GameMap:
@@ -40,6 +40,9 @@ class GameMap:
 
     def is_walkable(self, col: int, row: int) -> bool:
         return self.contains_tile(col, row) and self.tiles[row][col] in WALKABLE_TILES
+
+    def is_water(self, col: int, row: int) -> bool:
+        return self.contains_tile(col, row) and self.tiles[row][col] == TileType.WATER
 
     def tile_center(self, col: int, row: int) -> tuple[float, float]:
         """Return the world-pixel center of a tile."""

@@ -2,6 +2,8 @@
 
 from typing import Any
 
+import pytest
+
 from game.combat.arrows import Arrow
 from game.fauna.fauna import Fauna
 from game.fauna.sheep import Sheep
@@ -66,6 +68,35 @@ def test_a_pawn_on_an_order_shows_its_action_type(build_map: MapBuilder) -> None
         False,
         False,
     )
+
+
+@pytest.mark.parametrize(
+    ("rows", "expected"),
+    [
+        (["....~"], {"isInWater": False, "waterTile": [4, 0], "lastRefusal": None}),
+        (FIELD, {"isInWater": False, "waterTile": None, "lastRefusal": "no shore reachable"}),
+    ],
+    ids=["lake-found", "no-lake"],
+)
+def test_a_pawn_sent_to_the_lake_shows_its_water_tile_or_its_refusal(
+    build_map: MapBuilder, rows: list[str], expected: dict[str, Any]
+) -> None:
+    game_map = build_map(rows)
+    pawn = NPC(*game_map.tile_center(0, 0), game_map, [], ResourceStorage())
+    pawn.enqueue(Action(ActionType.SWIM))
+
+    [npc_state] = serialize(game_map, npcs=[pawn], fauna=[])["npcs"]
+
+    assert {key: npc_state[key] for key in expected} == expected
+
+
+def test_a_pawn_in_the_lake_shows_it_is_in_water(build_map: MapBuilder) -> None:
+    game_map = build_map(["~.."])
+    pawn = NPC(*game_map.tile_center(0, 0), game_map, [], ResourceStorage())
+
+    [npc_state] = serialize(game_map, npcs=[pawn], fauna=[])["npcs"]
+
+    assert npc_state["isInWater"] is True
 
 
 def test_a_speech_bubble_shows_until_its_duration_runs_out(build_map: MapBuilder) -> None:

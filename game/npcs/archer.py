@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 
 from game.combat.arrows import Team, build_arrow
 from game.combat.targeting import find_nearest_living, find_walkable_tile_in_range, tile_distance
-from game.npcs.actions import ARCHER_ACTIONS, Action, ActionType, State
+from game.npcs.actions import ARCHER_ACTIONS, SHORE_ACTIONS, Action, ActionType, State
 from game.npcs.npc import NPC
 from game.settings import (
     ARCHER_ARROW_DAMAGE,
@@ -103,6 +103,8 @@ class Archer(NPC):
             self._start_eat()
         elif action.action_type == ActionType.DEFEND:
             self._start_defending()
+        elif action.action_type in SHORE_ACTIONS:
+            self._start_shore_trip(action)
 
     def _start_shooting(self) -> None:
         enemy = self._find_nearest_enemy()
@@ -162,19 +164,14 @@ class Archer(NPC):
                 self._walk_toward_enemy(enemy)
             return
 
-        self.state = State.DONE
+        super()._on_arrival()
 
     def _perform(self) -> None:
-        self._perform_timer += 1
-        action_type = self.current_action_type
-        if action_type == ActionType.EAT and self._perform_timer >= self._perform_duration:
-            self._finish_eating()
-            return
-        if action_type in (ActionType.SHOOT, ActionType.DEFEND):
+        if self.current_action_type in (ActionType.SHOOT, ActionType.DEFEND):
+            self._perform_timer += 1
             self._advance_shot()
             return
-        if self._perform_timer >= self._perform_duration:
-            self.state = State.DONE
+        super()._perform()
 
     def _advance_shot(self) -> None:
         enemy = self._shoot_target

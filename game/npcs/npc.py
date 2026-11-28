@@ -89,18 +89,18 @@ class NPC(NPCBase):
 
     def _start_build(self, action: Action) -> None:
         if isinstance(action.target, Structure):
-            adj = self._adjacent_to_structure(action.target)
-            if adj is None:
+            site_side_tile = self._adjacent_to_structure(action.target)
+            if site_side_tile is None:
                 self.state = State.DONE
                 return
-            self._plan_move_to(*adj)
+            self._plan_move_to(*site_side_tile)
         else:
             self._start_new_structure(action)
 
     def _start_new_structure(self, action: Action) -> None:
         origin = action.target if isinstance(action.target, tuple) else self.tile_pos
-        btype = "house1"
-        resolved = self._find_free_area(origin, find_building_dimensions(btype))
+        building_type = "house1"
+        resolved = self._find_free_area(origin, find_building_dimensions(building_type))
         if resolved is None:
             self.say("No space to build!", MEDIUM_SPEECH_DURATION_FRAMES)
             self.state = State.DONE
@@ -115,14 +115,14 @@ class NPC(NPCBase):
             return
         self._storage.spend("wood", BUILD_COST_WOOD)
         self._storage.spend("stone", BUILD_COST_STONE)
-        struct = Structure(col, row, building_type=btype)
-        self._resources.append(struct)
-        action.target = struct
-        adj = self._adjacent_to_structure(struct)
-        if adj is None:
+        structure = Structure(col, row, building_type=building_type)
+        self._resources.append(structure)
+        action.target = structure
+        site_side_tile = self._adjacent_to_structure(structure)
+        if site_side_tile is None:
             self._plan_move_to(col, row)
         else:
-            self._plan_move_to(*adj)
+            self._plan_move_to(*site_side_tile)
 
     def _start_eat(self) -> None:
         if self._storage.get("wheat") < EAT_WHEAT_COST:
@@ -215,9 +215,9 @@ class NPC(NPCBase):
         if result is None:
             self.state = State.DONE
             return
-        res_type, amount = result
+        resource_type, amount = result
         self.is_carrying = True
-        self.carrying = {res_type: amount}
+        self.carrying = {resource_type: amount}
         self._last_harvest_action = action_type
         self._last_harvest_target = target
         self._start_return_to_hut()
@@ -264,24 +264,28 @@ class NPC(NPCBase):
 
     def _find_nearest(self, kind: type[Resource]) -> Resource | None:
         best: Resource | None = None
-        best_dist = float("inf")
-        for r in self._resources:
-            if isinstance(r, kind) and not r.depleted:
-                if r.reserved_by is not None and r.reserved_by != self.id:
+        best_distance = float("inf")
+        for resource in self._resources:
+            if isinstance(resource, kind) and not resource.depleted:
+                if resource.reserved_by is not None and resource.reserved_by != self.id:
                     continue
-                d = abs(r.col - self.tile_pos[0]) + abs(r.row - self.tile_pos[1])
-                if d < best_dist:
-                    best_dist = d
-                    best = r
+                distance = abs(resource.col - self.tile_pos[0]) + abs(
+                    resource.row - self.tile_pos[1]
+                )
+                if distance < best_distance:
+                    best_distance = distance
+                    best = resource
         return best
 
     def _find_nearest_ready_wheat(self) -> WheatField | None:
         best: WheatField | None = None
-        best_dist = float("inf")
-        for r in self._resources:
-            if isinstance(r, WheatField) and r.fully_grown and not r.depleted:
-                d = abs(r.col - self.tile_pos[0]) + abs(r.row - self.tile_pos[1])
-                if d < best_dist:
-                    best_dist = d
-                    best = r
+        best_distance = float("inf")
+        for resource in self._resources:
+            if isinstance(resource, WheatField) and resource.fully_grown and not resource.depleted:
+                distance = abs(resource.col - self.tile_pos[0]) + abs(
+                    resource.row - self.tile_pos[1]
+                )
+                if distance < best_distance:
+                    best_distance = distance
+                    best = resource
         return best

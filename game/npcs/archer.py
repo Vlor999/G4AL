@@ -155,8 +155,8 @@ class Archer(NPC):
             if enemy.health <= 0:
                 self._lose_target()
                 return
-            dist = self._enemy_tile_distance(enemy)
-            if dist <= ARCHER_RANGE:
+            distance = self._enemy_tile_distance(enemy)
+            if distance <= ARCHER_RANGE:
                 self._start_shoot_perform()
             else:
                 self._walk_toward_enemy(enemy)

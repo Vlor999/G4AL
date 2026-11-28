@@ -142,15 +142,15 @@ class Fauna:
         if self._path_index >= len(self._path):
             return
         target_col, target_row = self._path[self._path_index]
-        tx, ty = self._map.tile_center(target_col, target_row)
-        dx, dy = tx - self.x, ty - self.y
-        dist = math.hypot(dx, dy)
-        if dist < self.speed:
-            self.x, self.y = tx, ty
+        center_x, center_y = self._map.tile_center(target_col, target_row)
+        dx, dy = center_x - self.x, center_y - self.y
+        distance = math.hypot(dx, dy)
+        if distance < self.speed:
+            self.x, self.y = center_x, center_y
             self._path_index += 1
         else:
-            self.x += dx / dist * self.speed
-            self.y += dy / dist * self.speed
+            self.x += dx / distance * self.speed
+            self.y += dy / distance * self.speed
 
     def _random_nearby_walkable(
         self, col: int, row: int, radius: int = 5
@@ -158,9 +158,9 @@ class Fauna:
         candidates = []
         for dc in range(-radius, radius + 1):
             for dr in range(-radius, radius + 1):
-                nc, nr = col + dc, row + dr
-                if self._map.is_walkable(nc, nr):
-                    candidates.append((nc, nr))
+                candidate = (col + dc, row + dr)
+                if self._map.is_walkable(*candidate):
+                    candidates.append(candidate)
         if not candidates:
             return None
         return self._map.rng.choice(candidates)

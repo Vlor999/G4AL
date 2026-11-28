@@ -23,8 +23,8 @@ class GameMap:
         self,
         cols: int = MAP_COLS,
         rows: int = MAP_ROWS,
-        seed: int | None = None,
         *,
+        seed: int | None = None,
         rng: random.Random | None = None,
     ) -> None:
         self.cols = cols
@@ -46,5 +46,5 @@ class GameMap:
         return col * TILE_SIZE + TILE_SIZE // 2, row * TILE_SIZE + TILE_SIZE // 2
 
     def world_to_tile(self, x: float, y: float) -> tuple[int, int]:
-        """Convert world pixel coords → (col, row)."""
+        """The (col, row) tile that contains the world pixel (*x*, *y*)."""
         return int(x // TILE_SIZE), int(y // TILE_SIZE)

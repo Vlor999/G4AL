@@ -202,8 +202,8 @@ class NPCBase:
 
     def _plan_move_to(self, col: int, row: int) -> None:
         start = self.tile_pos
-        blocked = self._occupied_by_structures()
-        path = find_path(self._map, start, (col, row), blocked=blocked)
+        blocked = self._find_tiles_covered_by_resources()
+        path = find_path(self._map, start, goal=(col, row), blocked=blocked)
         if not path:
             self.state = State.DONE
             return
@@ -221,29 +221,29 @@ class NPCBase:
 
         target_col, target_row = self._path[self._path_index]
 
-        tx, ty = self._map.tile_center(target_col, target_row)
-        dx, dy = tx - self.x, ty - self.y
-        dist = math.hypot(dx, dy)
+        center_x, center_y = self._map.tile_center(target_col, target_row)
+        dx, dy = center_x - self.x, center_y - self.y
+        distance = math.hypot(dx, dy)
 
-        if dist < self.speed:
-            self.x, self.y = tx, ty
+        if distance < self.speed:
+            self.x, self.y = center_x, center_y
             self._path_index += 1
         else:
-            self.x += dx / dist * self.speed
-            self.y += dy / dist * self.speed
+            self.x += dx / distance * self.speed
+            self.y += dy / distance * self.speed
 
     def _start_return_to_hut(self) -> None:
         """Path to the storage hut to deposit carried resources."""
         if self._hut is None:
             self._deposit_at_hut()
             return
-        adj = self._adjacent_to_structure(self._hut)
-        if adj is None:
+        hut_side_tile = self._adjacent_to_structure(self._hut)
+        if hut_side_tile is None:
             self._deposit_at_hut()
             return
         start = self.tile_pos
-        blocked = self._occupied_by_structures()
-        path = find_path(self._map, start, adj, blocked=blocked)
+        blocked = self._find_tiles_covered_by_resources()
+        path = find_path(self._map, start, goal=hut_side_tile, blocked=blocked)
         if not path:
             self._deposit_at_hut()
             return
@@ -296,10 +296,10 @@ class NPCBase:
     def _store_carried_load(self) -> None:
         """Move the carried load into storage, keeping in ``carrying`` what does not fit."""
         kept: dict[str, int] = {}
-        for res_type, amount in self.carrying.items():
-            left = amount - self._storage.add(res_type, amount)
+        for resource_type, amount in self.carrying.items():
+            left = amount - self._storage.add(resource_type, amount)
             if left > 0:
-                kept[res_type] = left
+                kept[resource_type] = left
         self.carrying = kept
         self.is_carrying = bool(kept)
 
@@ -310,7 +310,7 @@ class NPCBase:
             if target.reserved_by == self.id:
                 target.reserved_by = None
 
-    def _occupied_by_structures(self) -> set[tuple[int, int]]:
+    def _find_tiles_covered_by_resources(self) -> set[tuple[int, int]]:
         """Every tile a non-depleted resource covers, structure footprints included."""
         return {
             tile
@@ -319,21 +319,20 @@ class NPCBase:
             for tile in resource.occupied_tiles
         }
 
-    def _adjacent_to_structure(self, struct: Structure) -> tuple[int, int] | None:
-        """Return the nearest walkable tile *cardinally* adjacent to the
-        structure footprint (sharing an edge, not diagonal-only), closest
-        to the NPC's current position."""
-        occupied = set(struct.occupied_tiles)
+    def _adjacent_to_structure(self, structure: Structure) -> tuple[int, int] | None:
+        """The walkable tile sharing an edge with the footprint of *structure* that is
+        closest to this NPC; None when no such tile exists."""
+        occupied = set(structure.occupied_tiles)
         candidates: set[tuple[int, int]] = set()
-        for oc, orow in occupied:
+        for footprint_col, footprint_row in occupied:
             for dc, dr in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
-                nc, nr = oc + dc, orow + dr
-                if (nc, nr) in occupied:
+                neighbor = (footprint_col + dc, footprint_row + dr)
+                if neighbor in occupied:
                     continue
-                if not self._map.is_walkable(nc, nr):
+                if not self._map.is_walkable(*neighbor):
                     continue
-                candidates.add((nc, nr))
+                candidates.add(neighbor)
         if not candidates:
             return None
-        mc, mr = self.tile_pos
-        return min(candidates, key=lambda p: abs(p[0] - mc) + abs(p[1] - mr))
+        own_col, own_row = self.tile_pos
+        return min(candidates, key=lambda tile: abs(tile[0] - own_col) + abs(tile[1] - own_row))

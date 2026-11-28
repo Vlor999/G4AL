@@ -84,12 +84,12 @@ class WildArcher(Fauna):
         self._timer += 1
         if self._timer >= self._state_duration:
             self._timer = 0
-            target, dist = self._find_nearest_npc()
-            if target and dist <= WILD_ARCHER_RANGE:
+            target, distance = self._find_nearest_npc()
+            if target and distance <= WILD_ARCHER_RANGE:
                 self._attack_target = target
                 self._start_shoot()
                 return
-            if target and dist <= WILD_ARCHER_CHASE_RANGE:
+            if target and distance <= WILD_ARCHER_CHASE_RANGE:
                 self._chase_target(target)
                 return
             roll = self._map.rng.random()
@@ -102,8 +102,8 @@ class WildArcher(Fauna):
         if self._path_index >= len(self._path):
             self._start_idle()
             return
-        target, dist = self._find_nearest_npc()
-        if target and dist <= WILD_ARCHER_RANGE:
+        target, distance = self._find_nearest_npc()
+        if target and distance <= WILD_ARCHER_RANGE:
             self._attack_target = target
             self._start_shoot()
             return
@@ -138,8 +138,8 @@ class WildArcher(Fauna):
 
         if not self._is_firing and self._timer >= fire_start:
             self._is_firing = True
-            dist = tile_distance(self.tile_pos, target.tile_pos)
-            if dist > WILD_ARCHER_RANGE:
+            distance = tile_distance(self.tile_pos, target.tile_pos)
+            if distance > WILD_ARCHER_RANGE:
                 self._attack_target = None
                 self._is_firing = False
                 self._start_idle()

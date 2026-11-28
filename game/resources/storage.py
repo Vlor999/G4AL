@@ -1,4 +1,4 @@
-"""Global resource stockpile – shared by all bots, Clash-of-Clans style."""
+"""The settlement's resource stockpile, shared by every NPC."""
 
 from __future__ import annotations
 
@@ -20,22 +20,18 @@ class StorageSnapshot(TypedDict):
 
 
 class ResourceStorage:
-    """Singleton-like global inventory for the settlement."""
+    """Stock of each resource kind, capped by a capacity that each completed house raises."""
 
     def __init__(self) -> None:
         self._stock: dict[str, int] = dict.fromkeys(STORED_RESOURCE_KINDS, 0)
-        self._house_count: int = 0  # completed houses (excluding storage hut)
-
-    # ── capacity ─────────────────────────────────────────────────────────
+        self._house_count: int = 0  # the storage hut is not counted
 
     @property
     def capacity(self) -> int:
-        """Maximum total resource units that can be stored."""
         return STORAGE_BASE_CAPACITY + self._house_count * HOUSE_CAPACITY_BONUS
 
     @property
     def total(self) -> int:
-        """Current total resource units stored."""
         return sum(self._stock.values())
 
     @property
@@ -47,12 +43,11 @@ class ResourceStorage:
         return max(0, self.capacity - self.total)
 
     def register_house(self) -> None:
-        """Call when a new house is completed to increase capacity."""
+        """Count a completed house, which raises ``capacity`` by ``HOUSE_CAPACITY_BONUS``."""
         self._house_count += 1
 
-    # ── public API ───────────────────────────────────────────────────────
     def add(self, resource: str, amount: int) -> int:
-        """Add resources. Returns the amount actually stored (may be capped)."""
+        """Store up to *amount* units, as many as the capacity allows; returns how many."""
         self._stock.setdefault(resource, 0)
         space = self.remaining_space
         actual = min(amount, space)
@@ -60,7 +55,7 @@ class ResourceStorage:
         return actual
 
     def spend(self, resource: str, amount: int) -> bool:
-        """Try to spend. Returns True on success, False if insufficient."""
+        """Remove *amount* units; False, removing nothing, when the stock is short."""
         if self._stock.get(resource, 0) >= amount:
             self._stock[resource] -= amount
             return True
@@ -97,7 +92,7 @@ class ResourceStorage:
         }
 
     def discard(self, resource: str, amount: int) -> int:
-        """Discard (destroy) resources. Returns the amount actually removed."""
+        """Remove up to *amount* units, as many as are stocked; returns how many."""
         current = self._stock.get(resource, 0)
         actual = min(amount, current)
         self._stock[resource] -= actual

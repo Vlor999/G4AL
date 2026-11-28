@@ -17,7 +17,7 @@ description: "Protocol for launching implementation sub-agents on tickets: workt
 - **Isolation**: one worktree per ticket from `origin/dev`, under `.claude/worktrees/`
   (`git worktree add .claude/worktrees/<slug> -b <branch> origin/dev`, or the
   `worktree` skill). Never two agents on the same files.
-- **Context in the prompt**: the ticket, `AGENTS.md`, the applicable
+- **Context in the prompt**: the ticket, `CLAUDE.md`, the applicable
   `.claude/rules/` files, the known entry files. The agent guesses nothing.
 - **Architecture**: the prompt tells the agent to follow `.claude/rules/architecture.md`
   (and to load `ub-mode` when installed), to write its plan before coding, and to run

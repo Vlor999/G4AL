@@ -15,7 +15,7 @@ Optional, for the `openwiki` MCP server declared in `.mcp.json`:
 
 1. Branch from `dev`: `<type>/<slug>` (`feat/archer-patrol`).
 2. Write the change and its tests. The rules in [`.claude/rules/`](.claude/rules/) apply
-   to humans and agents alike; [AGENTS.md](AGENTS.md) is the entry point.
+   to humans and agents alike; [CLAUDE.md](CLAUDE.md) is the entry point.
 3. `make check` must pass (format, lint, `mypy --strict`, vulture, tests). The
    pre-commit hooks run the fast part of it plus `gitleaks` on every commit.
 4. Commit with Conventional Commits in English (`feat(npc): add patrol action`),

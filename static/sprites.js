@@ -44,12 +44,10 @@ window.G4AL = window.G4AL || {};
     const ASSET = "/static/assets";
 
     G.sprites = {};
-    G.spritesLoaded = false;
     G.npcFacing = {};
 
     // Speed tiers: game frames per animation frame change
     const ANIM_SPEED = { slow: 30, normal: 12, fast: 5 };
-    G.ANIM_SPEED = ANIM_SPEED;
 
     // ── Config helpers (reads from SPRITE_CONFIG in details.js) ─────────
 
@@ -90,17 +88,12 @@ window.G4AL = window.G4AL || {};
             loadImg("ts_dirt",  "Terrain/Tileset/Tilemap_color4.png"),
             loadImg("ts_sand",  "Terrain/Tileset/Tilemap_color5.png"),
             loadImg("water_bg", "Terrain/Tileset/Water Background color.png"),
-            loadImg("water_foam","Terrain/Tileset/Water Foam.png"),
 
             // Trees
             loadImg("tree1", "Terrain/Resources/Wood/Trees/Tree1.png"),
             loadImg("tree2", "Terrain/Resources/Wood/Trees/Tree2.png"),
             loadImg("tree3", "Terrain/Resources/Wood/Trees/Tree3.png"),
             loadImg("tree4", "Terrain/Resources/Wood/Trees/Tree4.png"),
-            loadImg("stump1","Terrain/Resources/Wood/Trees/Stump 1.png"),
-            loadImg("stump2","Terrain/Resources/Wood/Trees/Stump 2.png"),
-            loadImg("stump3","Terrain/Resources/Wood/Trees/Stump 3.png"),
-            loadImg("stump4","Terrain/Resources/Wood/Trees/Stump 4.png"),
 
             // Rocks
             loadImg("rock1", "Terrain/Decorations/Rocks/Rock1.png"),
@@ -163,13 +156,11 @@ window.G4AL = window.G4AL || {};
             loadImg("pawn_idle_wood", "Units/Blue Units/Pawn/Pawn_Idle Wood.png"),
             loadImg("pawn_idle_gold", "Units/Blue Units/Pawn/Pawn_Idle Gold.png"),
             loadImg("pawn_idle_meat", "Units/Blue Units/Pawn/Pawn_Idle Meat.png"),
-            loadImg("pawn_idle_knife","Units/Blue Units/Pawn/Pawn_Idle Knife.png"),
             loadImg("pawn_run_axe",   "Units/Blue Units/Pawn/Pawn_Run Axe.png"),
             loadImg("pawn_run_pick",  "Units/Blue Units/Pawn/Pawn_Run Pickaxe.png"),
             loadImg("pawn_run_ham",   "Units/Blue Units/Pawn/Pawn_Run Hammer.png"),
             loadImg("pawn_run_wood",  "Units/Blue Units/Pawn/Pawn_Run Wood.png"),
             loadImg("pawn_run_gold",  "Units/Blue Units/Pawn/Pawn_Run Gold.png"),
-            loadImg("pawn_run_meat",  "Units/Blue Units/Pawn/Pawn_Run Meat.png"),
             loadImg("pawn_act_axe",   "Units/Blue Units/Pawn/Pawn_Interact Axe.png"),
             loadImg("pawn_act_pick",  "Units/Blue Units/Pawn/Pawn_Interact Pickaxe.png"),
             loadImg("pawn_act_ham",   "Units/Blue Units/Pawn/Pawn_Interact Hammer.png"),
@@ -206,7 +197,6 @@ window.G4AL = window.G4AL || {};
             // Shadow
             loadImg("shadow", "Terrain/Tileset/Shadow.png"),
         ]);
-        G.spritesLoaded = true;
     };
 
     // ── Animation helpers ───────────────────────────────────────────────

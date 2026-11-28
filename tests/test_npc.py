@@ -19,6 +19,7 @@ from game.settings import (
     NPC_MAX_HEALTH,
     STORAGE_BASE_CAPACITY,
     WHEAT_GROW_TIME,
+    WHEAT_YIELD,
 )
 from game.world.map import GameMap
 from tests.conftest import MapBuilder
@@ -443,7 +444,7 @@ def test_collect_wheat_harvests_the_nearest_ripe_field(build_map: MapBuilder) ->
     npc.enqueue(Action(ActionType.COLLECT_WHEAT))
 
     assert run_until(npc, lambda: storage.wheat == 1)
-    assert unripe.remaining_yields == unripe.yields
+    assert unripe.remaining_yields == {"wheat": WHEAT_YIELD}
 
 
 @pytest.mark.parametrize(

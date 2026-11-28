@@ -7,3 +7,6 @@ ARROW_IMPACT_HEIGHT = 10  # pixels above the target's position: the body
 
 # Heights of objects and terrain are counted in half tiles (docs/adr/0002).
 HEIGHT_STEP = 0.5
+
+# Structure.build_progress is a percentage: the structure is built at this value.
+BUILD_PROGRESS_COMPLETE = 100

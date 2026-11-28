@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 
 from game.fauna.cat import Cat
 from game.fauna.sheep import Sheep
-from game.settings import SHEEP_BIOMES
+from game.settings import CAT_CORNER_MARGIN, SHEEP_BIOMES
 from game.world.terrain import TileType
 
 if TYPE_CHECKING:
@@ -33,12 +33,10 @@ def _place_cat_in_corner(
     *,
     occupied: set[tuple[int, int]],
 ) -> Cat | None:
-    corners = [
-        (2, 2),
-        (game_map.cols - 3, 2),
-        (2, game_map.rows - 3),
-        (game_map.cols - 3, game_map.rows - 3),
-    ]
+    near = CAT_CORNER_MARGIN
+    far_col = game_map.cols - 1 - CAT_CORNER_MARGIN
+    far_row = game_map.rows - 1 - CAT_CORNER_MARGIN
+    corners = [(near, near), (far_col, near), (near, far_row), (far_col, far_row)]
     for col, row in corners:
         if game_map.is_walkable(col, row) and (col, row) not in occupied:
             occupied.add((col, row))

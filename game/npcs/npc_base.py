@@ -10,6 +10,8 @@ from typing import TYPE_CHECKING, ClassVar
 from game.npcs.actions import Action, ActionType, State
 from game.resources.entities import Resource, Structure
 from game.settings import (
+    DEFAULT_SPEECH_DURATION_FRAMES,
+    LONG_SPEECH_DURATION_FRAMES,
     NPC_HUNGER_DAMAGE,
     NPC_HUNGER_DRAIN,
     NPC_HUNGER_MAX,
@@ -88,7 +90,7 @@ class NPCBase:
         self._speech_text: str = ""
         self._speech_timer: int = 0  # frames
 
-    def say(self, text: str, duration_frames: int = 300) -> None:
+    def say(self, text: str, duration_frames: int = DEFAULT_SPEECH_DURATION_FRAMES) -> None:
         """Show a speech bubble above this NPC for *duration_frames* frames."""
         self._speech_text = text
         self._speech_timer = duration_frames
@@ -99,7 +101,7 @@ class NPCBase:
         Returns True if the action was accepted, False if rejected.
         """
         if action.action_type not in self.allowed_actions:
-            self.say("I can't do that!", 180)
+            self.say("I can't do that!", LONG_SPEECH_DURATION_FRAMES)
             return False
         self.action_queue.append(action)
         if self.state in (State.IDLE, State.DONE):
@@ -259,7 +261,7 @@ class NPCBase:
         self._release_reservation()
 
         if self.is_carrying:
-            self.say("Storage full!", 180)
+            self.say("Storage full!", LONG_SPEECH_DURATION_FRAMES)
             self.state = State.WAITING_DEPOSIT
             return
 
@@ -271,7 +273,7 @@ class NPCBase:
             return
 
         if self._storage.is_full:
-            self.say("Storage full!", 180)
+            self.say("Storage full!", LONG_SPEECH_DURATION_FRAMES)
             self.state = State.WAITING_DEPOSIT
             return
 

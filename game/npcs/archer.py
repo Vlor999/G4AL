@@ -12,9 +12,12 @@ from game.settings import (
     ARCHER_ARROW_DAMAGE,
     ARCHER_DEFEND_SCAN_RADIUS,
     ARCHER_FIRE_ANIM_TIME,
+    ARCHER_MAX_HEALTH,
     ARCHER_RANGE,
     ARCHER_SHOOT_TIME,
-    NPC_SPEED,
+    ARCHER_SPEED,
+    BRIEF_SPEECH_DURATION_FRAMES,
+    SHORT_SPEECH_DURATION_FRAMES,
 )
 
 if TYPE_CHECKING:
@@ -47,9 +50,9 @@ class Archer(NPC):
             storage,
             name=name or game_map.name_pools.archers.pick(),
         )
-        self.speed = NPC_SPEED * 1.1
-        self.max_health = 70
-        self.health = 70
+        self.speed = ARCHER_SPEED
+        self.max_health = ARCHER_MAX_HEALTH
+        self.health = ARCHER_MAX_HEALTH
         self._all_fauna: list[Fauna] = []
         self._shoot_target: Fauna | None = None
         self._arrows: list[Arrow] = []
@@ -104,14 +107,14 @@ class Archer(NPC):
     def _start_shooting(self) -> None:
         enemy = self._find_nearest_enemy()
         if enemy is None:
-            self.say("No enemies!", 90)
+            self.say("No enemies!", SHORT_SPEECH_DURATION_FRAMES)
             self.state = State.DONE
             return
         self._engage(enemy)
 
     def _start_defending(self) -> None:
         self._defending = True
-        self.say("Defending!", 90)
+        self.say("Defending!", SHORT_SPEECH_DURATION_FRAMES)
         self._defend_scan()
 
     def _engage(self, enemy: Fauna) -> None:
@@ -126,7 +129,7 @@ class Archer(NPC):
             self._map, origin=self.tile_pos, target=enemy.tile_pos, shooting_range=ARCHER_RANGE
         )
         if best_tile is None:
-            self.say("Can't reach enemy!", 90)
+            self.say("Can't reach enemy!", SHORT_SPEECH_DURATION_FRAMES)
             self.state = State.DONE
             return
         self._plan_move_to(*best_tile)
@@ -188,7 +191,7 @@ class Archer(NPC):
     def _release_arrow(self, enemy: Fauna) -> None:
         self._is_firing = True
         enemy.health -= ARCHER_ARROW_DAMAGE
-        self.say("Fire!", 60)
+        self.say("Fire!", BRIEF_SPEECH_DURATION_FRAMES)
         self._arrows.append(build_arrow(shooter=self, target=enemy, team=Team.BLUE))
 
     def _end_shot_cycle(self, enemy: Fauna) -> None:
@@ -199,7 +202,7 @@ class Archer(NPC):
             self._walk_toward_enemy(enemy)
 
     def _lose_target(self) -> None:
-        self.say("Target down!", 60)
+        self.say("Target down!", BRIEF_SPEECH_DURATION_FRAMES)
         self._shoot_target = None
         if self._defending:
             self._defend_scan()

@@ -14,7 +14,7 @@
     // Fewest game frames between two arrow sounds.
     const ARROW_SFX_COOLDOWN_FRAMES = 20;
     // Game frames per animation frame of the cat.
-    const LECHAT_ANIM_INTERVAL = 6;
+    const CAT_ANIMATION_INTERVAL = 6;
 
     const particles = [];
     G.particles = particles;
@@ -762,8 +762,8 @@
         }
 
         // Pick the right frame from the individual images
-        const fi = Math.floor(G.gameFrame / LECHAT_ANIM_INTERVAL) % G.CAT_FRAME_COUNT;
-        const frameImg = sprites["lechat_" + fi];
+        const fi = Math.floor(G.gameFrame / CAT_ANIMATION_INTERVAL) % G.catFrameCount;
+        const frameImg = sprites["cat_" + fi];
         if (frameImg) {
             ctx.drawImage(frameImg, rect.left, rect.top, rect.width, rect.height);
         } else {

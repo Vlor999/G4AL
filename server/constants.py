@@ -30,6 +30,10 @@ LOOPBACK_BIND_ADDRESSES = frozenset({"localhost", "127.0.0.1", "::1"}) | WILDCAR
 MAX_COMMAND_CHARACTERS = 500
 # Chat messages the state keeps: older ones scroll out of the chat panel.
 CHAT_HISTORY_LENGTH = 30
+# Seed of the map every new game generates: the same world on each start.
+MAP_SEED = 42
+# Game loop frames between two state pushes to the client: ~20 Hz at 60 FPS.
+STATE_PUSH_INTERVAL_FRAMES = 3
 
 
 LLM_PROVIDER_VARIABLE = "G4AL_LLM_PROVIDER"

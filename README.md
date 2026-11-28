@@ -142,6 +142,7 @@ game/
 
 static/
   game.js           client entry point, Socket.IO, camera
+  tileset.js        names and sheet geometry of the tilemap tiles
   map_image.js      ground image, bushes and clouds
   renderer.js       canvas rendering
   sprites.js        sprite loading

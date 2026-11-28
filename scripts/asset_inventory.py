@@ -37,7 +37,7 @@ DETAILS_PATH = re.compile(r'"static/assets/([^"]+\.png)"')
 STYLE_PATH = re.compile(r"url\(['\"]?assets/([^'\")]+\.png)")
 SPRITES_PATH = re.compile(r'loadImg\("\w+",\s*"([^"]+\.png)"\)')
 SPRITES_TEMPLATE = re.compile(r'"(\w+/\w+_)" \+ String\(i\)\.padStart\((\d+), "0"\) \+ "\.png"')
-SPRITES_TEMPLATE_LENGTH = re.compile(r"Array\.from\(\{ length: (\d+) \}")
+SPRITES_TEMPLATE_LENGTH = re.compile(r"G\.CAT_FRAME_COUNT = (\d+);")
 
 # Which object kind of the game a sprite draws; the first matching prefix wins.
 KIND_BY_PATH_PREFIX: tuple[tuple[str, ObjectKind], ...] = (

@@ -5,6 +5,17 @@
 (function (G) {
     "use strict";
 
+    // Pixels past the canvas edges where a unit, a creature or a water rock is still drawn.
+    const OFFSCREEN_MARGIN = 80;
+    // Pixels past the canvas edges where a bush, a particle or an arrow is still drawn.
+    const SMALL_OFFSCREEN_MARGIN = 64;
+    // Side, in pixels, of the source image of Shadow.png.
+    const SHADOW_SPRITE_SIZE = 192;
+    // Fewest game frames between two arrow sounds.
+    const ARROW_SFX_COOLDOWN_FRAMES = 20;
+    // Game frames per animation frame of the cat.
+    const LECHAT_ANIM_INTERVAL = 6;
+
     const particles = [];
     G.particles = particles;
 
@@ -14,7 +25,7 @@
     let _audioCtx = null;
 
     function playArrowSfx() {
-        if (G.gameFrame - _arrowSfxCooldown < 20) return;  // min 20 frames between sounds
+        if (G.gameFrame - _arrowSfxCooldown < ARROW_SFX_COOLDOWN_FRAMES) return;
         _arrowSfxCooldown = G.gameFrame;
         try {
             if (!_audioCtx) _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -73,7 +84,7 @@
         for (const wr of waterRocks) {
             const dx = wr.x - G.camX;
             const dy = wr.y - G.camY;
-            if (dx < -80 || dx > W + 80 || dy < -80 || dy > H + 80) continue;
+            if (dx < -OFFSCREEN_MARGIN || dx > W + OFFSCREEN_MARGIN || dy < -OFFSCREEN_MARGIN || dy > H + OFFSCREEN_MARGIN) continue;
             const wrSpr = spr["water_rock" + wr.variant];
             if (wrSpr) {
                 const sz = 48;
@@ -85,7 +96,7 @@
         for (const deco of decorations) {
             const dx = deco.x - G.camX;
             const dy = deco.y - G.camY;
-            if (dx < -64 || dx > W + 64 || dy < -64 || dy > H + 64) continue;
+            if (dx < -SMALL_OFFSCREEN_MARGIN || dx > W + SMALL_OFFSCREEN_MARGIN || dy < -SMALL_OFFSCREEN_MARGIN || dy > H + SMALL_OFFSCREEN_MARGIN) continue;
             const bushSpr = spr["bush" + deco.variant];
             if (bushSpr) {
                 const sz = 30;
@@ -123,13 +134,13 @@
                 const npc = item.obj;
                 const sx = npc.x - G.camX;
                 const sy = npc.y - G.camY;
-                if (sx < -80 || sx > W + 80 || sy < -80 || sy > H + 80) continue;
+                if (sx < -OFFSCREEN_MARGIN || sx > W + OFFSCREEN_MARGIN || sy < -OFFSCREEN_MARGIN || sy > H + OFFSCREEN_MARGIN) continue;
                 drawNPC(ctx, npc, sx, sy);
             } else if (item.type === "fauna") {
                 const f = item.obj;
                 const sx = f.x - G.camX;
                 const sy = f.y - G.camY;
-                if (sx < -80 || sx > W + 80 || sy < -80 || sy > H + 80) continue;
+                if (sx < -OFFSCREEN_MARGIN || sx > W + OFFSCREEN_MARGIN || sy < -OFFSCREEN_MARGIN || sy > H + OFFSCREEN_MARGIN) continue;
                 drawFauna(ctx, f, sx, sy);
             }
         }
@@ -142,7 +153,7 @@
             const progress = age / p.life;
             const px = p.wx - G.camX;
             const py = p.wy - G.camY;
-            if (px < -64 || px > W + 64 || py < -64 || py > H + 64) continue;
+            if (px < -SMALL_OFFSCREEN_MARGIN || px > W + SMALL_OFFSCREEN_MARGIN || py < -SMALL_OFFSCREEN_MARGIN || py > H + SMALL_OFFSCREEN_MARGIN) continue;
             ctx.globalAlpha = 1 - progress;
             if (p.type === "dust") {
                 const ds = spr.dust1 || spr.dust2;
@@ -173,7 +184,7 @@
                 const ay = arrow.fromY + (arrow.toY - arrow.fromY) * p;
                 const sx = ax - G.camX;
                 const sy = ay - G.camY;
-                if (sx < -64 || sx > W + 64 || sy < -64 || sy > H + 64) continue;
+                if (sx < -SMALL_OFFSCREEN_MARGIN || sx > W + SMALL_OFFSCREEN_MARGIN || sy < -SMALL_OFFSCREEN_MARGIN || sy > H + SMALL_OFFSCREEN_MARGIN) continue;
 
                 // Calculate angle from source to target
                 const dx = arrow.toX - arrow.fromX;
@@ -584,7 +595,7 @@
         // Shadow
         if (spr.shadow) {
             ctx.globalAlpha = 0.25;
-            ctx.drawImage(spr.shadow, 0, 0, 192, 192, sx - HALF * 0.7, sy - 4, SIZE * 0.7, SIZE * 0.35);
+            ctx.drawImage(spr.shadow, 0, 0, SHADOW_SPRITE_SIZE, SHADOW_SPRITE_SIZE, sx - HALF * 0.7, sy - 4, SIZE * 0.7, SIZE * 0.35);
             ctx.globalAlpha = 1;
         } else {
             ctx.fillStyle = "rgba(0,0,0,0.25)";
@@ -646,9 +657,6 @@
     }
 
     // ── Draw Fauna (autonomous creatures like sheep) ──────────────────
-
-    const LECHAT_FRAMES = 27;
-    const LECHAT_ANIM_INTERVAL = 6;  // game frames per animation frame
 
     function getFaunaSpriteInfo(f) {
         const spr = G.sprites;
@@ -715,7 +723,7 @@
         // Shadow
         if (spr.shadow) {
             ctx.globalAlpha = 0.2;
-            ctx.drawImage(spr.shadow, 0, 0, 192, 192, sx - HALF * 0.6, sy - 2, SIZE * 0.6, SIZE * 0.25);
+            ctx.drawImage(spr.shadow, 0, 0, SHADOW_SPRITE_SIZE, SHADOW_SPRITE_SIZE, sx - HALF * 0.6, sy - 2, SIZE * 0.6, SIZE * 0.25);
             ctx.globalAlpha = 1;
         } else {
             ctx.fillStyle = "rgba(0,0,0,0.18)";
@@ -753,12 +761,12 @@
         // Shadow
         if (spr.shadow) {
             ctx.globalAlpha = 0.2;
-            ctx.drawImage(spr.shadow, 0, 0, 192, 192, sx - HALF * 0.5, sy - 2, SIZE * 0.5, SIZE * 0.2);
+            ctx.drawImage(spr.shadow, 0, 0, SHADOW_SPRITE_SIZE, SHADOW_SPRITE_SIZE, sx - HALF * 0.5, sy - 2, SIZE * 0.5, SIZE * 0.2);
             ctx.globalAlpha = 1;
         }
 
-        // Pick the right frame from the 27 individual images
-        const fi = Math.floor(G.gameFrame / LECHAT_ANIM_INTERVAL) % LECHAT_FRAMES;
+        // Pick the right frame from the individual images
+        const fi = Math.floor(G.gameFrame / LECHAT_ANIM_INTERVAL) % G.CAT_FRAME_COUNT;
         const frameImg = spr["lechat_" + fi];
         if (frameImg) {
             ctx.drawImage(frameImg, rect.left, rect.top, rect.width, rect.height);
@@ -788,7 +796,7 @@
         // Shadow
         if (spr.shadow) {
             ctx.globalAlpha = 0.25;
-            ctx.drawImage(spr.shadow, 0, 0, 192, 192, sx - HALF * 0.7, sy - 4, SIZE * 0.7, SIZE * 0.35);
+            ctx.drawImage(spr.shadow, 0, 0, SHADOW_SPRITE_SIZE, SHADOW_SPRITE_SIZE, sx - HALF * 0.7, sy - 4, SIZE * 0.7, SIZE * 0.35);
             ctx.globalAlpha = 1;
         } else {
             ctx.fillStyle = "rgba(0,0,0,0.25)";

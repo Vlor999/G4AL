@@ -5,6 +5,9 @@
 (function (G) {
     "use strict";
 
+    // Pixels around an NPC's position where a click selects it.
+    const NPC_CLICK_RADIUS = 30;
+
     // ── Keyboard (camera scrolling + push-to-talk) ──────────────────────
 
     const CAMERA_ARROW_KEYS = new Set(["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"]);
@@ -57,7 +60,7 @@
             if (!npc.controllable) continue;
             const dx = wx - npc.x;
             const dy = wy - npc.y;
-            if (Math.sqrt(dx * dx + dy * dy) <= 30) {
+            if (Math.sqrt(dx * dx + dy * dy) <= NPC_CLICK_RADIUS) {
                 clicked = npc;
                 break;
             }

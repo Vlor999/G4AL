@@ -5,6 +5,11 @@
 (function (G) {
     "use strict";
 
+    // Pixels above an NPC's position where its speech bubble is drawn.
+    const SPEECH_BUBBLE_OFFSET_Y = 70;
+    // Pixels past the canvas edges where a speech bubble is still drawn.
+    const SPEECH_BUBBLE_CULL_MARGIN = 100;
+
     // ── Action labels per action type ───────────────────────────────────
     const ACTION_LABELS = {
         chop_wood:     "\u{1fa93} CHOP",
@@ -133,8 +138,9 @@
         for (const npc of G.gameState.npcs) {
             if (!npc.speechText) continue;
             const sx = npc.x - G.camX;
-            const sy = npc.y - G.camY - 70;
-            if (sx < -100 || sx > G.canvas.width + 100 || sy < -100) continue;
+            const sy = npc.y - G.camY - SPEECH_BUBBLE_OFFSET_Y;
+            if (sx < -SPEECH_BUBBLE_CULL_MARGIN || sx > G.canvas.width + SPEECH_BUBBLE_CULL_MARGIN
+                || sy < -SPEECH_BUBBLE_CULL_MARGIN) continue;
 
             const bubble = document.createElement("div");
             bubble.className = "speech-bubble";

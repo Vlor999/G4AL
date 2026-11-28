@@ -5,11 +5,14 @@
 (function (G) {
     "use strict";
 
+    // Tile codes of the state's map.tiles, mirroring game/world/terrain.py TileType.
+    const TILE_TYPE = { GRASS: 0, DIRT: 1, SAND: 2, WATER: 3 };
+
     const TILE_COLORS = {
-        0: { light: "#7cb342", dark: "#689f38" },
-        1: { light: "#a18864", dark: "#a18864" },
-        2: { light: "#dcc88c", dark: "#dcc88c" },
-        3: { light: "#42a5f5", dark: "#42a5f5" },
+        [TILE_TYPE.GRASS]: { light: "#7cb342", dark: "#689f38" },
+        [TILE_TYPE.DIRT]: { light: "#a18864", dark: "#a18864" },
+        [TILE_TYPE.SAND]: { light: "#dcc88c", dark: "#dcc88c" },
+        [TILE_TYPE.WATER]: { light: "#42a5f5", dark: "#42a5f5" },
     };
 
     // Ground and decorations per biome (docs/adr/0003-biome-map-generation.md).
@@ -46,10 +49,10 @@
                 const py = r * tileSize;
 
                 let tileset = null;
-                if (tt === 0) tileset = spr[GRASS_TILESET_BY_BIOME[biome]] || spr.ts_grass;
-                else if (tt === 1) tileset = spr.ts_dirt;
-                else if (tt === 2) tileset = spr.ts_sand;
-                else if (tt === 3) {
+                if (tt === TILE_TYPE.GRASS) tileset = spr[GRASS_TILESET_BY_BIOME[biome]] || spr.ts_grass;
+                else if (tt === TILE_TYPE.DIRT) tileset = spr.ts_dirt;
+                else if (tt === TILE_TYPE.SAND) tileset = spr.ts_sand;
+                else if (tt === TILE_TYPE.WATER) {
                     if (spr.water_bg) {
                         mctx.drawImage(spr.water_bg, px, py, tileSize, tileSize);
                     } else {
@@ -73,14 +76,14 @@
                         mctx.fillRect(px, py, tileSize, tileSize);
                     }
                 } else {
-                    const colors = TILE_COLORS[tt] || TILE_COLORS[0];
+                    const colors = TILE_COLORS[tt] || TILE_COLORS[TILE_TYPE.GRASS];
                     const color = (r + c) % 2 === 0 ? colors.light : colors.dark;
                     mctx.fillStyle = color;
                     mctx.fillRect(px, py, tileSize, tileSize);
                 }
 
                 const bushOneTileIn = BUSH_ONE_TILE_IN_BY_BIOME[biome];
-                if (tt === 0 && bushOneTileIn && posHash(c + 1, r + 3, bushOneTileIn) === 0) {
+                if (tt === TILE_TYPE.GRASS && bushOneTileIn && posHash(c + 1, r + 3, bushOneTileIn) === 0) {
                     decorations.push({
                         type: "bush",
                         variant: posHash(c, r, 4) + 1,

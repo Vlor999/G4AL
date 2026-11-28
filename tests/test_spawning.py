@@ -1,3 +1,5 @@
+import pytest
+
 from game.fauna.sheep import Sheep
 from game.fauna.wild_archer import WildArcher
 from game.npcs.archer import Archer
@@ -11,8 +13,6 @@ from game.settings import (
     MAP_COLS,
     MAP_ROWS,
     PAWN_SPAWN_RADIUS,
-    STORAGE_HUT_COL,
-    STORAGE_HUT_ROW,
 )
 from game.spawning import spawn_world
 from game.world.map import GameMap
@@ -27,9 +27,20 @@ def test_spawn_world_places_a_built_storage_hut_among_resources(build_map: MapBu
     world = spawn_world(build_meadow(build_map))
 
     assert world.storage_hut.built
-    assert (world.storage_hut.col, world.storage_hut.row) == (STORAGE_HUT_COL, STORAGE_HUT_ROW)
+    assert (world.storage_hut.col, world.storage_hut.row) == (MAP_COLS // 2 - 1, MAP_ROWS // 2)
     assert world.storage_hut in world.resources
     assert world.storage.total == 0
+
+
+@pytest.mark.parametrize(("cols", "rows"), [(12, 10), (41, 27)])
+def test_spawn_world_centres_the_storage_hut_on_a_map_of_any_size(
+    build_map: MapBuilder, cols: int, rows: int
+) -> None:
+    world = spawn_world(build_map(["." * cols] * rows))
+
+    hut = world.storage_hut
+    assert (hut.col, hut.row) == (cols // 2 - 1, rows // 2)
+    assert (cols // 2, rows // 2) in hut.occupied_tiles
 
 
 def test_spawn_world_places_pawns_near_the_center_and_archers_near_the_hut(
@@ -47,11 +58,10 @@ def test_spawn_world_places_pawns_near_the_center_and_archers_near_the_hut(
         col, row = pawn.tile_pos
         assert abs(col - game_map.cols // 2) <= PAWN_SPAWN_RADIUS
         assert abs(row - game_map.rows // 2) <= PAWN_SPAWN_RADIUS
+    hut = world.storage_hut
     for archer in archers:
         col, row = archer.tile_pos
-        assert max(abs(col - STORAGE_HUT_COL), abs(row - STORAGE_HUT_ROW)) <= (
-            ARCHER_SPAWN_MAX_DISTANCE
-        )
+        assert max(abs(col - hut.col), abs(row - hut.row)) <= ARCHER_SPAWN_MAX_DISTANCE
 
 
 def test_spawn_world_puts_no_npc_on_a_resource_or_another_npc(build_map: MapBuilder) -> None:

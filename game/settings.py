@@ -67,10 +67,6 @@ WILD_ARCHER_DAMAGE = 8  # HP per arrow hit on our units
 WILD_ARCHER_SHOOT_TIME = 80  # frames between shots (~1.3 s)
 WILD_ARCHER_GRACE_FRAMES = 7200  # world frames (2 min) at game start before wild archers attack
 
-# ── Storage Hut (deposit point for carried resources) ────────────────────
-STORAGE_HUT_COL = MAP_COLS // 2 - 1  # tile column of the hut origin
-STORAGE_HUT_ROW = MAP_ROWS // 2  # tile row    of the hut origin
-
 # ── Initial spawn ────────────────────────────────────────────────────────
 INITIAL_PAWN_COUNT = 3
 PAWN_SPAWN_RADIUS = 3  # tiles around the map centre searched for pawn spots

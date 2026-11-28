@@ -15,8 +15,6 @@ from game.settings import (
     INITIAL_WILD_ARCHER_COUNT,
     MAP_COLS,
     MAP_ROWS,
-    STORAGE_HUT_COL,
-    STORAGE_HUT_ROW,
 )
 from game.spawning import SpawnedWorld, spawn_world
 from game.world.map import GameMap
@@ -71,7 +69,8 @@ def test_every_walkable_tile_is_reachable_from_the_storage_hut(seed: int) -> Non
         for col in range(game_map.cols)
         if game_map.is_walkable(col, row)
     }
-    assert reachable_from(game_map, (STORAGE_HUT_COL, STORAGE_HUT_ROW)) == walkable
+    hut = spawn_world(game_map).storage_hut
+    assert reachable_from(game_map, (hut.col, hut.row)) == walkable
 
 
 @pytest.mark.parametrize("seed", SEEDS)

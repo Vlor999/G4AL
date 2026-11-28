@@ -19,12 +19,11 @@ from game.settings import (
     INITIAL_SHEEP_COUNT,
     INITIAL_WILD_ARCHER_COUNT,
     PAWN_SPAWN_RADIUS,
-    STORAGE_HUT_COL,
-    STORAGE_HUT_ROW,
     WILD_ARCHER_CORNER_MARGIN,
     WILD_ARCHER_SPAWN_RADIUS,
 )
 from game.world.clock import WorldClock
+from game.world.dimensions import OBJECT_DIMENSIONS, ObjectKind
 from game.world.map import GameMap
 
 
@@ -50,9 +49,8 @@ def spawn_world(game_map: GameMap) -> SpawnedWorld:
     """Populate ``game_map``, drawing from ``game_map.rng``: the built storage hut,
     resources by biome around it, pawns around the map centre, archers around the hut,
     sheep, a cat and a wild archer camp in the bottom-right corner."""
-    storage_hut = Structure(
-        STORAGE_HUT_COL, STORAGE_HUT_ROW, build_progress=100, building_type="storage_hut"
-    )
+    hut_col, hut_row = _storage_hut_origin(game_map)
+    storage_hut = Structure(hut_col, hut_row, build_progress=100, building_type="storage_hut")
     storage_hut.built = True
     resources = spawn_resources(game_map, reserved=set(storage_hut.occupied_tiles))
     resources.append(storage_hut)
@@ -65,6 +63,13 @@ def spawn_world(game_map: GameMap) -> SpawnedWorld:
     _spawn_wild_archers_in_corner(world, game_map)
     _link_combatants(world)
     return world
+
+
+def _storage_hut_origin(game_map: GameMap) -> tuple[int, int]:
+    """Top-left tile of the hut: its footprint is centred on the map's centre column and
+    starts on the centre row."""
+    half_width = OBJECT_DIMENSIONS[ObjectKind.STORAGE_HUT].footprint_width // 2
+    return game_map.cols // 2 - half_width, game_map.rows // 2
 
 
 def _occupied_entity_tiles(resources: list[Resource]) -> set[tuple[int, int]]:
@@ -102,7 +107,7 @@ def _spawn_archers_near_hut(
     world: SpawnedWorld, game_map: GameMap, *, entity_tiles: set[tuple[int, int]]
 ) -> None:
     placed = 0
-    for col, row in _rings_around(STORAGE_HUT_COL, STORAGE_HUT_ROW):
+    for col, row in _rings_around(world.storage_hut.col, world.storage_hut.row):
         if not game_map.is_walkable(col, row) or (col, row) in entity_tiles:
             continue
         x, y = game_map.tile_center(col, row)

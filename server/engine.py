@@ -72,9 +72,9 @@ class GameEngine:
         self._running = False
         self._pending_answers: deque[_CommandAnswer] = deque()
 
-    def _add_log(self, msg: str) -> None:
+    def _add_log(self, message: str) -> None:
         """Append to the game log, keeping the last 50 lines; the caller holds ``self._lock``."""
-        self.log_messages.append(msg)
+        self.log_messages.append(message)
         if len(self.log_messages) > 50:
             self.log_messages.pop(0)
 
@@ -99,14 +99,14 @@ class GameEngine:
         with self._lock:
             if self._find_npc(npc_id) is None:
                 return False
-            for n in self.npcs:
-                n.selected = n.id == npc_id
+            for npc in self.npcs:
+                npc.selected = npc.id == npc_id
             return True
 
     def deselect_all(self) -> None:
         with self._lock:
-            for n in self.npcs:
-                n.selected = False
+            for npc in self.npcs:
+                npc.selected = False
 
     def _apply_answer(self, answer: _CommandAnswer) -> None:
         if isinstance(answer, _InterpretationFailed):
@@ -137,9 +137,9 @@ class GameEngine:
             return sum(npc.give_up_waiting_deposit() for npc in self.npcs)
 
     def _find_npc(self, npc_id: int) -> NPC | None:
-        for n in self.npcs:
-            if n.id == npc_id:
-                return n
+        for npc in self.npcs:
+            if npc.id == npc_id:
+                return npc
         return None
 
     def get_state(self) -> dict[str, Any]:
@@ -206,22 +206,22 @@ class GameEngine:
             self._pending_answers.append(answer)
 
     _frame_count: int = 0
-    _ws_push_interval: int = STATE_PUSH_INTERVAL_FRAMES
+    _state_push_interval: int = STATE_PUSH_INTERVAL_FRAMES
 
-    def run_loop(self, socketio_ref: SocketIO | None = None) -> None:
-        """Run the game loop in the current thread until ``stop``, pushing the state to ``socketio_ref``."""
+    def run_loop(self, socketio: SocketIO | None = None) -> None:
+        """Run the game loop in the current thread until ``stop``, pushing the state to ``socketio``."""
         self._running = True
         self._frame_count = 0
         is_push_failing = False
-        target_dt = 1.0 / FPS
+        frame_duration = 1.0 / FPS
         while self._running:
-            t0 = time.perf_counter()
+            frame_start = time.perf_counter()
             self.tick()
             self._frame_count += 1
 
-            if socketio_ref and self._frame_count % self._ws_push_interval == 0:
+            if socketio and self._frame_count % self._state_push_interval == 0:
                 try:
-                    socketio_ref.emit("state", self.get_state(), namespace="/")
+                    socketio.emit("state", self.get_state(), namespace="/")
                 except Exception as exc:  # noqa: BLE001 - a failed push must not stop the game loop
                     # Logged once per failure streak: pushes run ~20 times a second.
                     if not is_push_failing:
@@ -232,8 +232,8 @@ class GameEngine:
                         logger.bind(event="state_push").info("State push recovered")
                     is_push_failing = False
 
-            elapsed = time.perf_counter() - t0
-            sleep_time = target_dt - elapsed
+            elapsed = time.perf_counter() - frame_start
+            sleep_time = frame_duration - elapsed
             if sleep_time > 0:
                 time.sleep(sleep_time)
 

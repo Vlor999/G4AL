@@ -83,7 +83,7 @@ def test_a_speech_bubble_shows_until_its_duration_runs_out(build_map: MapBuilder
 
 def test_a_defending_archer_shows_its_action_and_its_shot(build_map: MapBuilder) -> None:
     game_map = build_map(FIELD)
-    fauna: list[Fauna] = [WildArcher(*game_map.tile_center(2, 1), game_map, [])]
+    fauna: list[Fauna] = [WildArcher(*game_map.tile_center(2, 1), game_map)]
     arrows: list[Arrow] = []
     archer = Archer(*game_map.tile_center(0, 1), game_map, [], ResourceStorage())
     archer.link_battlefield(fauna=fauna, arrows=arrows)
@@ -107,11 +107,11 @@ def test_a_wild_archer_shows_its_shot_and_a_sheep_never_fires(build_map: MapBuil
     game_map = build_map(FIELD)
     pawn = NPC(*game_map.tile_center(0, 1), game_map, [], ResourceStorage())
     arrows: list[Arrow] = []
-    wild_archer = WildArcher(*game_map.tile_center(2, 1), game_map, [])
+    wild_archer = WildArcher(*game_map.tile_center(2, 1), game_map)
     wild_archer.link_battlefield(
         npcs=[pawn], arrows=arrows, clock=clock_at(WILD_ARCHER_GRACE_FRAMES)
     )
-    sheep = Sheep(*game_map.tile_center(5, 3), game_map, [])
+    sheep = Sheep(*game_map.tile_center(5, 3), game_map)
     for _ in range(MAX_FRAMES):
         if arrows:
             break
@@ -127,7 +127,7 @@ def test_resources_npcs_and_fauna_carry_their_footprint_height_and_sprite_box(
 ) -> None:
     game_map = build_map(FIELD)
     pawn = NPC(*game_map.tile_center(0, 0), game_map, [], ResourceStorage())
-    sheep = Sheep(*game_map.tile_center(5, 3), game_map, [])
+    sheep = Sheep(*game_map.tile_center(5, 3), game_map)
     state = serialize_state(
         game_map=game_map,
         resources=[Structure(1, 1, building_type="storage_hut")],

@@ -86,7 +86,7 @@ class ClockWatcher(Sheep):
     """A sheep that records the elapsed frames it reads on the world clock each frame."""
 
     def __init__(self, game_map: GameMap, clock: WorldClock) -> None:
-        super().__init__(*game_map.tile_center(4, 3), game_map, [])
+        super().__init__(*game_map.tile_center(4, 3), game_map)
         self.clock = clock
         self.elapsed_frames_read: list[int] = []
 
@@ -111,7 +111,7 @@ def test_a_frame_grows_wheat_and_removes_dead_fauna(build_map: MapBuilder) -> No
     world = World(build_map(FIELD))
     field = WheatField(0, 0)
     world.resources.append(field)
-    alive, dead = (Sheep(*world.game_map.tile_center(col, 3), world.game_map, []) for col in (4, 5))
+    alive, dead = (Sheep(*world.game_map.tile_center(col, 3), world.game_map) for col in (4, 5))
     dead.health = 0
     world.fauna[:] = [alive, dead]
 
@@ -157,7 +157,7 @@ def test_an_arrow_released_this_frame_is_aged_in_the_same_frame(build_map: MapBu
     world = World(build_map(FIELD))
     archer = Archer(*world.game_map.tile_center(0, 1), world.game_map, [], ResourceStorage())
     world.npcs.append(archer)
-    world.fauna.append(WildArcher(*world.game_map.tile_center(1, 1), world.game_map, []))
+    world.fauna.append(WildArcher(*world.game_map.tile_center(1, 1), world.game_map))
     archer.link_battlefield(fauna=world.fauna, arrows=world.arrows)
     archer.enqueue(Action(ActionType.SHOOT))
 
@@ -169,7 +169,7 @@ def test_an_arrow_released_this_frame_is_aged_in_the_same_frame(build_map: MapBu
 def test_npcs_act_before_fauna(build_map: MapBuilder) -> None:
     world = World(build_map(FIELD))
     pawn = world.add_pawn((0, 1))
-    wild_archer = WildArcher(*world.game_map.tile_center(1, 1), world.game_map, [])
+    wild_archer = WildArcher(*world.game_map.tile_center(1, 1), world.game_map)
     wild_archer.link_battlefield(npcs=world.npcs, arrows=world.arrows, clock=world.clock)
     world.fauna.append(wild_archer)
     assert world.advance_until(lambda: wild_archer.state == FaunaState.SHOOTING)
@@ -197,8 +197,8 @@ def play_seeded_game(seed: int) -> Snapshot:
             x, y = world.npcs[0].x, world.npcs[0].y
             world.npcs.append(NPC(x, y, game_map, world.resources, world.storage))
             world.npcs.append(Archer(x, y, game_map, world.resources, world.storage))
-            world.fauna.append(Sheep(x, y, game_map, world.resources))
-            world.fauna.append(WildArcher(x, y, game_map, world.resources))
+            world.fauna.append(Sheep(x, y, game_map))
+            world.fauna.append(WildArcher(x, y, game_map))
         advance_world(
             npcs=world.npcs,
             fauna=world.fauna,

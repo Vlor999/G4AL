@@ -7,7 +7,6 @@ from typing import TYPE_CHECKING
 from game.fauna.fauna import Fauna
 
 if TYPE_CHECKING:
-    from game.resources.entities import Resource
     from game.world.map import GameMap
 
 
@@ -22,7 +21,6 @@ class Sheep(Fauna):
         x: float,
         y: float,
         game_map: GameMap,
-        resources: list[Resource],
     ):
-        super().__init__(x, y, game_map, resources)
+        super().__init__(x, y, game_map)
         self._start_idle()

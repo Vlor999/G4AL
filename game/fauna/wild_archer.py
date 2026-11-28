@@ -19,7 +19,6 @@ from game.world.clock import WorldClock
 
 if TYPE_CHECKING:
     from game.npcs.npc import NPC
-    from game.resources.entities import Resource
     from game.world.map import GameMap
 
 
@@ -36,9 +35,8 @@ class WildArcher(Fauna):
         x: float,
         y: float,
         game_map: GameMap,
-        resources: list[Resource],
     ):
-        super().__init__(x, y, game_map, resources, name=game_map.name_pools.wild_archers.pick())
+        super().__init__(x, y, game_map, name=game_map.name_pools.wild_archers.pick())
         self._attack_target: NPC | None = None
         self._all_npcs: list[NPC] = []
         self._arrows: list[Arrow] = []

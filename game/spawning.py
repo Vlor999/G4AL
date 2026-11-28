@@ -136,7 +136,7 @@ def _spawn_wild_archers_in_corner(world: SpawnedWorld, game_map: GameMap) -> Non
             if not game_map.is_walkable(col, row) or (col, row) in occupied:
                 continue
             x, y = game_map.tile_center(col, row)
-            world.fauna.append(WildArcher(x, y, game_map, world.resources))
+            world.fauna.append(WildArcher(x, y, game_map))
             occupied.add((col, row))
             placed += 1
             if placed >= INITIAL_WILD_ARCHER_COUNT:

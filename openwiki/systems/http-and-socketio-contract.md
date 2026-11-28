@@ -5,7 +5,7 @@ description: The routes and events the browser uses, how request bodies are vali
 tags: [http, socketio, validation, security, contract]
 verified:
   - by: openwiki/0.5.2
-    at: 2026-11-25T16:43:37.032Z
+    at: 2026-11-28T12:48:19.642Z
 sources:
   - id: openwiki-source-98b4fef5bee3b5a0d880f16b
     resource: repo://docs/api.md

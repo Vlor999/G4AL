@@ -6,14 +6,16 @@ tags: [game-loop, engine, socketio, threading, serialization]
 sources:
   - id: openwiki-source-9a049830ee6d0ec18662aeea
     resource: repo://game/simulation.py
+  - id: openwiki-source-be5f2d227c84deca728731ae
+    resource: repo://server/constants.py
   - id: openwiki-source-0d5ad3511dcf5d6f5ad53c00
     resource: repo://server/engine.py
   - id: openwiki-source-ad8a0f8b85e961c2b13636c0
     resource: repo://server/serialization.py
-generated: { by: "claude-code", at: "2026-11-25T15:38:15.273Z" }
+generated: { by: "claude-code", at: "2026-11-28T12:48:19.642Z" }
 verified:
   - by: openwiki/0.5.2
-    at: 2026-11-28T10:49:24.445Z
+    at: 2026-11-28T12:48:19.642Z
 ---
 
 # Game loop and state push
@@ -49,7 +51,7 @@ The NPC, fauna and arrow lists are mutated in place (slice assignment), because 
 
 ## State push
 
-Every third frame (`_ws_push_interval = 3`, about 20 Hz) the loop emits `state` with `get_state()` on namespace `/`. A new connection also receives `state` once on connect.
+Every third frame (`STATE_PUSH_INTERVAL_FRAMES = 3` in `server/constants.py`, about 20 Hz) the loop emits `state` with `get_state()` on namespace `/`. A new connection also receives `state` once on connect.
 
 A push failure must not stop the game. The loop catches the exception, logs a single `state_push` warning at the start of a failure streak and a single info message when pushes recover, so a dropped client does not flood logs at 20 lines a second. `tests/e2e/test_game_loop.py` drives this with a fake socket that raises for the first pushes.
 

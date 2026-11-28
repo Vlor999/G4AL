@@ -3,9 +3,6 @@ type: system
 title: Browser client
 description: How the static/ client is organised as classic scripts sharing one global namespace, what each script owns, and how it talks to the server, including the chat panel, the model picker and push-to-talk.
 tags: [client, javascript, canvas, push-to-talk, chat]
-verified:
-  - by: openwiki/0.5.2
-    at: 2026-11-25T15:38:15.273Z
 sources:
   - id: openwiki-source-ad8a0f8b85e961c2b13636c0
     resource: repo://server/serialization.py
@@ -24,6 +21,9 @@ sources:
   - id: openwiki-source-546d715933eb378ce5631982
     resource: repo://static/sprites.js
 generated: { by: "claude-code", at: "2026-11-25T15:38:15.273Z" }
+verified:
+  - by: openwiki/0.5.2
+    at: 2026-11-28T12:48:19.642Z
 ---
 
 # Browser client

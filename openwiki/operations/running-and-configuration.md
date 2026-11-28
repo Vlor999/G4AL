@@ -3,9 +3,6 @@ type: operations
 title: Running and configuration
 description: How to start the G4AL server, which environment variables it reads and when they stop the start, what is optional, where logs go and how audio playback is set up.
 tags: [operations, configuration, environment, logging]
-verified:
-  - by: openwiki/0.5.2
-    at: 2026-11-25T15:38:15.273Z
 sources:
   - id: openwiki-source-b7fcb6ba7b5ef12e584d14ba
     resource: repo://api/logger.py
@@ -20,6 +17,9 @@ sources:
   - id: openwiki-source-fbf7171f46d33a488a6bdda0
     resource: repo://server/providers.py
 generated: { by: "claude-code", at: "2026-11-25T15:38:15.273Z" }
+verified:
+  - by: openwiki/0.5.2
+    at: 2026-11-28T12:48:19.642Z
 ---
 
 # Running and configuration

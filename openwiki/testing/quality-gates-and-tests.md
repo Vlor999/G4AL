@@ -5,7 +5,7 @@ description: How the pytest suite is organised around fakes of the ports, and wh
 tags: [testing, quality, ci, pytest, lint]
 verified:
   - by: openwiki/0.5.2
-    at: 2026-11-25T15:38:15.273Z
+    at: 2026-11-28T12:48:19.642Z
 sources:
   - id: openwiki-source-164e2da859b5277df81c7d94
     resource: repo://.github/workflows/ci.yml

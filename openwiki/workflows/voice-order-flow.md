@@ -5,7 +5,7 @@ description: The path of a spoken or typed command from the browser to an NPC ac
 tags: [voice, orders, llm, tts, chat, workflow]
 verified:
   - by: openwiki/0.5.2
-    at: 2026-11-25T15:38:15.273Z
+    at: 2026-11-28T12:48:19.642Z
 sources:
   - id: openwiki-source-bd1c9ad72f7e472b6efd8fe4
     resource: repo://api/order_contract.py

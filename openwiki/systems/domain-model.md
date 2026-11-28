@@ -3,9 +3,6 @@ type: reference
 title: Domain model
 description: The game/ simulation, sub-package by sub-package - the NPC action machine, how a player order becomes an action, harvesting and the storage-full rule, resources and storage, orders and their outcome values, chat values, spawning and the world clock.
 tags: [domain, npc, orders, storage, resources, spawning]
-verified:
-  - by: openwiki/0.5.2
-    at: 2026-11-28T10:49:24.445Z
 sources:
   - id: openwiki-source-bfb818f4a0eb4aef9472705b
     resource: repo://game/npcs/actions.py
@@ -32,6 +29,9 @@ sources:
   - id: openwiki-source-2bb4f9456b7b530d91f7448d
     resource: repo://game/world/terrain.py
 generated: { by: "claude-code", at: "2026-11-25T15:38:15.273Z" }
+verified:
+  - by: openwiki/0.5.2
+    at: 2026-11-28T12:48:19.642Z
 ---
 
 # Domain model

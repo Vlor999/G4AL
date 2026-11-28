@@ -3,9 +3,6 @@ type: guide
 title: G4AL quickstart
 description: What G4AL is, how to run and verify it, and a task-to-page map of this wiki.
 tags: [quickstart, overview, onboarding]
-verified:
-  - by: openwiki/0.5.2
-    at: 2026-11-25T15:38:15.273Z
 sources:
   - id: openwiki-source-7b58b9d865554d4c161a99ca
     resource: repo://game/ports.py
@@ -18,6 +15,9 @@ sources:
   - id: openwiki-source-0d5ad3511dcf5d6f5ad53c00
     resource: repo://server/engine.py
 generated: { by: "claude-code", at: "2026-11-25T15:38:15.273Z" }
+verified:
+  - by: openwiki/0.5.2
+    at: 2026-11-28T12:48:19.642Z
 ---
 
 # G4AL quickstart

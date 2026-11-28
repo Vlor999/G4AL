@@ -5,7 +5,7 @@ description: Which LLM models can interpret orders, how the start model and the 
 tags: [llm, models, providers, configuration, mistral]
 verified:
   - by: openwiki/0.5.2
-    at: 2026-11-28T10:49:24.445Z
+    at: 2026-11-28T12:48:19.642Z
 sources:
   - id: openwiki-source-4a7abb12a40e98905af9e3a5
     resource: repo://api/model_catalog.py

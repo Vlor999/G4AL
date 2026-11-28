@@ -45,32 +45,32 @@
         capBar.style.background = pct >= 100 ? "#e74c3c" : pct >= 80 ? "#f39c12" : "#f5deb3";
 
         // Selection panel
-        const sel = G.gameState.npcs.find(n => n.id === G.selectedId);
-        const unitSection = document.getElementById("unit-select-section");
-        if (sel) {
-            unitSection.style.display = "block";
-            document.getElementById("sel-name").textContent = sel.name;
-            document.getElementById("sel-hp-text").textContent = `${Math.round(sel.health)}/${sel.maxHealth}`;
-            document.getElementById("sel-hp-bar").style.width = `${(sel.health / sel.maxHealth) * 100}%`;
-            document.getElementById("sel-hunger-text").textContent = `${Math.round(sel.hunger)}%`;
+        const selectedNpc = G.gameState.npcs.find(n => n.id === G.selectedId);
+        const selectedNpcSection = document.getElementById("unit-select-section");
+        if (selectedNpc) {
+            selectedNpcSection.style.display = "block";
+            document.getElementById("sel-name").textContent = selectedNpc.name;
+            document.getElementById("sel-hp-text").textContent = `${Math.round(selectedNpc.health)}/${selectedNpc.maxHealth}`;
+            document.getElementById("sel-hp-bar").style.width = `${(selectedNpc.health / selectedNpc.maxHealth) * 100}%`;
+            document.getElementById("sel-hunger-text").textContent = `${Math.round(selectedNpc.hunger)}%`;
             const hungerBar = document.getElementById("sel-hunger-bar");
-            hungerBar.style.width = `${(sel.hunger / sel.maxHunger) * 100}%`;
-            hungerBar.classList.toggle("low", sel.hunger / sel.maxHunger < 0.25);
-            document.getElementById("sel-state").textContent = sel.state;
+            hungerBar.style.width = `${(selectedNpc.hunger / selectedNpc.maxHunger) * 100}%`;
+            hungerBar.classList.toggle("low", selectedNpc.hunger / selectedNpc.maxHunger < 0.25);
+            document.getElementById("sel-state").textContent = selectedNpc.state;
         } else {
-            unitSection.style.display = "none";
+            selectedNpcSection.style.display = "none";
         }
 
-        // Action buttons – rebuild dynamically based on selected unit's allowed actions
+        // Rebuilt only when the selected NPC's kind changes: a rebuild every frame would replace a button between press and release.
         const actionEl = document.getElementById("action-buttons");
-        if (sel && sel.allowedActions) {
-            const btnHTML = sel.allowedActions
+        if (selectedNpc && selectedNpc.allowedActions) {
+            const btnHTML = selectedNpc.allowedActions
                 .filter(a => a !== "move_to")  // move_to is done via right-click
                 .map(a => `<button class="action-btn" data-action="${a}">${ACTION_LABELS[a] || a.toUpperCase()}</button>`)
                 .join("");
-            if (actionEl.dataset.lastKind !== sel.kind) {
+            if (actionEl.dataset.lastKind !== selectedNpc.kind) {
                 actionEl.innerHTML = btnHTML;
-                actionEl.dataset.lastKind = sel.kind;
+                actionEl.dataset.lastKind = selectedNpc.kind;
             }
         } else {
             if (actionEl.dataset.lastKind !== "__none") {
@@ -79,13 +79,12 @@
             }
         }
 
-        // Roster – only show controllable units (pawns + archers)
         const rosterEl = document.getElementById("roster-list");
-        const units = G.gameState.npcs.filter(n => n.controllable !== false);
+        const controllableNpcs = G.gameState.npcs.filter(n => n.controllable !== false);
         const fauna = G.gameState.fauna || [];
         const sheepCount = fauna.filter(f => f.kind === "sheep").length;
         const wildArcherCount = fauna.filter(f => f.kind === "wild_archer").length;
-        let rosterHTML = units.map(n => {
+        let rosterHTML = controllableNpcs.map(n => {
             const cls = n.selected ? "roster-entry selected" : "roster-entry";
             const marker = n.selected ? "\u25b8 " : "  ";
             const icon = n.kind === "archer" ? "\ud83c\udff9 " : "";

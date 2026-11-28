@@ -23,15 +23,16 @@ def _heuristic(a: Tile, b: Tile) -> float:
 def find_path(
     game_map: GameMap,
     start: Tile,
+    *,
     goal: Tile,
     blocked: set[Tile] | None = None,
 ) -> list[Tile]:
     """A* on the tile grid: the (col, row) tiles from *start* to *goal*, both included, or
     [] when no path exists.
 
-    An unwalkable *goal* is replaced by its first walkable neighbour. *blocked* tiles (other
-    NPCs) are impassable, except the goal itself, so an NPC can still head for a tile
-    another one stands on.
+    An unwalkable *goal* is replaced by its first walkable neighbour. *blocked* tiles (the
+    tiles resources and structures cover) are impassable, except the goal itself, so an NPC
+    can still walk onto the tree or rock it was sent to.
     """
     reachable_goal = _nearest_walkable_goal(game_map, goal)
     if reachable_goal is None:

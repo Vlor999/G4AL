@@ -36,7 +36,7 @@ class Resource:
 
     kind: str = "resource"
 
-    def __init__(self, col: int, row: int, hp: int, yields: dict[str, int]) -> None:
+    def __init__(self, col: int, row: int, *, hp: int, yields: dict[str, int]) -> None:
         self.col = col
         self.row = row
         self.hp = hp
@@ -59,14 +59,14 @@ class Resource:
     def collect_one_unit(self) -> tuple[str, int] | None:
         """Take one unit: ``(resource_type, 1)``, or None when nothing remains. Lowers
         ``hp`` in proportion and sets ``depleted`` once the last unit is taken."""
-        for res_type in list(self.remaining_yields.keys()):
-            if self.remaining_yields[res_type] > 0:
-                self.remaining_yields[res_type] -= 1
+        for resource_type in list(self.remaining_yields.keys()):
+            if self.remaining_yields[resource_type] > 0:
+                self.remaining_yields[resource_type] -= 1
                 total_left = sum(self.remaining_yields.values())
                 self.hp = max(0, round(self.max_hp * total_left / max(1, self._total_units)))
                 if total_left <= 0:
                     self.depleted = True
-                return (res_type, 1)
+                return (resource_type, 1)
         self.depleted = True
         return None
 
@@ -81,7 +81,7 @@ class Tree(Resource):
 class Rock(Resource):
     kind = "rock"
 
-    def __init__(self, col: int, row: int, has_gold: bool = False) -> None:
+    def __init__(self, col: int, row: int, *, has_gold: bool = False) -> None:
         yields = {"stone": ROCK_STONE_YIELD}
         if has_gold:
             yields["gold"] = ROCK_GOLD_YIELD
@@ -103,6 +103,7 @@ class Structure(Resource):
         self,
         col: int,
         row: int,
+        *,
         build_progress: int = 0,
         building_type: str = "house1",
     ) -> None:

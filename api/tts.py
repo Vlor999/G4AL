@@ -1,6 +1,6 @@
 """ElevenLabs TTS – speaks NPC voice lines in the background.
 
-Voice assignments come from :pymod:`api.roster` (the single source of
+Voice assignments come from :pymod:`api.npc_profiles` (the single source of
 truth for NPC identities).  A daemon worker thread processes a FIFO queue
 so voice lines never overlap and never block the game loop.
 """
@@ -22,7 +22,7 @@ from api.constants import (
     TTS_QUEUE_POLL_SECONDS,
 )
 from api.logger import PipelineLogger
-from api.roster import NPC_VOICE_MAP, ElevenLabsVoice
+from api.npc_profiles import NPC_VOICE_MAP, ElevenLabsVoice
 
 if TYPE_CHECKING:
     from elevenlabs import ElevenLabs

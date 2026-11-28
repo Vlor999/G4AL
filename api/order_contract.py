@@ -13,7 +13,7 @@ from collections.abc import Mapping, Sequence
 from typing import Any, TypedDict
 
 from api.logger import LoggedOrder
-from api.roster import get_soul
+from api.npc_profiles import get_soul
 from game.npcs.actions import ActionType
 from game.npcs.npc import NPC
 from game.orders.orders import VOICE_ORDER_ACTIONS, CommandRefused, NpcOrder, RefusalReason

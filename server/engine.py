@@ -20,7 +20,7 @@ from game.settings import FPS
 from game.simulation import advance_world
 from game.spawning import spawn_world
 from game.world.map import GameMap
-from server.constants import CHAT_HISTORY_LENGTH
+from server.constants import CHAT_HISTORY_LENGTH, MAP_SEED, STATE_PUSH_INTERVAL_FRAMES
 from server.model_selection import ModelSelection
 from server.serialization import serialize_state
 
@@ -54,7 +54,7 @@ class GameEngine:
         speaker: VoiceLineSpeaker,
         run_in_background: Callable[[Callable[[], None]], None] = _run_in_daemon_thread,
     ) -> None:
-        self.game_map = GameMap(seed=42)
+        self.game_map = GameMap(seed=MAP_SEED)
         world = spawn_world(self.game_map)
         self.storage = world.storage
         self.resources = world.resources
@@ -206,7 +206,7 @@ class GameEngine:
             self._pending_answers.append(answer)
 
     _frame_count: int = 0
-    _ws_push_interval: int = 3  # frames: ~20 Hz at 60 FPS
+    _ws_push_interval: int = STATE_PUSH_INTERVAL_FRAMES
 
     def run_loop(self, socketio_ref: SocketIO | None = None) -> None:
         """Run the game loop in the current thread until ``stop``, pushing the state to ``socketio_ref``."""

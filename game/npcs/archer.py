@@ -38,7 +38,6 @@ class Archer(NPC):
         resources: list[Resource],
         storage: ResourceStorage,
         name: str | None = None,
-        all_fauna: list[Fauna] | None = None,
     ):
         super().__init__(
             x,
@@ -51,7 +50,7 @@ class Archer(NPC):
         self.speed = NPC_SPEED * 1.1
         self.max_health = 70
         self.health = 70
-        self._all_fauna: list[Fauna] = all_fauna if all_fauna is not None else []
+        self._all_fauna: list[Fauna] = []
         self._shoot_target: Fauna | None = None
         self._arrows: list[Arrow] = []
         self._is_firing: bool = False

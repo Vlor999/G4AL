@@ -18,6 +18,7 @@ for coding agents. Agents and humans had to guess conventions.
   `.claude/rules/`, skills in `.agents/skills/` linked from `.claude/skills/`, a
   PostToolUse hook that runs ruff and mypy on each edited Python file, the `openwiki`
   MCP server in `.mcp.json`.
+  Superseded on that point by [ADR 0005](0005-claude-md-as-agent-entry-point.md).
 - The frontend has no lint toolchain: it stays plain ES modules without Node.
 - Readiness is measured with `npx @kodus/agent-readiness . --no-web`.
 

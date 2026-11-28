@@ -1,6 +1,6 @@
 ---
 name: mr-review
-description: Review a GitHub pull request of G4AL against the project rules (AGENTS.md, .claude/rules/) and docs, and report findings ranked by severity. Use when the user explicitly requests a review of a pull request (by number or the current branch).
+description: Review a GitHub pull request of G4AL against the project rules (CLAUDE.md, .claude/rules/) and docs, and report findings ranked by severity. Use when the user explicitly requests a review of a pull request (by number or the current branch).
 disable-model-invocation: false
 ---
 
@@ -24,7 +24,7 @@ Reviews a GitHub pull request and produces findings prioritized by importance an
 
 ## Step 2 — Rule Gathering
 
-- Read `AGENTS.md`, every file under `.claude/rules/`, `docs/architecture.md`, `docs/api.md` (client/server contract), `docs/adr/`, and any other documentation or configuration the change touches.
+- Read `CLAUDE.md`, every file under `.claude/rules/`, `docs/architecture.md`, `docs/api.md` (client/server contract), `docs/adr/`, and any other documentation or configuration the change touches.
 - Apply `.claude/rules/architecture.md` to any Python or JavaScript the PR adds or changes. Check each point below on the modules the PR adds or changes:
   - **Import direction.** List the imports of each module and compare them with the layer table. `game/` imports nothing from `api/`, `server/`, Flask, Socket.IO, Mistral, ElevenLabs or pygame. Inside `game/`, a sub-package imports only the ones below it (`world` < `resources` < `combat` < `npcs` and `fauna` < `orders` < `spawning`, `simulation`, `ports`; `settings` and `constants` are shared). An import under `TYPE_CHECKING` counts.
   - **Domain.** Search `game/` for what belongs to an adapter or the entry point: network, SDK, filesystem, environment, `print`, the clock, a JSON payload shape for the client, prompt text.

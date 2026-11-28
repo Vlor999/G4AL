@@ -156,7 +156,7 @@ tests/              pytest suite; tests/e2e drives the HTTP routes
 docs/               architecture, client/server contract, decisions
 ```
 
-Contributors and coding agents start with [AGENTS.md](AGENTS.md) and [CONTRIBUTING.md](CONTRIBUTING.md).
+Contributors and coding agents start with [CLAUDE.md](CLAUDE.md) and [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Credits
 

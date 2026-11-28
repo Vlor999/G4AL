@@ -50,7 +50,7 @@ adapters in api/, HTML5 canvas client in static/) before it becomes a PR. You ha
 NO context from the conversation that produced this diff. Do not rationalize the
 author's choices; push back on anything questionable.
 
-Read AGENTS.md and every file under .claude/rules/ first, with the Read tool.
+Read CLAUDE.md and every file under .claude/rules/ first, with the Read tool.
 
 Gate output (make check):
 <GATES>

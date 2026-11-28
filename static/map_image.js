@@ -38,8 +38,7 @@
         const decorations = [];
         const waterRocks = [];
 
-        const SRC_X = 1 * 64;
-        const SRC_Y = 1 * 64;
+        const groundTile = G.locateTilesetTile(TILESET_TILE.FLAT_CENTER);
 
         for (let r = 0; r < rows; r++) {
             for (let c = 0; c < cols; c++) {
@@ -70,7 +69,10 @@
                 }
 
                 if (tileset) {
-                    mctx.drawImage(tileset, SRC_X, SRC_Y, 64, 64, px, py, tileSize, tileSize);
+                    mctx.drawImage(
+                        tileset, groundTile.sourceX, groundTile.sourceY, TILESET_TILE_SIZE, TILESET_TILE_SIZE,
+                        px, py, tileSize, tileSize,
+                    );
                     if ((r + c) % 2 === 0) {
                         mctx.fillStyle = "rgba(0,0,0,0.04)";
                         mctx.fillRect(px, py, tileSize, tileSize);

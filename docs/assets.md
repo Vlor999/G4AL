@@ -209,6 +209,10 @@ feature each group is for.
 - `Terrain/Resources/Gold/Gold Resource/Gold_Resource.png`
 - `Terrain/Resources/Gold/Gold Resource/Gold_Resource_Highlight.png`
 - `Terrain/Resources/Meat/Meat Resource/Meat Resource.png`
+- `Terrain/Resources/Wood/Trees/Stump 1.png`
+- `Terrain/Resources/Wood/Trees/Stump 2.png`
+- `Terrain/Resources/Wood/Trees/Stump 3.png`
+- `Terrain/Resources/Wood/Trees/Stump 4.png`
 - `Terrain/Resources/Wood/Wood Resource/Wood Resource.png`
 
 ### Tool icons (pickaxe, axe, hammer) for the interface
@@ -217,6 +221,10 @@ feature each group is for.
 - `Terrain/Resources/Tools/Tool_02.png`
 - `Terrain/Resources/Tools/Tool_03.png`
 - `Terrain/Resources/Tools/Tool_04.png`
+
+### No intended feature recorded
+
+- `Terrain/Tileset/Water Foam.png`
 
 ### Interface icons (order panel, NPC status)
 
@@ -257,7 +265,9 @@ feature each group is for.
 
 ### Pawn knife run animation (hunting)
 
+- `Units/Blue Units/Pawn/Pawn_Idle Knife.png`
 - `Units/Blue Units/Pawn/Pawn_Run Knife.png`
+- `Units/Blue Units/Pawn/Pawn_Run Meat.png`
 
 ### Future unit type: warrior
 

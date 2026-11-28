@@ -80,11 +80,11 @@ sprite draws (decision in `docs/adr/0002-object-dimensions-and-height-model.md`)
 | `Terrain/Resources/Wood/Trees/Tree4.png` | 1536×192 | 8 | 192×192 | (56, 46, 136, 168) | (96, 168) | 1.91 | tree 1×1 | 1 |
 | `Terrain/Resources/Wood/Wood Resource/Wood Resource.png` | 64×64 | 1 | 64×64 | (9, 18, 56, 46) | (32, 46) | 0.44 | - | - |
 | `Terrain/Tileset/Shadow.png` | 192×192 | 1 | 192×192 | (57, 56, 136, 136) | (96, 136) | 1.25 | - | - |
-| `Terrain/Tileset/Tilemap_color1.png` | 576×384 | 1 | 576×384 | (0, 0, 576, 384) | (288, 384) | 6.00 | - | - |
-| `Terrain/Tileset/Tilemap_color2.png` | 576×384 | 1 | 576×384 | (0, 0, 576, 384) | (288, 384) | 6.00 | - | - |
-| `Terrain/Tileset/Tilemap_color3.png` | 576×384 | 1 | 576×384 | (0, 0, 576, 384) | (288, 384) | 6.00 | - | - |
-| `Terrain/Tileset/Tilemap_color4.png` | 576×384 | 1 | 576×384 | (0, 0, 576, 384) | (288, 384) | 6.00 | - | - |
-| `Terrain/Tileset/Tilemap_color5.png` | 576×384 | 1 | 576×384 | (0, 0, 576, 384) | (288, 384) | 6.00 | - | - |
+| `Terrain/Tileset/Tilemap_color1.png` ([tile index](tileset.md)) | 576×384 | 1 | 576×384 | (0, 0, 576, 384) | (288, 384) | 6.00 | - | - |
+| `Terrain/Tileset/Tilemap_color2.png` ([tile index](tileset.md)) | 576×384 | 1 | 576×384 | (0, 0, 576, 384) | (288, 384) | 6.00 | - | - |
+| `Terrain/Tileset/Tilemap_color3.png` ([tile index](tileset.md)) | 576×384 | 1 | 576×384 | (0, 0, 576, 384) | (288, 384) | 6.00 | - | - |
+| `Terrain/Tileset/Tilemap_color4.png` ([tile index](tileset.md)) | 576×384 | 1 | 576×384 | (0, 0, 576, 384) | (288, 384) | 6.00 | - | - |
+| `Terrain/Tileset/Tilemap_color5.png` ([tile index](tileset.md)) | 576×384 | 1 | 576×384 | (0, 0, 576, 384) | (288, 384) | 6.00 | - | - |
 | `Terrain/Tileset/Water Background color.png` | 64×64 | 1 | 64×64 | (0, 0, 64, 64) | (32, 64) | 1.00 | - | - |
 | `Terrain/Tileset/Water Foam.png` | 3072×192 | 16 | 192×192 | (54, 58, 138, 142) | (96, 142) | 1.31 | - | - |
 | `Units/Blue Units/Archer/Archer_Idle.png` | 1152×192 | 6 | 192×192 | (58, 48, 128, 136) | (93, 136) | 1.38 | archer 1×1 | 0.5 |

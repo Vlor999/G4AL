@@ -30,6 +30,8 @@ SPRITES_FILE = REPOSITORY_ROOT / "static" / "sprites.js"
 STYLE_FILE = REPOSITORY_ROOT / "static" / "style.css"
 OUTPUT_FILE = REPOSITORY_ROOT / "docs" / "assets.md"
 SEPARATELY_LISTED_DIRECTORIES = ("lechat/", "UI Elements/")
+TILEMAP_PATH_PREFIX = "Terrain/Tileset/Tilemap_color"
+TILE_INDEX_LINK = " ([tile index](tileset.md))"
 
 DETAILS_ENTRY = re.compile(r"^\s{4}(\w+): \{")
 DETAILS_FRAMES = re.compile(r"frames: (\d+)")
@@ -164,8 +166,9 @@ def format_dimensions(path: str) -> tuple[str, str]:
 
 def format_row(sprite: SpriteMeasure) -> str:
     kind_and_footprint, height = format_dimensions(sprite.path)
+    link = TILE_INDEX_LINK if sprite.path.startswith(TILEMAP_PATH_PREFIX) else ""
     return (
-        f"| `{sprite.path}` | {sprite.sheet_width}×{sprite.sheet_height} | {sprite.frame_count} "
+        f"| `{sprite.path}`{link} | {sprite.sheet_width}×{sprite.sheet_height} | {sprite.frame_count} "
         f"| {sprite.frame_width}×{sprite.sheet_height} | {sprite.opaque_box or '-'} "
         f"| {sprite.anchor} | {sprite.opaque_height_in_tiles} | {kind_and_footprint} | {height} |"
     )

@@ -5,6 +5,7 @@ import pytest
 from scripts.asset_inventory import (
     SpriteMeasure,
     find_frame_count,
+    format_row,
     group_by_feature,
     read_frame_counts,
     read_loaded_paths,
@@ -69,3 +70,13 @@ def test_group_by_feature_puts_a_path_under_the_first_matching_prefix() -> None:
         ["Terrain/Resources/Tools/Tool_01.png"],
         ["Terrain/Resources/Wood/Wood Resource/W.png"],
     ]
+
+
+def test_a_tilemap_row_links_to_the_tile_index_and_other_rows_do_not() -> None:
+    tilemap = SpriteMeasure("Terrain/Tileset/Tilemap_color3.png", 576, 384, 1, (0, 0, 576, 384))
+    shadow = SpriteMeasure("Terrain/Tileset/Shadow.png", 192, 192, 1, None)
+
+    assert format_row(tilemap).startswith(
+        "| `Terrain/Tileset/Tilemap_color3.png` ([tile index](tileset.md)) | 576×384 |"
+    )
+    assert format_row(shadow).startswith("| `Terrain/Tileset/Shadow.png` | 192×192 |")

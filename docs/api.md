@@ -84,6 +84,11 @@ the lake actions (`go_to_shore`, `fish`, `swim`):
 | `waterTile` | `[col, row]` or `null` | the water tile next to the shore tile of the lake action under way; `null` outside one |
 | `lastRefusal` | str or `null` | why the latest refused action was refused (`"no shore reachable"`), until the action after it ends; `null` otherwise |
 
+The client draws a fishing pawn idle, facing `waterTile`, with a water splash on the
+catch (when the `fish` action ends); a swimming NPC clipped at the waterline, with a
+splash each time `isInWater` changes. Durations and who may do what come from the
+server (`allowedActions`, `state`, `actionType`).
+
 No client reads `lastRefusal` yet. [#123](https://github.com/Vlor999/G4AL/issues/123)
 will return the refusal reason from `enqueue`, so the orders report it.
 

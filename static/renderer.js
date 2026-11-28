@@ -131,6 +131,7 @@
             }
         }
 
+        G.spawnWaterSplashes(G.gameState.npcs);
         G.drawParticles(ctx, W, H);
 
         if (G.gameState.arrows) {
@@ -546,14 +547,15 @@
         const rect = spriteRect(npc, sx, sy, G.mapCached.tileSize);
         const SIZE = rect.height;
         const HALF = SIZE / 2;
-        const facingRight = G.updateFacing(npc);
+        const facingRight = G.faceWater(npc, G.updateFacing(npc));
 
-        // Shadow
-        if (sprites.shadow) {
+        // Shadow, on land only: the waterline hides a swimmer's feet
+        const hasShadow = !npc.isInWater;
+        if (hasShadow && sprites.shadow) {
             ctx.globalAlpha = 0.25;
             ctx.drawImage(sprites.shadow, 0, 0, SHADOW_SPRITE_SIZE, SHADOW_SPRITE_SIZE, sx - HALF * 0.7, sy - 4, SIZE * 0.7, SIZE * 0.35);
             ctx.globalAlpha = 1;
-        } else {
+        } else if (hasShadow) {
             ctx.fillStyle = "rgba(0,0,0,0.25)";
             ctx.beginPath(); ctx.ellipse(sx, sy, HALF * 0.6, HALF * 0.25, 0, 0, Math.PI * 2); ctx.fill();
         }
@@ -567,8 +569,10 @@
         // Sprite
         const info = getNpcSprite(npc);
         const frame = G.spriteFrame(info.frames, info.speed, npc.id);
+        const isClipped = G.clipAtWaterline(ctx, npc, rect);
         const spriteDrawn = info.sprite && G.drawSpriteFrame(ctx, info.sprite, frame, info.frames,
             rect.left, rect.top, rect.width, rect.height, !facingRight);
+        if (isClipped) ctx.restore();
 
         if (!spriteDrawn) {
             const bob = npc.state === "IDLE" ? Math.sin(Date.now() / 200) * 2 : 0;

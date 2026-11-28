@@ -20,6 +20,9 @@
         eat:           "\ud83c\udf56 EAT",
         shoot:         "\ud83c\udff9 SHOOT",
         defend:        "\ud83d\udee1\ufe0f DEFEND",
+        go_to_shore:   "\ud83c\udfd6\ufe0f SHORE",
+        fish:          "\ud83c\udfa3 FISH",
+        swim:          "\ud83c\udfca SWIM",
     };
 
     // ── DOM UI update (called every frame from render loop) ─────────────

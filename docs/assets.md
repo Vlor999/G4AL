@@ -196,10 +196,6 @@ feature each group is for.
 
 - `Particle FX/Fire_03.png`
 
-### Water effects (an NPC or object falling in water)
-
-- `Particle FX/Water Splash.png`
-
 ### Water decoration
 
 - `Terrain/Decorations/Rubber Duck/Rubber duck.png`
